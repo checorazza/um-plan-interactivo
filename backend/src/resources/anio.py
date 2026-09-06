@@ -6,6 +6,7 @@ from src.models.anio import Anio
 parser = reqparse.RequestParser()
 parser.add_argument('numero', type=int, required=True, help="El número de año es obligatorio")
 parser.add_argument('id_carrera', type=int, required=True, help="La carrera es obligatoria")
+parser.add_argument('creditos_requeridos', type=int, required=True, help="Los créditos requeridos son obligatorios")
 
 
 class Anios(Resource): #Lista de años (cómo detesto escribir anio)
@@ -14,7 +15,7 @@ class Anios(Resource): #Lista de años (cómo detesto escribir anio)
 
     def post(self):
         args = parser.parse_args()
-        anio = Anio(numero=args['numero'], id_carrera=args['id_carrera'])
+        anio = Anio(numero=args['numero'], id_carrera=args['id_carrera'], creditos_requeridos=args['creditos_requeridos'])
         db.session.add(anio)
         db.session.commit()
         return anio.to_json(), 201
@@ -29,6 +30,7 @@ class Anio(Resource): #Año individual
         args = parser.parse_args()
         anio.numero = args['numero']
         anio.id_carrera = args['id_carrera']
+        anio.creditos_requeridos = args['creditos_requeridos']
         db.session.commit()
         return anio.to_json(), 200
 

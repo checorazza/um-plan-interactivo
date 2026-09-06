@@ -5,6 +5,8 @@ class Anio(db.Model):
     id_anio = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.Integer, nullable=False)
 
+    creditos_requeridos = db.Column(db.Integer, nullable=False)
+
     # Relaciones
     id_carrera = db.Column(db.Integer, db.ForeignKey('carrera.id_carrera'), nullable=False)
 
