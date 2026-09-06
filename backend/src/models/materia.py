@@ -6,6 +6,10 @@ class Materia(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     creditos = db.Column(db.Integer, nullable=False)
 
+    #estado
+    es_regular = db.Column(db.Boolean, nullable=False, default=False)
+    es_aprobada = db.Column(db.Boolean, nullable=False, default=False)
+
     id_anio = db.Column(db.Integer, db.ForeignKey('anio.id_anio'), nullable=False)
 
     # correlativa: apunta a otra materia
