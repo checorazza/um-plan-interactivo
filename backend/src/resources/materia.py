@@ -9,6 +9,10 @@ parser.add_argument('creditos', type=int, required=True, help="Los créditos son
 parser.add_argument('id_anio', type=int, required=True, help="El año es obligatorio")
 parser.add_argument('id_correlativa', type=int, required=False)  # opcional
 
+estado_parser = reqparse.RequestParser()
+estado_parser.add_argument('es_regular', type=bool, required=False)
+estado_parser.add_argument('es_aprobada', type=bool, required=False)
+
 
 class Materias(Resource): #Lista de materias
     def get(self):
@@ -46,3 +50,14 @@ class Materia(Resource): #Materia individual
         db.session.delete(materia)
         db.session.commit()
         return '', 204
+
+class MateriaEstado(Resource):
+    def put(self, id_materia):
+        materia = Materia.query.get_or_404(id_materia)
+        args = estado_parser.parse_args()
+        if args['es_regular'] is not None:
+            materia.es_regular = args['es_regular']
+        if args['es_aprobada'] is not None:
+            materia.es_aprobada = args['es_aprobada']
+        db.session.commit()
+        return materia.to_json(), 200

@@ -17,4 +17,6 @@ class Anio(db.Model):
         return {
             'id_anio': self.id_anio, 
             'numero': self.numero, 
-            'id_carrera': self.id_carrera}
+            'id_carrera': self.id_carrera,
+            'creditos_requeridos': self.creditos_requeridos,
+            }

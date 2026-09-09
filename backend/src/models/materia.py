@@ -23,4 +23,6 @@ class Materia(db.Model):
             'creditos': self.creditos,
             'id_anio': self.id_anio,
             'id_correlativa': self.id_correlativa,
+            'es_regular': self.es_regular, 
+            'es_aprobada': self.es_aprobada,
         }
