@@ -1,4 +1,5 @@
 .env
 Collection/
 database/
-venv/
+.venv/
+__pycache__
