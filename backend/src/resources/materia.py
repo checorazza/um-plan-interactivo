@@ -19,7 +19,7 @@ class Materias(Resource): #Lista de materias
 
     def post(self):
         args = parser.parse_args()
-        materia = Materia(
+        materia = MateriaModel(
             nombre=args['nombre'],
             creditos=args['creditos'],
             id_anio=args['id_anio'],
