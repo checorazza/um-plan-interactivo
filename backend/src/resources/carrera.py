@@ -27,18 +27,18 @@ class Carreras(Resource): #Listado de carreras
 class Carrera(Resource): #Carrera individual
 
     def get(self, id_carrera):
-        carrera = CarreraModel.query.get_or_404(id_carrera)
+        carrera = db.get_or_404(CarreraModel, id_carrera)
         return carrera.to_json(), 200
 
     def put(self, id_carrera):
-        carrera = CarreraModel.query.get_or_404(id_carrera)
+        carrera = db.get_or_404(CarreraModel, id_carrera)
         args = parser.parse_args()
         carrera.nombre = args['nombre']
         db.session.commit()
         return carrera.to_json(), 200
 
     def delete(self, id_carrera):
-        carrera = CarreraModel.query.get_or_404(id_carrera)
+        carrera = db.get_or_404(CarreraModel, id_carrera)
         db.session.delete(carrera)
         db.session.commit()
         return '', 204   # 204 = No Content

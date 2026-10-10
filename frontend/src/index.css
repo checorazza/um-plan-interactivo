@@ -1,0 +1,164 @@
+/* Tokens de la app. Los estados de las materias comparten la misma escala
+   semántica en claro y oscuro, así que los componentes nunca escriben un color
+   literal: siempre usan una variable de acá. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Superficies y texto */
+  --fondo: #f6f7f9;
+  --superficie: #ffffff;
+  --superficie-2: #eef0f4;
+  --borde: #d7dbe3;
+  --texto: #15181d;
+  --texto-suave: #5c6472;
+
+  /* Estados de una materia */
+  --sin-estado-fondo: #ffffff;
+  --sin-estado-borde: #c2c8d4;
+  --sin-estado-texto: #15181d;
+
+  --regular-fondo: #fff4d6;
+  --regular-borde: #d9a400;
+  --regular-texto: #553f00;
+
+  --aprobada-fondo: #d8f5e3;
+  --aprobada-borde: #1f9254;
+  --aprobada-texto: #0c3f24;
+
+  --bloqueada-fondo: #eceef2;
+  --bloqueada-borde: #c2c8d4;
+  --bloqueada-texto: #8b93a1;
+
+  /* Acentos */
+  --acento: #2a5bd7;
+  --acento-texto: #ffffff;
+  --peligro: #c22f3d;
+
+  /* Aristas del grafo */
+  --arista: #aeb6c4;
+  --arista-activa: #2a5bd7;
+
+  /* Forma y tipografía */
+  --radio: 10px;
+  --radio-chico: 6px;
+  --sombra: 0 1px 2px rgb(17 24 39 / 8%), 0 4px 12px rgb(17 24 39 / 6%);
+  --fuente: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --fondo: #11141a;
+    --superficie: #1a1f27;
+    --superficie-2: #232933;
+    --borde: #333b48;
+    --texto: #e7eaf0;
+    --texto-suave: #9aa3b2;
+
+    --sin-estado-fondo: #1a1f27;
+    --sin-estado-borde: #414b5a;
+    --sin-estado-texto: #e7eaf0;
+
+    --regular-fondo: #3a2f0c;
+    --regular-borde: #d9a400;
+    --regular-texto: #f4de9b;
+
+    --aprobada-fondo: #0f3522;
+    --aprobada-borde: #2fab65;
+    --aprobada-texto: #a7e8c3;
+
+    --bloqueada-fondo: #191d24;
+    --bloqueada-borde: #2c333e;
+    --bloqueada-texto: #68717f;
+
+    --acento: #6b93ff;
+    --acento-texto: #0a0d12;
+    --peligro: #ff7b86;
+
+    --arista: #3c4451;
+    --arista-activa: #6b93ff;
+
+    --sombra: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 12px rgb(0 0 0 / 30%);
+  }
+}
+
+:root[data-tema="oscuro"] {
+  --fondo: #11141a;
+  --superficie: #1a1f27;
+  --superficie-2: #232933;
+  --borde: #333b48;
+  --texto: #e7eaf0;
+  --texto-suave: #9aa3b2;
+
+  --sin-estado-fondo: #1a1f27;
+  --sin-estado-borde: #414b5a;
+  --sin-estado-texto: #e7eaf0;
+
+  --regular-fondo: #3a2f0c;
+  --regular-borde: #d9a400;
+  --regular-texto: #f4de9b;
+
+  --aprobada-fondo: #0f3522;
+  --aprobada-borde: #2fab65;
+  --aprobada-texto: #a7e8c3;
+
+  --bloqueada-fondo: #191d24;
+  --bloqueada-borde: #2c333e;
+  --bloqueada-texto: #68717f;
+
+  --acento: #6b93ff;
+  --acento-texto: #0a0d12;
+  --peligro: #ff7b86;
+
+  --arista: #3c4451;
+  --arista-activa: #6b93ff;
+
+  --sombra: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 12px rgb(0 0 0 / 30%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

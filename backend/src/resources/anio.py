@@ -23,10 +23,10 @@ class Anios(Resource): #Lista de años (cómo detesto escribir anio)
 
 class Anio(Resource): #Año individual
     def get(self, id_anio):
-        return AnioModel.query.get_or_404(id_anio).to_json(), 200
+        return db.get_or_404(AnioModel, id_anio).to_json(), 200
 
     def put(self, id_anio):
-        anio = AnioModel.query.get_or_404(id_anio)
+        anio = db.get_or_404(AnioModel, id_anio)
         args = parser.parse_args()
         anio.numero = args['numero']
         anio.id_carrera = args['id_carrera']
@@ -35,7 +35,7 @@ class Anio(Resource): #Año individual
         return anio.to_json(), 200
 
     def delete(self, id_anio):
-        anio = AnioModel.query.get_or_404(id_anio)
+        anio = db.get_or_404(AnioModel, id_anio)
         db.session.delete(anio)
         db.session.commit()
         return '', 204

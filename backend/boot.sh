@@ -14,4 +14,6 @@ fi
 
 pip install -q -r requirements.txt
 
+flask db upgrade
+
 python app.py
