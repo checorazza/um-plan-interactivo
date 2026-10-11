@@ -1,6 +1,7 @@
 .env
+# Conexion a la base de produccion
+.env.produccion
 Collection/
 database/
 .venv/
 __pycache__
-migrations

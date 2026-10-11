@@ -95,16 +95,25 @@ el ir y venir de conexiones, no SQLAlchemy.
 
 No corren solas al desplegar, y es a propósito: una migración disparada desde
 una función serverless puede ejecutarse varias veces en paralelo. Se corren a
-mano, desde tu máquina, con la cadena **directa** (sin `-pooler`, que es lo que
-Neon recomienda para DDL):
+mano, desde tu máquina.
+
+Para no pegar la cadena de conexión en la consola —donde queda en el historial
+del shell— se guarda en `backend/.env.produccion`, que está en el
+`.gitignore`:
+
+1. En Vercel: **Storage → la base → Quickstart → pestaña `.env.local` →
+   "Show secret" → "Copy Snippet"**.
+2. Pegar todo en `backend/.env.produccion`.
+3. Correr:
 
 ```bash
-cd backend
-DATABASE_URL="postgresql://...neon.tech/...?sslmode=require" .venv/Scripts/python.exe -m flask db upgrade
+cd backend && .venv/Scripts/python.exe scripts/migrar_produccion.py --con-seed
 ```
 
-Después de eso, cargar los planes con los scripts de `backend/scripts/`
-apuntando al mismo `DATABASE_URL`.
+El script usa `DATABASE_URL_UNPOOLED` (la conexión **directa**) si está, que es
+lo que Neon recomienda para DDL: el pooler no maneja bien los cambios de
+esquema. Con `--con-seed` carga además los seis planes; sin el flag, sólo
+migra.
 
 ## Google OAuth
 
