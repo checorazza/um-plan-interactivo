@@ -9,7 +9,7 @@ def test_get_materias_lista_correlativas(client, plan):
     calculo2.correlativas = [calculo1]
     db.session.commit()
 
-    respuesta = client.get('/materias')
+    respuesta = client.get('/api/materias')
     assert respuesta.status_code == 200
 
     por_nombre = {m['nombre']: m for m in respuesta.json}
@@ -25,7 +25,7 @@ def test_post_materia_con_varias_correlativas(client, plan, auth_admin):
     algebra = plan['materias']['algebra']
 
     respuesta = client.post(
-        '/materias',
+        '/api/materias',
         headers=auth_admin,
         json={
             'codigo': '2030',
@@ -45,7 +45,7 @@ def test_post_materia_con_varias_correlativas(client, plan, auth_admin):
 
 def test_post_materia_sin_correlativas(client, plan, auth_admin):
     respuesta = client.post(
-        '/materias',
+        '/api/materias',
         headers=auth_admin,
         json={
             'codigo': '0009',
@@ -61,7 +61,7 @@ def test_post_materia_sin_correlativas(client, plan, auth_admin):
 
 def test_post_rechaza_correlativa_inexistente(client, plan, auth_admin):
     respuesta = client.post(
-        '/materias',
+        '/api/materias',
         headers=auth_admin,
         json={
             'codigo': 'XXXX',
@@ -84,7 +84,7 @@ def test_put_rechaza_ciclo(client, plan, auth_admin):
 
     # Cálculo I no puede requerir Cálculo II, que ya requiere Cálculo I
     respuesta = client.put(
-        f'/materias/{calculo1.id_materia}',
+        f'/api/materias/{calculo1.id_materia}',
         headers=auth_admin,
         json={
             'codigo': '0003',
@@ -102,7 +102,7 @@ def test_put_rechaza_ciclo(client, plan, auth_admin):
 def test_put_rechaza_autoreferencia(client, plan, auth_admin):
     calculo1 = plan['materias']['calculo1']
     respuesta = client.put(
-        f'/materias/{calculo1.id_materia}',
+        f'/api/materias/{calculo1.id_materia}',
         headers=auth_admin,
         json={
             'codigo': '0003',
@@ -125,7 +125,7 @@ def test_put_reemplaza_las_correlativas(client, plan, auth_admin):
     db.session.commit()
 
     respuesta = client.put(
-        f'/materias/{calculo2.id_materia}',
+        f'/api/materias/{calculo2.id_materia}',
         headers=auth_admin,
         json={
             'codigo': '0004',
@@ -177,6 +177,6 @@ def test_el_endpoint_global_de_estado_ya_no_existe(client, plan):
     # Antes cualquiera podía aprobar una materia para todos los usuarios.
     calculo1 = plan['materias']['calculo1']
     respuesta = client.put(
-        f'/materias/{calculo1.id_materia}/estado', json={'es_aprobada': True}
+        f'/api/materias/{calculo1.id_materia}/estado', json={'es_aprobada': True}
     )
     assert respuesta.status_code == 404

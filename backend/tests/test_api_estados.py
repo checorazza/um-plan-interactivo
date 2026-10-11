@@ -11,7 +11,7 @@ def ids(plan_um, *nombres):
 
 
 def marcar(client, auth, id_materia, estado):
-    return client.put(f'/me/estados/{id_materia}', headers=auth, json={'estado': estado})
+    return client.put(f'/api/me/estados/{id_materia}', headers=auth, json={'estado': estado})
 
 
 def aprobar_primer_anio(client, auth, plan_um):
@@ -27,14 +27,14 @@ def aprobar_primer_anio(client, auth, plan_um):
 
 
 def test_estados_vacios_al_principio(client, auth):
-    respuesta = client.get('/me/estados', headers=auth)
+    respuesta = client.get('/api/me/estados', headers=auth)
     assert respuesta.status_code == 200
     assert respuesta.json == []
 
 
 def test_estados_requiere_sesion(client):
-    assert client.get('/me/estados').status_code == 401
-    assert client.put('/me/estados', json={'estados': []}).status_code == 401
+    assert client.get('/api/me/estados').status_code == 401
+    assert client.put('/api/me/estados', json={'estados': []}).status_code == 401
 
 
 # --- marcar una materia ---
@@ -93,7 +93,7 @@ def test_aprobar_sin_la_correlativa_falla_pero_regularizar_no(client, auth, plan
             {'id_materia': plan_um['m']['informatica'].id_materia, 'estado': 'aprobada'},
         ]
     }
-    assert client.put('/me/estados', headers=auth, json=cuerpo).status_code == 200
+    assert client.put('/api/me/estados', headers=auth, json=cuerpo).status_code == 200
 
     # 4 + 7 = 11 créditos: todavía no alcanza para 2º año
     id_fisica = plan_um['m']['fisica'].id_materia
@@ -140,7 +140,7 @@ def test_desmarcar_que_rompe_otras_da_conflicto(client, auth, plan_um):
     marcar(client, auth, plan_um['m']['calculo1'].id_materia, 'aprobada')
 
     respuesta = client.delete(
-        f'/me/estados/{plan_um["m"]["precalculo"].id_materia}', headers=auth
+        f'/api/me/estados/{plan_um["m"]["precalculo"].id_materia}', headers=auth
     )
     assert respuesta.status_code == 409
     assert respuesta.json['conflictos']
@@ -151,7 +151,7 @@ def test_desmarcar_una_hoja_funciona(client, auth, plan_um):
 
     # Química no es correlativa de nada, pero sus créditos tampoco hacen falta
     respuesta = client.delete(
-        f'/me/estados/{plan_um["m"]["quimica"].id_materia}', headers=auth
+        f'/api/me/estados/{plan_um["m"]["quimica"].id_materia}', headers=auth
     )
     assert respuesta.status_code == 204
     assert EstadoMateria.query.count() == 2
@@ -159,7 +159,7 @@ def test_desmarcar_una_hoja_funciona(client, auth, plan_um):
 
 def test_desmarcar_es_idempotente(client, auth, plan_um):
     respuesta = client.delete(
-        f'/me/estados/{plan_um["m"]["quimica"].id_materia}', headers=auth
+        f'/api/me/estados/{plan_um["m"]["quimica"].id_materia}', headers=auth
     )
     assert respuesta.status_code == 204
 
@@ -170,7 +170,7 @@ def test_desmarcar_que_rompe_el_gate_de_creditos_da_conflicto(client, auth, plan
 
     # Sin Informática quedan 10 créditos: Física de 2º año ya no es alcanzable
     respuesta = client.delete(
-        f'/me/estados/{plan_um["m"]["informatica"].id_materia}', headers=auth
+        f'/api/me/estados/{plan_um["m"]["informatica"].id_materia}', headers=auth
     )
     assert respuesta.status_code == 409
     conflictivas = [c['id_materia'] for c in respuesta.json['conflictos']]
@@ -190,7 +190,7 @@ def test_put_masivo_guarda_un_conjunto_valido(client, auth, plan_um):
             {'id_materia': plan_um['m']['calculo1'].id_materia, 'estado': 'regular'},
         ]
     }
-    respuesta = client.put('/me/estados', headers=auth, json=cuerpo)
+    respuesta = client.put('/api/me/estados', headers=auth, json=cuerpo)
 
     assert respuesta.status_code == 200
     assert len(respuesta.json) == 4
@@ -204,7 +204,7 @@ def test_put_masivo_rechaza_un_conjunto_inalcanzable(client, auth, plan_um):
             {'id_materia': plan_um['m']['calculo2'].id_materia, 'estado': 'aprobada'},
         ]
     }
-    respuesta = client.put('/me/estados', headers=auth, json=cuerpo)
+    respuesta = client.put('/api/me/estados', headers=auth, json=cuerpo)
 
     assert respuesta.status_code == 422
     assert respuesta.json['conflictos'][0]['id_materia'] == (
@@ -222,7 +222,7 @@ def test_put_masivo_rechaza_aprobada_sin_correlativa(client, auth, plan_um):
             {'id_materia': plan_um['m']['calculo1'].id_materia, 'estado': 'aprobada'},
         ]
     }
-    respuesta = client.put('/me/estados', headers=auth, json=cuerpo)
+    respuesta = client.put('/api/me/estados', headers=auth, json=cuerpo)
     assert respuesta.status_code == 422
 
 
@@ -230,7 +230,7 @@ def test_put_masivo_reemplaza_todo(client, auth, plan_um):
     aprobar_primer_anio(client, auth, plan_um)
     assert EstadoMateria.query.count() == 3
 
-    respuesta = client.put('/me/estados', headers=auth, json={'estados': []})
+    respuesta = client.put('/api/me/estados', headers=auth, json={'estados': []})
     assert respuesta.status_code == 200
     assert respuesta.json == []
     assert EstadoMateria.query.count() == 0
@@ -238,7 +238,7 @@ def test_put_masivo_reemplaza_todo(client, auth, plan_um):
 
 def test_put_masivo_rechaza_materias_inexistentes(client, auth, plan_um):
     respuesta = client.put(
-        '/me/estados',
+        '/api/me/estados',
         headers=auth,
         json={'estados': [{'id_materia': 9999, 'estado': 'regular'}]},
     )
@@ -247,14 +247,14 @@ def test_put_masivo_rechaza_materias_inexistentes(client, auth, plan_um):
 
 
 def test_put_masivo_rechaza_cuerpos_mal_formados(client, auth):
-    assert client.put('/me/estados', headers=auth, json={}).status_code == 400
+    assert client.put('/api/me/estados', headers=auth, json={}).status_code == 400
     assert (
-        client.put('/me/estados', headers=auth, json={'estados': 'no'}).status_code
+        client.put('/api/me/estados', headers=auth, json={'estados': 'no'}).status_code
         == 400
     )
     assert (
         client.put(
-            '/me/estados', headers=auth, json={'estados': [{'id_materia': 'x'}]}
+            '/api/me/estados', headers=auth, json={'estados': [{'id_materia': 'x'}]}
         ).status_code
         == 400
     )
@@ -267,8 +267,8 @@ def test_el_progreso_es_por_usuario(client, auth, auth_admin, plan_um):
     aprobar_primer_anio(client, auth, plan_um)
 
     # el otro usuario no ve nada
-    assert client.get('/me/estados', headers=auth_admin).json == []
-    assert len(client.get('/me/estados', headers=auth).json) == 3
+    assert client.get('/api/me/estados', headers=auth_admin).json == []
+    assert len(client.get('/api/me/estados', headers=auth).json) == 3
 
 
 def test_los_estados_de_otra_carrera_no_aportan_creditos(
@@ -281,7 +281,7 @@ def test_los_estados_de_otra_carrera_no_aportan_creditos(
             {'id_materia': plan['materias']['algebra'].id_materia, 'estado': 'aprobada'},
         ]
     }
-    assert client.put('/me/estados', headers=auth, json=cuerpo).status_code == 200
+    assert client.put('/api/me/estados', headers=auth, json=cuerpo).status_code == 200
 
     respuesta = marcar(client, auth, plan_um['m']['calculo1'].id_materia, 'regular')
     assert respuesta.status_code == 422

@@ -14,7 +14,7 @@ def test_las_anuales_van_primero():
 
 def test_el_plan_trae_el_semestre(client, plan_um):
     id_carrera = plan_um['carrera'].id_carrera
-    cuerpo = client.get(f'/carreras/{id_carrera}/plan').json
+    cuerpo = client.get(f'/api/carreras/{id_carrera}/plan').json
 
     por_codigo = {m['codigo']: m['semestre'] for m in cuerpo['materias']}
     assert por_codigo['CP00'] == '1'
@@ -24,10 +24,10 @@ def test_el_plan_trae_el_semestre(client, plan_um):
 
 def test_el_plan_viene_ordenado_por_anio_y_semestre(client, plan_um):
     id_carrera = plan_um['carrera'].id_carrera
-    materias = client.get(f'/carreras/{id_carrera}/plan').json['materias']
+    materias = client.get(f'/api/carreras/{id_carrera}/plan').json['materias']
 
     anios = {a['id_anio']: a['numero'] for a in
-             client.get(f'/carreras/{id_carrera}/plan').json['anios']}
+             client.get(f'/api/carreras/{id_carrera}/plan').json['anios']}
     orden = [
         (anios[m['id_anio']], ORDEN_SEMESTRE[m['semestre']]) for m in materias
     ]
@@ -40,7 +40,7 @@ def test_el_plan_viene_ordenado_por_anio_y_semestre(client, plan_um):
 
 def test_crear_materia_sin_semestre_falla(client, auth_admin, plan):
     respuesta = client.post(
-        '/materias',
+        '/api/materias',
         headers=auth_admin,
         json={
             'codigo': '1234',
@@ -54,7 +54,7 @@ def test_crear_materia_sin_semestre_falla(client, auth_admin, plan):
 
 def test_crear_materia_con_semestre_invalido_falla(client, auth_admin, plan):
     respuesta = client.post(
-        '/materias',
+        '/api/materias',
         headers=auth_admin,
         json={
             'codigo': '1234',
@@ -69,7 +69,7 @@ def test_crear_materia_con_semestre_invalido_falla(client, auth_admin, plan):
 
 def test_crear_materia_anual(client, auth_admin, plan):
     respuesta = client.post(
-        '/materias',
+        '/api/materias',
         headers=auth_admin,
         json={
             'codigo': '2028',

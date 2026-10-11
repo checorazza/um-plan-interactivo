@@ -124,7 +124,7 @@ def test_agrupar_es_idempotente(dos_carreras):
 def test_aprobar_una_basica_la_aprueba_en_la_otra_carrera(client, auth, dos_carreras):
     id_materia = dos_carreras['info_precalculo'].id_materia
     respuesta = client.put(
-        f'/me/estados/{id_materia}', headers=auth, json={'estado': 'aprobada'}
+        f'/api/me/estados/{id_materia}', headers=auth, json={'estado': 'aprobada'}
     )
 
     assert respuesta.status_code == 200
@@ -138,7 +138,7 @@ def test_aprobar_una_basica_la_aprueba_en_la_otra_carrera(client, auth, dos_carr
 
 def test_regularizar_tambien_se_propaga(client, auth, dos_carreras):
     id_materia = dos_carreras['info_quimica'].id_materia
-    client.put(f'/me/estados/{id_materia}', headers=auth, json={'estado': 'regular'})
+    client.put(f'/api/me/estados/{id_materia}', headers=auth, json={'estado': 'regular'})
 
     gemela = EstadoMateria.query.filter_by(
         id_materia=dos_carreras['indu_quimica'].id_materia
@@ -149,10 +149,10 @@ def test_regularizar_tambien_se_propaga(client, auth, dos_carreras):
 
 def test_desmarcar_se_propaga(client, auth, dos_carreras):
     id_materia = dos_carreras['info_precalculo'].id_materia
-    client.put(f'/me/estados/{id_materia}', headers=auth, json={'estado': 'aprobada'})
+    client.put(f'/api/me/estados/{id_materia}', headers=auth, json={'estado': 'aprobada'})
     assert EstadoMateria.query.count() == 2
 
-    respuesta = client.delete(f'/me/estados/{id_materia}', headers=auth)
+    respuesta = client.delete(f'/api/me/estados/{id_materia}', headers=auth)
 
     assert respuesta.status_code == 200
     assert respuesta.json['propagado_a'] == [
@@ -164,7 +164,7 @@ def test_desmarcar_se_propaga(client, auth, dos_carreras):
 def test_una_materia_propia_no_propaga_nada(client, auth, dos_carreras):
     id_materia = dos_carreras['info_propia'].id_materia
     respuesta = client.put(
-        f'/me/estados/{id_materia}', headers=auth, json={'estado': 'aprobada'}
+        f'/api/me/estados/{id_materia}', headers=auth, json={'estado': 'aprobada'}
     )
 
     assert respuesta.status_code == 200
@@ -181,7 +181,7 @@ def test_el_put_masivo_tambien_expande(client, auth, dos_carreras):
             }
         ]
     }
-    respuesta = client.put('/me/estados', headers=auth, json=cuerpo)
+    respuesta = client.put('/api/me/estados', headers=auth, json=cuerpo)
 
     assert respuesta.status_code == 200
     ids = {e['id_materia'] for e in respuesta.json}
@@ -206,7 +206,7 @@ def test_el_estado_explicito_gana_sobre_el_propagado(client, auth, dos_carreras)
             },
         ]
     }
-    respuesta = client.put('/me/estados', headers=auth, json=cuerpo)
+    respuesta = client.put('/api/me/estados', headers=auth, json=cuerpo)
 
     assert respuesta.status_code == 200
     estados = {e['id_materia']: e['estado'] for e in respuesta.json}
@@ -242,13 +242,13 @@ def test_no_propaga_donde_dejaria_el_plan_inconsistente(
 ):
     # 12 créditos alcanzan para 2º de Informática, no para 3º de Industrial
     client.put(
-        f'/me/estados/{gates_distintos["info_precalculo"].id_materia}',
+        f'/api/me/estados/{gates_distintos["info_precalculo"].id_materia}',
         headers=auth,
         json={'estado': 'aprobada'},
     )
 
     respuesta = client.put(
-        f'/me/estados/{gates_distintos["info_calculo1"].id_materia}',
+        f'/api/me/estados/{gates_distintos["info_calculo1"].id_materia}',
         headers=auth,
         json={'estado': 'aprobada'},
     )
@@ -275,12 +275,12 @@ def test_el_cambio_propio_se_guarda_aunque_no_se_pueda_propagar(
     client, auth, gates_distintos
 ):
     client.put(
-        f'/me/estados/{gates_distintos["info_precalculo"].id_materia}',
+        f'/api/me/estados/{gates_distintos["info_precalculo"].id_materia}',
         headers=auth,
         json={'estado': 'aprobada'},
     )
     client.put(
-        f'/me/estados/{gates_distintos["info_calculo1"].id_materia}',
+        f'/api/me/estados/{gates_distintos["info_calculo1"].id_materia}',
         headers=auth,
         json={'estado': 'aprobada'},
     )
@@ -301,7 +301,7 @@ def test_el_plan_informa_la_basica(client, dos_carreras):
         .filter(Anio.id_anio == dos_carreras['info_calculo1'].id_anio)
         .scalar()
     )
-    cuerpo = client.get(f'/carreras/{id_carrera}/plan').json
+    cuerpo = client.get(f'/api/carreras/{id_carrera}/plan').json
 
     por_codigo = {m['codigo']: m for m in cuerpo['materias']}
     assert por_codigo['0003']['id_basica'] == dos_carreras['info_calculo1'].id_basica

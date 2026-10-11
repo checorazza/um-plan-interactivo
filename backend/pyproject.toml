@@ -1,0 +1,5 @@
+# Le dice a Vercel cuál es la app WSGI. Sin esto encuentra dos candidatos
+# —app.py y tests/conftest.py, que también expone un `app`— y no elige.
+# La ruta es relativa al `root` del servicio en vercel.json, o sea backend/.
+[tool.vercel]
+entrypoint = "app:app"

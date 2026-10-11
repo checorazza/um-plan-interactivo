@@ -1,5 +1,7 @@
 import os
 
+from sqlalchemy.pool import NullPool
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ORIGENES_POR_DEFECTO = 'http://localhost:5173,http://127.0.0.1:5173'
@@ -49,6 +51,16 @@ class Config:
         self.SQLALCHEMY_DATABASE_URI = normalizar_url(
             os.getenv('DATABASE_URL')
         ) or f'sqlite:///{os.path.join(ruta_base_de_datos(), nombre)}'
+        # En Vercel cada request puede caer en un proceso nuevo, así que no
+        # tiene sentido mantener un pool de conexiones vivo: se abre y se
+        # cierra por invocación. `pool_pre_ping` descarta las que Neon haya
+        # cortado por inactividad.
+        if self.SQLALCHEMY_DATABASE_URI.startswith('postgresql'):
+            self.SQLALCHEMY_ENGINE_OPTIONS = {
+                'poolclass': NullPool,
+                'pool_pre_ping': True,
+            }
+
         self.JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
         self.JWT_ACCESS_TOKEN_EXPIRES = int(
             os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 60 * 60 * 24 * 7)

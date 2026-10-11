@@ -1,0 +1,11 @@
+# Nada de esto hace falta en el deploy, y los tests confunden la detección del
+# entrypoint de Flask: conftest.py también expone una variable `app`.
+backend/tests/
+backend/.venv/
+backend/database/
+backend/Collection/
+backend/scripts/
+backend/requirements-dev.txt
+backend/pytest.ini
+planes/
+docs/

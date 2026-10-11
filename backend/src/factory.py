@@ -9,6 +9,8 @@ from sqlalchemy.engine import Engine
 from src.config import LARGO_MINIMO_SECRETO, Config
 from src.models import db
 
+PREFIJO_API = '/api'
+
 migrate = Migrate()
 jwt = JWTManager()
 
@@ -99,7 +101,10 @@ def _registrar_recursos(app):
     from src.resources.materia import Materia, Materias
     from src.resources.plan import CarreraPlan
 
-    api = Api(app)
+    # Todo cuelga de /api. En Vercel el front y la API comparten dominio y el
+    # rewrite manda /api/* acá; se usa el mismo prefijo en local para que no
+    # haya diferencia entre desarrollo y producción.
+    api = Api(app, prefix=PREFIJO_API)
 
     # Catálogo: lectura pública, escritura sólo para admins.
     api.add_resource(Carreras, '/carreras')

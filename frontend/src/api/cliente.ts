@@ -11,7 +11,15 @@ import type { Estado, EstadoMateria, Estados } from "../types/estado";
 import type { RespuestaPlan } from "../types/plan";
 import type { Usuario } from "../types/usuario";
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
+/**
+ * Dónde vive la API.
+ *
+ * En producción el front y la API comparten dominio —Vercel manda `/api/*` al
+ * servicio de Flask—, así que `VITE_API_URL` va vacío y las llamadas salen
+ * relativas. En local apunta al Flask de al lado. El prefijo `/api` es el
+ * mismo en los dos casos.
+ */
+const BASE = `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000"}/api`;
 
 /** Client ID de Google. Vacío = la app es sólo local, sin botón de login. */
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";

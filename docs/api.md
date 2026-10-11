@@ -1,6 +1,12 @@
 # API
 
-Base: `http://127.0.0.1:5000` en desarrollo (configurable con `PORT`).
+Base: **`/api`**. En desarrollo, `http://127.0.0.1:5000/api` (el puerto se
+configura con `PORT`); en producción el front y la API comparten dominio y
+Vercel manda `/api/*` al servicio de Flask, así que el front llama en relativo.
+
+El prefijo es el mismo en los dos entornos a propósito: si en local la API
+colgara de la raíz y en producción de `/api`, cualquier ruta mal armada
+aparecería recién al desplegar.
 
 Todas las respuestas son JSON. Los errores traen `{"message": "..."}`, y algunos
 agregan campos extra que se documentan abajo.
@@ -12,10 +18,10 @@ el caso principal de la app. La sesión sólo hace falta para sincronizar el
 progreso y para cargar planes.
 
 El flujo es: el front obtiene un ID token de Google Identity Services, lo canjea
-en `POST /auth/google` por un JWT propio, y manda ese JWT en
+en `POST /api/auth/google` por un JWT propio, y manda ese JWT en
 `Authorization: Bearer <token>`.
 
-### `POST /auth/google`
+### `POST /api/auth/google`
 
 Canjea el ID token de Google por un JWT de la API. Crea el usuario la primera
 vez, y actualiza su perfil (email, nombre, foto) en los logins siguientes.
@@ -113,13 +119,13 @@ malla las dibuja.
 
 | Método                  | Ruta                        | Quién         |
 | ----------------------- | --------------------------- | ------------- |
-| `GET`                   | `/carreras`                 | público       |
-| `GET`                   | `/carreras/<id>`            | público       |
-| `POST` `PUT` `DELETE`   | `/carreras`, `/carreras/<id>` | admin       |
-| `GET`                   | `/anios`, `/anios/<id>`     | público       |
-| `POST` `PUT` `DELETE`   | `/anios`, `/anios/<id>`     | admin         |
-| `GET`                   | `/materias`, `/materias/<id>` | público     |
-| `POST` `PUT` `DELETE`   | `/materias`, `/materias/<id>` | admin       |
+| `GET`                   | `/api/carreras`                 | público       |
+| `GET`                   | `/api/carreras/<id>`            | público       |
+| `POST` `PUT` `DELETE`   | `/api/carreras`, `/api/carreras/<id>` | admin       |
+| `GET`                   | `/api/anios`, `/api/anios/<id>`     | público       |
+| `POST` `PUT` `DELETE`   | `/api/anios`, `/api/anios/<id>`     | admin         |
+| `GET`                   | `/api/materias`, `/api/materias/<id>` | público     |
+| `POST` `PUT` `DELETE`   | `/api/materias`, `/api/materias/<id>` | admin       |
 
 Body de materia:
 
