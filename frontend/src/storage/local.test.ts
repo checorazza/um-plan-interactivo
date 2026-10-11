@@ -49,11 +49,27 @@ class AlmacenFalso implements Storage {
 
 const PLAN = planDePrueba();
 
-/** El mismo plan, pero con Precálculo marcada como básica 100. */
+/** El mismo plan, pero con Precálculo (código CP00) marcada como básica. */
 function armarPlanConBasica() {
   const plan = planDePrueba();
   const precalculo = plan.materias.get(1);
   if (precalculo) plan.materias.set(1, { ...precalculo, id_basica: 100 });
+  return plan;
+}
+
+/**
+ * El mismo plan pero con otros ids, como queda después de recargarlo en la
+ * base. Los códigos y el nombre de la carrera no cambian.
+ */
+function planConIdsNuevos() {
+  const original = planDePrueba();
+  const plan = planDePrueba();
+  plan.materias = new Map(
+    [...original.materias].map(([id, m]) => [id + 1000, { ...m, id_materia: id + 1000 }]),
+  );
+  plan.materiasPorAnio = new Map(
+    [...original.materiasPorAnio].map(([anio, ids]) => [anio, ids.map((i) => i + 1000)]),
+  );
   return plan;
 }
 
@@ -113,18 +129,18 @@ describe("materias básicas", () => {
   const PLAN_CON_BASICA = armarPlanConBasica();
 
   it("guarda y lee el estado de una básica", () => {
-    registrarBasica(100, "aprobada");
-    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+    registrarBasica("CP00", "aprobada");
+    expect(leerBasicas()).toEqual({ CP00: "aprobada" });
   });
 
   it("lo borra con null", () => {
-    registrarBasica(100, "aprobada");
-    registrarBasica(100, null);
+    registrarBasica("CP00", "aprobada");
+    registrarBasica("CP00", null);
     expect(leerBasicas()).toEqual({});
   });
 
   it("una básica aprobada en otra carrera aparece acá", () => {
-    registrarBasica(100, "aprobada");
+    registrarBasica("CP00", "aprobada");
     const { estados, propagados } = leerDeCarrera(PLAN_CON_BASICA);
 
     expect(estados[1]).toBe("aprobada");
@@ -134,20 +150,20 @@ describe("materias básicas", () => {
   it("el estado de una básica vive sólo en el grupo", () => {
     // Guardar la carrera no deja una copia por materia: si quedaran las dos,
     // desmarcarla en una carrera dejaría viva la copia de la otra.
-    registrarBasica(100, "aprobada");
+    registrarBasica("CP00", "aprobada");
     guardarDeCarrera(PLAN_CON_BASICA, { 1: "aprobada", 2: "regular" });
 
     const { estados: todo } = { estados: leerTodo() };
     expect(todo[1]).toBeUndefined();
     expect(todo[2]).toBe("regular");
-    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+    expect(leerBasicas()).toEqual({ CP00: "aprobada" });
   });
 
   it("desmarcarla en una carrera la desmarca en todas", () => {
-    registrarBasica(100, "aprobada");
+    registrarBasica("CP00", "aprobada");
     expect(leerDeCarrera(PLAN_CON_BASICA).estados[1]).toBe("aprobada");
 
-    registrarBasica(100, null);
+    registrarBasica("CP00", null);
     expect(leerDeCarrera(PLAN_CON_BASICA).estados[1]).toBeUndefined();
   });
 
@@ -157,31 +173,111 @@ describe("materias básicas", () => {
 
     adoptarBasicas(PLAN_CON_BASICA);
 
-    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+    expect(leerBasicas()).toEqual({ CP00: "aprobada" });
     expect(leerTodo()[1]).toBeUndefined();
     expect(leerDeCarrera(PLAN_CON_BASICA).estados[1]).toBe("aprobada");
   });
 
   it("al adoptar, lo que ya estaba en el grupo manda", () => {
-    registrarBasica(100, "aprobada");
-    guardarTodo({ 1: "regular" }, { 100: "aprobada" });
+    registrarBasica("CP00", "aprobada");
+    guardarTodo({ 1: "regular" }, { CP00: "aprobada" });
 
     adoptarBasicas(PLAN_CON_BASICA);
 
-    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+    expect(leerBasicas()).toEqual({ CP00: "aprobada" });
   });
 
   it("no toca las materias propias de la carrera", () => {
-    registrarBasica(100, "aprobada");
+    registrarBasica("CP00", "aprobada");
     const { estados } = leerDeCarrera(PLAN_CON_BASICA);
     // Química General (2) no tiene básica
     expect(estados[2]).toBeUndefined();
   });
 
   it("guardar el progreso de una carrera no pisa el mapa de básicas", () => {
-    registrarBasica(100, "aprobada");
+    registrarBasica("CP00", "aprobada");
     guardarDeCarrera(PLAN_CON_BASICA, {});
-    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+    expect(leerBasicas()).toEqual({ CP00: "aprobada" });
+  });
+});
+
+describe("cuando cambian los ids de la base", () => {
+  // Recargar un plan reasigna los ids. El progreso se guarda contra la
+  // carrera y el código, que no cambian, así que tiene que sobrevivir.
+
+  it("recupera el progreso por carrera y código", () => {
+    const viejo = planDePrueba();
+    guardarDeCarrera(viejo, { 2: "aprobada", 3: "regular" });
+
+    const nuevo = planConIdsNuevos();
+    const { estados } = leerDeCarrera(nuevo);
+
+    expect(estados[1002]).toBe("aprobada");
+    expect(estados[1003]).toBe("regular");
+  });
+
+  it("deja guardado el progreso con los ids nuevos", () => {
+    guardarDeCarrera(planDePrueba(), { 2: "aprobada" });
+
+    const nuevo = planConIdsNuevos();
+    leerDeCarrera(nuevo);
+
+    // La recuperación se persiste: el id viejo ya no queda dando vueltas
+    const todo = leerTodo();
+    expect(todo[1002]).toBe("aprobada");
+    expect(todo[2]).toBeUndefined();
+  });
+
+  it("no mezcla materias de distintas carreras con el mismo código", () => {
+    // Hay códigos que son materias distintas según la carrera (`3050` es uno
+    // de ellos), así que la clave lleva la carrera además del código.
+    // Los ids de materia son únicos entre carreras, por eso la otra carrera
+    // tiene ids propios.
+    guardarDeCarrera(planDePrueba(), { 2: "aprobada" });
+
+    const otra = planConIdsNuevos();
+    otra.carrera = { id_carrera: 9, nombre: "Otra Carrera" };
+
+    expect(leerDeCarrera(otra).estados[1002]).toBeUndefined();
+  });
+
+  it("las básicas también sobreviven, porque van por código", () => {
+    registrarBasica("CP00", "aprobada");
+
+    const nuevo = planConIdsNuevos();
+    const precalculo = nuevo.materias.get(1001);
+    if (precalculo) nuevo.materias.set(1001, { ...precalculo, id_basica: 777 });
+
+    expect(leerDeCarrera(nuevo).estados[1001]).toBe("aprobada");
+  });
+
+  it("desmarcar con los ids nuevos no deja el estado viejo colgado", () => {
+    guardarDeCarrera(planDePrueba(), { 2: "aprobada" });
+
+    const nuevo = planConIdsNuevos();
+    leerDeCarrera(nuevo);
+    guardarDeCarrera(nuevo, {});
+
+    expect(leerTodo()).toEqual({});
+  });
+});
+
+describe("migración del formato 3", () => {
+  it("conserva el progreso guardado por id", () => {
+    almacen.setItem(
+      "um-plan:estados",
+      JSON.stringify({
+        version: 3,
+        estados: { 2: "aprobada" },
+        basicas: { 100: "aprobada" },
+        actualizadoEn: "2026-01-01T00:00:00Z",
+      }),
+    );
+
+    // Los estados por materia se mantienen; las básicas iban por id de
+    // grupo, que no sirve de clave, y se vuelven a sembrar al abrir el plan.
+    expect(leerTodo()).toEqual({ 2: "aprobada" });
+    expect(leerBasicas()).toEqual({});
   });
 });
 

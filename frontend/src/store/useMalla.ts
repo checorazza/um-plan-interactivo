@@ -156,7 +156,8 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       const a = antes[idMateria];
       const d = despues[idMateria];
       if (a === d) continue;
-      registrarBasica(materia.id_basica, d ?? null);
+      // Por código, no por id de grupo: los ids cambian al recargar un plan.
+      registrarBasica(materia.codigo, d ?? null);
     }
   }
 

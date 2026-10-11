@@ -4,12 +4,18 @@ Los JSON los genera `extraer_planes.py` desde los PDF. Este script sólo los
 mete en la base: valida primero, carga después, y agrupa las básicas al final.
 
 Es idempotente por carrera: si la carrera ya existe se saltea, salvo
-`--reemplazar`, que la borra y la vuelve a cargar.
+`--actualizar`, que la pone al día **sin borrarla**.
+
+Esa distinción importa. Borrar una carrera se lleva en cascada sus materias y,
+con ellas, los `estado_materia` de todos los usuarios: corregir una errata de
+un plan borraría el progreso de todo el mundo. `--actualizar` modifica las
+materias existentes en su lugar, buscándolas por código, así que los ids —y
+los estados que cuelgan de ellos— sobreviven.
 
 Uso, desde backend/:
-    .venv/Scripts/python.exe scripts/seed.py                 # validar nomás
+    .venv/Scripts/python.exe scripts/seed.py                  # validar nomás
     .venv/Scripts/python.exe scripts/seed.py --cargar
-    .venv/Scripts/python.exe scripts/seed.py --cargar --reemplazar
+    .venv/Scripts/python.exe scripts/seed.py --cargar --actualizar
 """
 
 import glob
@@ -105,9 +111,64 @@ def cargar(plan):
         ]
 
 
+def actualizar(plan, carrera):
+    """Pone una carrera al día sin borrar nada que se pueda conservar.
+
+    Las materias se buscan por código: las que ya están se modifican en su
+    lugar, así conservan su id y con él los estados de los usuarios. Sólo se
+    borran las que desaparecieron del plan.
+
+    Devuelve `(nuevas, modificadas, borradas)`.
+    """
+    anios = {a.numero: a for a in carrera.anios}
+    for datos in plan['anios']:
+        anio = anios.get(datos['numero'])
+        if anio is None:
+            anio = Anio(numero=datos['numero'], id_carrera=carrera.id_carrera)
+            db.session.add(anio)
+            anios[datos['numero']] = anio
+        anio.creditos_requeridos = datos['creditos_requeridos']
+    db.session.flush()
+
+    existentes = {
+        m.codigo: m for a in carrera.anios for m in a.materias
+    }
+    por_codigo = {}
+    nuevas = modificadas = 0
+
+    for datos in plan['materias']:
+        materia = existentes.get(datos['codigo'])
+        if materia is None:
+            materia = Materia(codigo=datos['codigo'])
+            db.session.add(materia)
+            nuevas += 1
+        else:
+            modificadas += 1
+
+        materia.nombre = datos['nombre']
+        materia.creditos = datos['creditos']
+        materia.semestre = datos['semestre']
+        materia.id_anio = anios[datos['anio']].id_anio
+        por_codigo[datos['codigo']] = materia
+    db.session.flush()
+
+    for datos in plan['materias']:
+        por_codigo[datos['codigo']].correlativas = [
+            por_codigo[c] for c in datos['correlativas']
+        ]
+
+    # Las que ya no están en el plan sí se van, con sus estados: la materia
+    # dejó de existir.
+    sobrantes = [m for c, m in existentes.items() if c not in por_codigo]
+    for materia in sobrantes:
+        db.session.delete(materia)
+
+    return nuevas, modificadas, len(sobrantes)
+
+
 def main():
     hay_que_cargar = '--cargar' in sys.argv
-    reemplazar = '--reemplazar' in sys.argv
+    poner_al_dia = '--actualizar' in sys.argv
 
     archivos = sorted(glob.glob(os.path.join(SEEDS, '*.json')))
     if not archivos:
@@ -140,11 +201,16 @@ def main():
         for plan in planes:
             existente = Carrera.query.filter_by(nombre=plan['carrera']).first()
             if existente is not None:
-                if not reemplazar:
+                if not poner_al_dia:
                     print(f'  ya existe, se saltea: {plan["carrera"]}')
                     continue
-                db.session.delete(existente)
-                db.session.flush()
+                nuevas, modificadas, borradas = actualizar(plan, existente)
+                print(
+                    f'  al día: {plan["carrera"]} '
+                    f'({modificadas} actualizadas, {nuevas} nuevas, '
+                    f'{borradas} borradas)'
+                )
+                continue
 
             cargar(plan)
             print(f'  cargada: {plan["carrera"]} ({len(plan["materias"])} materias)')

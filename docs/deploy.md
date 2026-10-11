@@ -132,6 +132,22 @@ lo que Neon recomienda para DDL: el pooler no maneja bien los cambios de
 esquema. Con `--con-seed` carga además los seis planes; sin el flag, sólo
 migra.
 
+### Corregir un plan ya cargado
+
+Nunca se borra la carrera para volver a crearla. Los `estado_materia` cuelgan
+de `materia.id_materia` con borrado en cascada, así que borrarla se llevaría
+el progreso de **todos** los usuarios, sin aviso. Y hay correcciones
+pendientes de confirmar con la facultad, así que va a pasar.
+
+`seed.py --cargar --actualizar` pone los planes al día **en su lugar**: busca
+cada materia por código, modifica las que ya están —conservando su id— y sólo
+borra las que desaparecieron del plan. `migrar_produccion.py --con-seed` hace
+lo mismo.
+
+El front también lo soporta del otro lado: guarda cada estado junto con su
+clave natural (carrera y código) y, si un id dejó de existir, recupera el
+progreso por esa clave y lo vuelve a guardar con el id nuevo.
+
 ## Google OAuth
 
 En Google Cloud Console, el OAuth Client ID (tipo "Aplicación web") necesita

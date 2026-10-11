@@ -88,9 +88,18 @@ def main():
             from src.models import Carrera, db
             from src.services.agrupar_basicas import analizar, aplicar
 
+            from scripts.seed import actualizar
+
             for plan in planes:
-                if Carrera.query.filter_by(nombre=plan['carrera']).first():
-                    print(f'  ya existe, se saltea: {plan["carrera"]}')
+                existente = Carrera.query.filter_by(nombre=plan['carrera']).first()
+                if existente is not None:
+                    # Se actualiza en su lugar: borrar la carrera se llevaría
+                    # el progreso de todos los usuarios.
+                    nuevas, modificadas, borradas = actualizar(plan, existente)
+                    print(
+                        f'  al día: {plan["carrera"]} ({modificadas} actualizadas, '
+                        f'{nuevas} nuevas, {borradas} borradas)'
+                    )
                     continue
                 cargar(plan)
                 print(f'  cargada: {plan["carrera"]}')
