@@ -4,6 +4,7 @@ from src.auth.guards import requiere_admin
 from src.domain.correlativas import CorrelativaInvalida, validar_correlativas_db
 from src.models import db
 from src.models.materia import SEMESTRES, Materia as MateriaModel
+from src.services.plan import correlativas_por_materia
 
 parser = reqparse.RequestParser()
 parser.add_argument('codigo', type=str, required=True, help="El código del plan es obligatorio")
@@ -42,7 +43,13 @@ def _asignar_correlativas(materia, ids):
 
 class Materias(Resource):  # Lista de materias
     def get(self):
-        return [m.to_json() for m in MateriaModel.query.all()], 200
+        materias = MateriaModel.query.all()
+        # Las correlativas de todas, en una consulta: leerlas desde cada
+        # materia sería una consulta por materia.
+        correlativas = correlativas_por_materia(m.id_materia for m in materias)
+        return [
+            m.to_json(correlativas.get(m.id_materia, [])) for m in materias
+        ], 200
 
     @requiere_admin
     def post(self):

@@ -82,6 +82,23 @@ las cambiás hay que volver a desplegar.
 `CORS_ORIGINS` no hace falta para el front, que es del mismo origen, pero sin
 definirla queda el default de `localhost:5173`, y conviene que diga la verdad.
 
+## Rendimiento
+
+Tres cosas que costaban segundos y vale la pena no deshacer:
+
+1. **La región de las funciones tiene que coincidir con la de la base.** Lo
+   que se multiplica por cada consulta es la distancia *función ↔ Neon*, no la
+   distancia hasta quien usa la app: el navegador habla con el CDN, que está
+   en todos lados. Las dos están en `gru1` (São Paulo). Con la función en
+   Washington y la base en São Paulo, cada consulta costaba ~140 ms.
+2. **Ninguna respuesta puede hacer una consulta por fila.** Serializar un plan
+   leyendo `materia.correlativas` hacía 50 consultas para 47 materias: 7
+   segundos. `tests/test_consultas.py` cuenta las consultas de los endpoints
+   de lectura justamente para que no vuelva.
+3. **El catálogo se cachea en el CDN** (`Cache-Control` con `s-maxage`), así
+   que la mayoría de las visitas no invocan la función ni tocan la base. El
+   progreso de cada usuario nunca se cachea.
+
 ## Base de datos
 
 ### Conexiones

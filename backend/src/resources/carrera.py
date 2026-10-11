@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse
 from src.models import db
 from src.models.carrera import Carrera as CarreraModel
 from src.auth.guards import requiere_admin
+from src.resources import CACHE_CATALOGO
 
 # El parser valida y extrae los datos que llegan en el body del request
 parser = reqparse.RequestParser()
@@ -14,7 +15,7 @@ class Carreras(Resource): #Listado de carreras
     def get(self):
         # Devuelve todas las carreras
         carreras = CarreraModel.query.all()
-        return [c.to_json() for c in carreras], 200
+        return [c.to_json() for c in carreras], 200, CACHE_CATALOGO
 
     @requiere_admin
     def post(self):

@@ -65,7 +65,11 @@ class Materia(db.Model):
         primaryjoin=id_materia == correlativa.c.id_materia,
         secondaryjoin=id_materia == correlativa.c.id_requisito,
         backref='habilita',
-        lazy='selectin',
+        # `lazy='select'` a propósito: en una relación muchos-a-muchos
+        # auto-referencial, `selectin` no agrupa y termina pidiendo las
+        # correlativas de cada materia por separado (N+1). Los listados usan
+        # `correlativas_por_materia`, que las trae todas en una consulta.
+        lazy='select',
     )
 
     # El estado de cursado (regular / aprobada) NO vive acá: es por usuario y
@@ -84,7 +88,15 @@ class Materia(db.Model):
         ),
     )
 
-    def to_json(self):
+    def to_json(self, correlativas=None):
+        """Serializa la materia.
+
+        `correlativas` permite pasar la lista ya resuelta. Sin eso hay que ir
+        a buscarla, y en un listado eso es una consulta por materia.
+        """
+        if correlativas is None:
+            correlativas = [m.id_materia for m in self.correlativas]
+
         return {
             'id_materia': self.id_materia,
             'codigo': self.codigo,
@@ -93,5 +105,5 @@ class Materia(db.Model):
             'semestre': self.semestre,
             'id_anio': self.id_anio,
             'id_basica': self.id_basica,
-            'correlativas': [m.id_materia for m in self.correlativas],
+            'correlativas': correlativas,
         }

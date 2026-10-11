@@ -1,5 +1,6 @@
 from flask_restful import Resource, abort
 
+from src.resources import CACHE_CATALOGO
 from src.services.plan import plan_json
 
 
@@ -13,4 +14,4 @@ class CarreraPlan(Resource):
         plan = plan_json(id_carrera)
         if plan is None:
             abort(404, message='No existe esa carrera')
-        return plan, 200
+        return plan, 200, CACHE_CATALOGO

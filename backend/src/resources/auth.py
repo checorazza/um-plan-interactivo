@@ -5,6 +5,7 @@ from flask_restful import Resource, abort, reqparse
 from src.auth import ErrorDeToken, verificar_id_token
 from src.auth.guards import requiere_usuario
 from src.models import Usuario, db
+from src.resources import SIN_CACHE
 
 parser = reqparse.RequestParser()
 parser.add_argument(
@@ -54,7 +55,7 @@ class Yo(Resource):
 
     @requiere_usuario
     def get(self, usuario):
-        return usuario.to_json(), 200
+        return usuario.to_json(), 200, SIN_CACHE
 
     @requiere_usuario
     def delete(self, usuario):

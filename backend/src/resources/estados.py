@@ -9,6 +9,7 @@ from flask_restful import Resource, abort
 
 from src.auth.guards import requiere_usuario
 from src.domain.reglas import ESTADOS, puede_marcar, validar_conjunto
+from src.resources import SIN_CACHE
 from src.models import EstadoMateria, db
 from src.services.basicas import expandir, propagar
 from src.services.plan import carrera_de_materia, carreras_de_materias, cargar_plan
@@ -68,7 +69,7 @@ class MisEstados(Resource):
 
     @requiere_usuario
     def get(self, usuario):
-        return _listar(usuario.id_usuario), 200
+        return _listar(usuario.id_usuario), 200, SIN_CACHE
 
     @requiere_usuario
     def put(self, usuario):

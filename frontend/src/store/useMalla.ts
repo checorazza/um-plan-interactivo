@@ -40,7 +40,7 @@ import {
 } from "../storage/local";
 import type { Carrera } from "../types/carrera";
 import type { Estado, Estados } from "../types/estado";
-import type { Plan } from "../types/plan";
+import type { Plan, RespuestaPlan } from "../types/plan";
 import { useSesion } from "./useSesion";
 
 /** Un cambio que espera confirmación porque revierte otras materias. */
@@ -92,7 +92,15 @@ interface EstadoMalla {
   cascada: CascadaPendiente | null;
 
   cargarCarreras: () => Promise<void>;
-  seleccionarCarrera: (idCarrera: number) => Promise<void>;
+  /**
+   * `precargado` evita una segunda vuelta a la red: al abrir la app ya
+   * sabemos, por el storage, qué carrera mostrar, así que el plan se puede
+   * pedir en paralelo con la lista de carreras en vez de esperarla.
+   */
+  seleccionarCarrera: (
+    idCarrera: number,
+    precargado?: Promise<RespuestaPlan>,
+  ) => Promise<void>;
   seleccionar: (idMateria: number | null) => void;
   marcar: (idMateria: number, nuevoEstado: Estado | null) => void;
   confirmarCascada: () => void;
@@ -228,20 +236,35 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       if (cargaEnCurso) return cargaEnCurso;
       cargaEnCurso = (async () => {
         set({ cargando: true, error: null });
+
+        // Las dos llamadas salen juntas. La lista de carreras no hace falta
+        // para pedir el plan de la que ya estaba abierta, y encadenarlas
+        // costaba una vuelta completa a la red de más en cada visita.
+        const guardada = leerCarrera();
+        const pedidoCarreras = getCarreras();
+        const pedidoPlan =
+          guardada === null ? null : getPlan(guardada).catch(() => null);
+
         try {
-          const carreras = await getCarreras();
+          const carreras = await pedidoCarreras;
           set({ carreras, cargando: false });
 
           if (get().idCarrera !== null) return;
 
           // Si la carrera que el usuario tenía abierta sigue existiendo, se
           // vuelve a ella; si no, a la primera.
-          const guardada = leerCarrera();
           const elegida =
             carreras.find((c) => c.id_carrera === guardada) ?? carreras[0];
-          if (elegida) {
-            await get().seleccionarCarrera(elegida.id_carrera);
-          }
+          if (!elegida) return;
+
+          // El plan precargado sólo sirve si es el de la carrera elegida: la
+          // guardada puede haber dejado de existir.
+          const precargado =
+            elegida.id_carrera === guardada && pedidoPlan
+              ? pedidoPlan.then((r) => r ?? getPlan(elegida.id_carrera))
+              : undefined;
+
+          await get().seleccionarCarrera(elegida.id_carrera, precargado);
         } catch (error) {
           set({ cargando: false, error: mensajeDe(error) });
         }
@@ -254,10 +277,10 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       }
     },
 
-    seleccionarCarrera: async (idCarrera) => {
+    seleccionarCarrera: async (idCarrera, precargado) => {
       set({ cargando: true, error: null, seleccionada: null });
       try {
-        const respuesta = await getPlan(idCarrera);
+        const respuesta = await (precargado ?? getPlan(idCarrera));
         const plan = armarPlan(respuesta);
 
         // Lo guardado se valida contra el plan recién traído: puede haber
