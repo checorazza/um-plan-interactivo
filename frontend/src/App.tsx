@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { Avisos } from "./components/Avisos/Avisos";
 import { ConfirmacionCascada } from "./components/ConfirmacionCascada/ConfirmacionCascada";
 import { Malla } from "./components/Malla/Malla";
 import { Sidebar } from "./components/Sidebar/Sidebar";
@@ -22,6 +23,7 @@ function App() {
 
       <main className="app__contenido">
         {plan && <Malla />}
+        {plan && <Avisos />}
 
         {!plan && cargando && <p className="app__aviso">Cargando el plan…</p>}
 

@@ -12,6 +12,7 @@ import {
   puedeAprobar,
   puedeMarcar,
   puedeRegularizar,
+  sanearEstados,
   validarConjunto,
 } from "./reglas";
 
@@ -268,6 +269,66 @@ describe("validarConjunto", () => {
     expect(validarConjunto(PLAN, { 999: "aprobada" })[0]?.causa).toBe(
       "desconocida",
     );
+  });
+});
+
+describe("sanearEstados", () => {
+  it("deja intacto un conjunto válido", () => {
+    const estados: Estados = { ...PRIMER_ANIO_APROBADO, [CALCULO_1]: "regular" };
+    const resultado = sanearEstados(PLAN, estados);
+
+    expect(resultado.estados).toEqual(estados);
+    expect(resultado.descartadas).toEqual([]);
+  });
+
+  it("descarta lo que ya no cumple las reglas y dice por qué", () => {
+    // Como si el plan hubiera subido los créditos de 2º año desde la última vez
+    const resultado = sanearEstados(PLAN, { [CALCULO_1]: "aprobada" });
+
+    expect(resultado.estados).toEqual({});
+    expect(resultado.descartadas).toHaveLength(1);
+    expect(resultado.descartadas[0]?.idMateria).toBe(CALCULO_1);
+    expect(resultado.descartadas[0]?.causa).toBe("creditos");
+  });
+
+  it("descarta materias que ya no están en el plan", () => {
+    const resultado = sanearEstados(PLAN, {
+      [PRECALCULO]: "aprobada",
+      999: "aprobada",
+    });
+
+    expect(resultado.estados).toEqual({ [PRECALCULO]: "aprobada" });
+    expect(resultado.descartadas.map((c) => c.idMateria)).toEqual([999]);
+  });
+
+  it("conserva lo que sí se sostiene al descartar el resto", () => {
+    const resultado = sanearEstados(PLAN, {
+      [PRECALCULO]: "aprobada",
+      [QUIMICA]: "aprobada",
+      [CALCULO_2]: "aprobada", // 3º año: imposible con 10 créditos
+    });
+
+    expect(resultado.estados).toEqual({
+      [PRECALCULO]: "aprobada",
+      [QUIMICA]: "aprobada",
+    });
+    expect(resultado.descartadas.map((c) => c.idMateria)).toEqual([CALCULO_2]);
+  });
+
+  it("lo que devuelve siempre es válido", () => {
+    const resultado = sanearEstados(PLAN, {
+      [PRECALCULO]: "regular",
+      [CALCULO_1]: "aprobada",
+      [CALCULO_2]: "aprobada",
+      [QUIMICA_ORGANICA]: "aprobada",
+    });
+    expect(validarConjunto(PLAN, resultado.estados)).toEqual([]);
+  });
+
+  it("no muta la entrada", () => {
+    const estados: Estados = { [CALCULO_1]: "aprobada" };
+    sanearEstados(PLAN, estados);
+    expect(estados).toEqual({ [CALCULO_1]: "aprobada" });
   });
 });
 

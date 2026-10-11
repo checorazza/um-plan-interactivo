@@ -211,17 +211,16 @@ export function estadoDeBloqueo(
 }
 
 /**
- * Valida un conjunto completo de estados.
- *
- * Devuelve los conflictos de las materias que no se podrían haber marcado en
- * ningún orden. Array vacío = conjunto consistente.
+ * El subconjunto más grande de `estados` al que se podría haber llegado
+ * respetando las reglas, junto con lo que quedó afuera.
  *
  * Acepta materias de a una, quedándose sólo con las que ya pasan las reglas con
  * lo aceptado hasta el momento, y repite mientras haya progreso. Funciona
  * porque los créditos sólo crecen al aceptar materias: si una materia no entra
- * ahora, tampoco va a entrar con menos aceptado.
+ * ahora, tampoco va a entrar con menos aceptado. Por eso el resultado no
+ * depende del orden en que vengan los estados.
  */
-export function validarConjunto(plan: Plan, estados: Estados): Conflicto[] {
+function separarAlcanzable(plan: Plan, estados: Estados) {
   const pendientes = new Map<number, Estado>();
   for (const [clave, estado] of Object.entries(estados)) {
     pendientes.set(Number(clave), estado);
@@ -240,6 +239,18 @@ export function validarConjunto(plan: Plan, estados: Estados): Conflicto[] {
     }
   }
 
+  return { aceptados, pendientes };
+}
+
+/**
+ * Valida un conjunto completo de estados.
+ *
+ * Devuelve los conflictos de las materias que no se podrían haber marcado en
+ * ningún orden. Array vacío = conjunto consistente.
+ */
+export function validarConjunto(plan: Plan, estados: Estados): Conflicto[] {
+  const { aceptados, pendientes } = separarAlcanzable(plan, estados);
+
   const conflictos: Conflicto[] = [];
   for (const [idMateria, estado] of pendientes) {
     const resultado = puedeMarcar(plan, aceptados, idMateria, estado);
@@ -250,6 +261,33 @@ export function validarConjunto(plan: Plan, estados: Estados): Conflicto[] {
     });
   }
   return conflictos;
+}
+
+/**
+ * Deja sólo los estados que son válidos para este plan, y reporta el resto.
+ *
+ * Hace falta al leer el progreso guardado: el plan pudo haber cambiado desde
+ * la última vez (una materia nueva, otra correlativa, otros créditos
+ * requeridos), o el dato pudo haber sido editado a mano. En vez de mostrar una
+ * malla inconsistente, se descarta lo que ya no se sostiene y se avisa.
+ */
+export function sanearEstados(
+  plan: Plan,
+  estados: Estados,
+): { estados: Estados; descartadas: Conflicto[] } {
+  const { aceptados, pendientes } = separarAlcanzable(plan, estados);
+
+  const descartadas: Conflicto[] = [];
+  for (const [idMateria, estado] of pendientes) {
+    const resultado = puedeMarcar(plan, aceptados, idMateria, estado);
+    descartadas.push({
+      idMateria,
+      motivo: resultado.motivo,
+      causa: resultado.causa ?? "desconocida",
+    });
+  }
+
+  return { estados: aceptados, descartadas };
 }
 
 /** Una materia que la cascada tuvo que revertir. */

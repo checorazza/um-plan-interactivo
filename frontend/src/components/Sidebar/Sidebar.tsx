@@ -11,6 +11,7 @@ export function Sidebar() {
   const estados = useMalla((s) => s.estados);
   const seleccionarCarrera = useMalla((s) => s.seleccionarCarrera);
   const reiniciar = useMalla((s) => s.reiniciar);
+  const sinPersistencia = useMalla((s) => s.sinPersistencia);
 
   const materias = plan ? [...plan.materias.values()] : [];
   const aprobadas = materias.filter((m) => estados[m.id_materia] === "aprobada");
@@ -104,8 +105,9 @@ export function Sidebar() {
           Reiniciar progreso
         </button>
         <p className="sidebar__nota">
-          Tu progreso se guarda en este dispositivo. No hace falta iniciar
-          sesión.
+          {sinPersistencia
+            ? "Este navegador no deja guardar datos, así que el progreso se pierde al cerrar la pestaña."
+            : "Tu progreso se guarda en este dispositivo. No hace falta iniciar sesión."}
         </p>
       </footer>
     </aside>
