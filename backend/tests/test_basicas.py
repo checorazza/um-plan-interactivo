@@ -38,7 +38,11 @@ def armar_carrera(nombre, creditos_por_anio):
 
 @pytest.fixture
 def dos_carreras(app):
-    """Informática e Industrial, con Cálculo I (0003) compartida en 2º año.
+    """Informática e Industrial, con Cálculo I (9003) compartida en 2º año.
+
+    Los códigos son inventados a propósito: los reales de las básicas están en
+    `NO_AGRUPAR` o sujetos a decisiones sobre los planes de verdad, y un test
+    no debería depender de eso.
 
     Las dos tienen 1º con 0 créditos y 2º con 12, y en 1º materias suficientes
     para llegar a esos 12.
@@ -47,13 +51,13 @@ def dos_carreras(app):
     _, indu = armar_carrera('Industrial', {1: 0, 2: 12})
 
     materias = {
-        'info_quimica': materia(info, 1, '0002', 'Química General', 7),
-        'info_precalculo': materia(info, 1, 'CP00', 'Precálculo', 6),
-        'info_calculo1': materia(info, 2, '0003', 'Cálculo I', 3),
-        'indu_quimica': materia(indu, 1, '0002', 'Química General', 7),
-        'indu_precalculo': materia(indu, 1, 'CP00', 'Precálculo', 6),
-        'indu_calculo1': materia(indu, 2, '0003', 'Cálculo I', 3),
-        'info_propia': materia(info, 1, '9999', 'Materia sólo de Informática', 4),
+        'info_quimica': materia(info, 1, '9002', 'Química General', 7),
+        'info_precalculo': materia(info, 1, '9000', 'Precálculo', 6),
+        'info_calculo1': materia(info, 2, '9003', 'Cálculo I', 3),
+        'indu_quimica': materia(indu, 1, '9002', 'Química General', 7),
+        'indu_precalculo': materia(indu, 1, '9000', 'Precálculo', 6),
+        'indu_calculo1': materia(indu, 2, '9003', 'Cálculo I', 3),
+        'info_propia': materia(info, 1, '9100', 'Materia sólo de Informática', 4),
     }
     db.session.flush()
 
@@ -76,12 +80,12 @@ def test_normalizar_ignora_mayusculas_y_acentos():
 
 
 def test_agrupa_los_codigos_repetidos(dos_carreras):
-    assert {b.codigo for b in Basica.query.all()} == {'0002', 'CP00', '0003'}
+    assert {b.codigo for b in Basica.query.all()} == {'9002', '9000', '9003'}
 
 
 def test_no_agrupa_lo_que_esta_en_una_sola_carrera(dos_carreras):
     assert dos_carreras['info_propia'].id_basica is None
-    assert Basica.query.filter_by(codigo='9999').first() is None
+    assert Basica.query.filter_by(codigo='9100').first() is None
 
 
 def test_las_equivalentes_comparten_basica(dos_carreras):
@@ -95,15 +99,15 @@ def test_los_nombres_distintos_quedan_como_dudosos(app):
     # El caso real del código 5044 en los planes de la UM
     _, a = armar_carrera('A', {1: 0})
     _, b = armar_carrera('B', {1: 0})
-    materia(a, 1, '5044', 'Modelos y Simulación', 4)
-    materia(b, 1, '5044', 'Modelado y Sistemas de Control', 4)
+    materia(a, 1, '9044', 'Modelos y Simulación', 4)
+    materia(b, 1, '9044', 'Modelado y Sistemas de Control', 4)
     db.session.flush()
 
     grupos, dudosos = analizar()
 
-    assert '5044' not in grupos
+    assert '9044' not in grupos
     assert len(dudosos) == 1
-    assert dudosos[0]['codigo'] == '5044'
+    assert dudosos[0]['codigo'] == '9044'
     assert len(dudosos[0]['nombres']) == 2
 
 
@@ -116,6 +120,28 @@ def test_agrupar_es_idempotente(dos_carreras):
     assert creadas == 0
     assert enlazadas == 0
     assert Basica.query.count() == antes
+
+
+def test_los_codigos_de_no_agrupar_nunca_se_agrupan(app):
+    """Hay códigos compartidos que no son la misma materia.
+
+    La protección no puede depender de que los nombres difieran: basta con
+    que alguien unifique la redacción para que se agrupen solas y el progreso
+    se comparta entre materias distintas.
+    """
+    from src.services.agrupar_basicas import NO_AGRUPAR
+
+    codigo = sorted(NO_AGRUPAR)[0]
+    _, a = armar_carrera('A', {1: 0})
+    _, b = armar_carrera('B', {1: 0})
+    materia(a, 1, codigo, 'Mismo Nombre Exacto', 4)
+    materia(b, 1, codigo, 'Mismo Nombre Exacto', 4)
+    db.session.flush()
+
+    grupos, dudosos = analizar()
+
+    assert codigo not in grupos
+    assert [d['codigo'] for d in dudosos] == [codigo]
 
 
 # --- propagación del progreso ---
@@ -224,10 +250,10 @@ def gates_distintos(app):
     _, indu = armar_carrera('Industrial', {1: 0, 2: 12, 3: 38})
 
     materias = {
-        'info_precalculo': materia(info, 1, 'CP00', 'Precálculo', 12),
-        'info_calculo1': materia(info, 2, '0003', 'Cálculo I', 3),
-        'indu_precalculo': materia(indu, 1, 'CP00', 'Precálculo', 12),
-        'indu_calculo1': materia(indu, 3, '0003', 'Cálculo I', 3),
+        'info_precalculo': materia(info, 1, '9000', 'Precálculo', 12),
+        'info_calculo1': materia(info, 2, '9003', 'Cálculo I', 3),
+        'indu_precalculo': materia(indu, 1, '9000', 'Precálculo', 12),
+        'indu_calculo1': materia(indu, 3, '9003', 'Cálculo I', 3),
     }
     db.session.flush()
 
@@ -304,5 +330,5 @@ def test_el_plan_informa_la_basica(client, dos_carreras):
     cuerpo = client.get(f'/api/carreras/{id_carrera}/plan').json
 
     por_codigo = {m['codigo']: m for m in cuerpo['materias']}
-    assert por_codigo['0003']['id_basica'] == dos_carreras['info_calculo1'].id_basica
-    assert por_codigo['9999']['id_basica'] is None
+    assert por_codigo['9003']['id_basica'] == dos_carreras['info_calculo1'].id_basica
+    assert por_codigo['9100']['id_basica'] is None

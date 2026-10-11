@@ -63,6 +63,40 @@ ANIOS = {
 # Una materia anual se dicta las ~30 semanas del año; una semestral, ~15.
 SEMANAS_ANUAL = 25
 
+# El Precálculo es el curso de nivelación. Sólo figura como materia en el plan
+# de Informática (`CP00`), pero las otras cinco carreras lo citan como
+# correlativa de Cálculo I y Física I con estos nombres.
+CODIGO_PRECALCULO = 'CP00'
+ALIAS_CORRELATIVAS = {'CPREC': CODIGO_PRECALCULO, 'PREC': CODIGO_PRECALCULO}
+
+PRECALCULO = {
+    'anio': 1,
+    'codigo': CODIGO_PRECALCULO,
+    'nombre': 'Precálculo',
+    'creditos': 0,
+    'semestre': '1',
+    'correlativas': [],
+    'correlativa_cruda': '',
+}
+
+# Números romanos, que quedan en mayúscula. `RR` y `HH` son de "RR HH".
+ROMANOS = {'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'}
+SIGLAS = {'RR', 'HH'}
+
+# Artículos, preposiciones y conjunciones: en español van en minúscula dentro
+# de un título, salvo cuando abren el nombre.
+MINUSCULAS = {
+    'a', 'al', 'ante', 'con', 'contra', 'de', 'del', 'desde', 'e', 'el',
+    'en', 'entre', 'hacia', 'hasta', 'la', 'las', 'los', 'o', 'para', 'por',
+    'segun', 'según', 'sin', 'sobre', 'tras', 'u', 'un', 'una', 'y',
+}
+
+# Erratas del PDF que se corrigen al normalizar. La lista se mantiene corta a
+# propósito: cada entrada es dato que estamos cambiando a mano.
+CORRECCIONES = {
+    'precalculo': 'Precálculo',  # el plan de Informática lo escribe sin tilde
+}
+
 NOMBRES_ARCHIVO = {
     'INFORMATICA-1.pdf': 'Ingeniería en Informática',
     'COMPUTACION.pdf': 'Ingeniería en Computación',
@@ -252,6 +286,58 @@ def asignar_semestre(materias, marcadores):
         materia['semestre'] = min(candidatos)[1] if candidatos else '1'
 
 
+def normalizar_nombre_materia(nombre):
+    """Pone el nombre en mayúsculas iniciales, con la convención española.
+
+    Los planes mezclan MAYÚSCULAS y Capitalizado según la carrera. Acá queda
+    una sola forma: cada palabra con inicial mayúscula, salvo artículos,
+    preposiciones y conjunciones, que en español van en minúscula dentro de un
+    título ("Análisis de Sistemas", no "Análisis De Sistemas"). La primera
+    palabra siempre lleva mayúscula, aunque sea una de ellas.
+
+    Los números romanos quedan en mayúscula (`II`, no `Ii`), y lo mismo las
+    siglas. Se trabaja sobre cada tramo de letras y no sobre la palabra
+    entera, para que `SEGUIM.DE` quede `Seguim.de`.
+    """
+    es_el_primero = True
+
+    def arreglar(tramo):
+        nonlocal es_el_primero
+        texto = tramo.group()
+        if texto.upper() in ROMANOS or texto.upper() in SIGLAS:
+            resultado = texto.upper()
+        elif not es_el_primero and texto.lower() in MINUSCULAS:
+            resultado = texto.lower()
+        else:
+            resultado = texto.capitalize()
+        es_el_primero = False
+        return resultado
+
+    normalizado = re.sub(
+        r'[^\W\d_]+', arreglar, ' '.join((nombre or '').split()), flags=re.UNICODE
+    )
+    return CORRECCIONES.get(normalizado.lower(), normalizado)
+
+
+def agregar_precalculo(materias):
+    """Suma el Precálculo al plan si lo cita y no lo tiene como materia.
+
+    Sin esto, la correlativa de Cálculo I y Física I se perdía en cinco de las
+    seis carreras.
+    """
+    if any(m['codigo'] == CODIGO_PRECALCULO for m in materias):
+        return False
+    citado = any(
+        token.upper() in ALIAS_CORRELATIVAS
+        for m in materias
+        for token in re.split(r'[\s/,;]+', m.get('correlativa_cruda', ''))
+    )
+    if not citado:
+        return False
+    materias.insert(0, dict(PRECALCULO))
+    return True
+
+
 def normalizar_codigo(codigo):
     """Forma en que se guarda el código.
 
@@ -302,6 +388,7 @@ def resolver_correlativas(materias):
         )
 
     def buscar(citada):
+        citada = ALIAS_CORRELATIVAS.get(citada.upper(), citada)
         if citada in codigos:
             return [citada]
         candidatos = por_clave.get(clave_flexible(citada), [])
@@ -353,10 +440,12 @@ def armar_plan(ruta, nombre_carrera):
     for materia in materias:
         materia.pop('y', None)
 
+    agregar_precalculo(materias)
     avisos = resolver_correlativas(materias)
 
     for materia in materias:
         materia['codigo'] = normalizar_codigo(materia['codigo'])
+        materia['nombre'] = normalizar_nombre_materia(materia['nombre'])
         materia['correlativas'] = [
             normalizar_codigo(c) for c in materia['correlativas']
         ]

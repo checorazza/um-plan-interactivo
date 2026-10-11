@@ -5,6 +5,7 @@ backend/.venv/
 backend/database/
 backend/Collection/
 backend/scripts/
+backend/seeds/
 backend/requirements-dev.txt
 backend/pytest.ini
 planes/

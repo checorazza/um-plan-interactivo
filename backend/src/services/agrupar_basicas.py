@@ -11,6 +11,28 @@ import unicodedata
 
 from src.models import Anio, Basica, Materia, db
 
+# Códigos que varios planes comparten pero que **no** son la misma materia.
+# Revisados uno por uno contra los PDF: o están escritos distinto en cada
+# carrera y no queremos arriesgar, o directamente son materias diferentes que
+# comparten código (`3050` es "Ing., Derecho y Ética Profesional" en un plan y
+# "Trabajo Integrador I" en otro; `5044` es "Modelado y Sistemas de Control"
+# frente a "Modelos y Simulación").
+#
+# Sin esta lista bastaría con que alguien unifique un nombre para que se
+# agrupen solas y el progreso se comparta entre materias que no lo son.
+NO_AGRUPAR = {
+    '0002',  # Química / Química General
+    '0006',  # Física / Física I
+    '0009',  # Informática / Informática I
+    '1024',  # Estadística Aplicada / Estadística Aplicada I
+    '1025',  # Análisis de Circuitos I / Análisis de Circuitos
+    '1037',  # Análisis de Señales
+    '1046',  # Evaluación y Seguim.de Proyectos / Form. y Evaluación de Proyectos
+    '2080',  # Ing. de Software Aplicada / Ingeniería de Software Aplicada
+    '3050',  # Ing., Derecho y Ética Profesional / Trabajo Integrador I
+    '5044',  # Modelado y Sistemas de Control / Modelos y Simulación
+}
+
 
 def normalizar(texto):
     """Baja a minúsculas, saca acentos y colapsa espacios.
@@ -35,7 +57,7 @@ def analizar():
     - `grupos`: `{codigo: {'nombre': ..., 'materias': [...]}}` con los códigos
       que aparecen en más de una carrera y con el mismo nombre normalizado.
     - `dudosos`: los códigos que aparecen en más de una carrera pero con
-      nombres que no coinciden. No se agrupan solos.
+      nombres que no coinciden, y los de `NO_AGRUPAR`. No se agrupan solos.
     """
     filas = (
         db.session.query(Materia, Anio.id_carrera)
@@ -57,7 +79,7 @@ def analizar():
             continue  # está en una sola carrera: no es una básica compartida
 
         nombres = {normalizar(m.nombre) for m, _ in entradas}
-        if len(nombres) > 1:
+        if codigo in NO_AGRUPAR or len(nombres) > 1:
             dudosos.append(
                 {
                     'codigo': codigo,

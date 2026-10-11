@@ -25,6 +25,14 @@
   "materias": [
     {
       "anio": 1,
+      "codigo": "CP00",
+      "nombre": "Precálculo",
+      "creditos": 0,
+      "semestre": "1",
+      "correlativas": []
+    },
+    {
+      "anio": 1,
       "codigo": "5092",
       "nombre": "Sistemas de Representación y Modelado 3D",
       "creditos": 3,
@@ -44,7 +52,9 @@
       "codigo": "0003",
       "nombre": "Cálculo I",
       "creditos": 3,
-      "correlativas": [],
+      "correlativas": [
+        "CP00"
+      ],
       "semestre": "2"
     },
     {
@@ -60,7 +70,9 @@
       "codigo": "5006",
       "nombre": "Física I",
       "creditos": 6,
-      "correlativas": [],
+      "correlativas": [
+        "CP00"
+      ],
       "semestre": "2"
     },
     {
@@ -210,7 +222,7 @@
     {
       "anio": 3,
       "codigo": "5094",
-      "nombre": "Organización y gestión de sistemas de salud",
+      "nombre": "Organización y Gestión de Sistemas de Salud",
       "creditos": 3,
       "correlativas": [
         "5093"

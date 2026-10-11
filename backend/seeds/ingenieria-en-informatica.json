@@ -26,7 +26,7 @@
     {
       "anio": 1,
       "codigo": "0001",
-      "nombre": "TECNOLOGÍA CIENCIA Y SOCIEDAD",
+      "nombre": "Tecnología Ciencia y Sociedad",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -34,7 +34,7 @@
     {
       "anio": 1,
       "codigo": "0002",
-      "nombre": "QUÍMICA GENERAL",
+      "nombre": "Química General",
       "creditos": 4,
       "correlativas": [],
       "semestre": "1"
@@ -42,7 +42,7 @@
     {
       "anio": 1,
       "codigo": "CP00",
-      "nombre": "PRECALCULO",
+      "nombre": "Precálculo",
       "creditos": 0,
       "correlativas": [],
       "semestre": "1"
@@ -50,7 +50,7 @@
     {
       "anio": 1,
       "codigo": "0003",
-      "nombre": "CÁLCULO I",
+      "nombre": "Cálculo I",
       "creditos": 3,
       "correlativas": [
         "CP00"
@@ -60,7 +60,7 @@
     {
       "anio": 1,
       "codigo": "0005",
-      "nombre": "SISTEMAS DE REPRESENTACIÓN",
+      "nombre": "Sistemas de Representación",
       "creditos": 3,
       "correlativas": [],
       "semestre": "2"
@@ -68,7 +68,7 @@
     {
       "anio": 1,
       "codigo": "2025",
-      "nombre": "ANÁLISIS DE SISTEMAS I",
+      "nombre": "Análisis de Sistemas I",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -76,7 +76,7 @@
     {
       "anio": 1,
       "codigo": "0007",
-      "nombre": "ÁLGEBRA Y GEOMETRÍA ANALÍTICA",
+      "nombre": "Álgebra y Geometría Analítica",
       "creditos": 5,
       "correlativas": [],
       "semestre": "anual"
@@ -84,7 +84,7 @@
     {
       "anio": 1,
       "codigo": "0008",
-      "nombre": "INGLÉS TÉCNICO",
+      "nombre": "Inglés Técnico",
       "creditos": 3,
       "correlativas": [],
       "semestre": "anual"
@@ -92,7 +92,7 @@
     {
       "anio": 1,
       "codigo": "0009",
-      "nombre": "INFORMÁTICA",
+      "nombre": "Informática",
       "creditos": 7,
       "correlativas": [],
       "semestre": "anual"
@@ -100,7 +100,7 @@
     {
       "anio": 2,
       "codigo": "2031",
-      "nombre": "ANÁLISIS DE SISTEMAS II",
+      "nombre": "Análisis de Sistemas II",
       "creditos": 4,
       "correlativas": [
         "2025"
@@ -110,7 +110,7 @@
     {
       "anio": 2,
       "codigo": "2023",
-      "nombre": "ARQUITECTURA DE COMPUTADORAS",
+      "nombre": "Arquitectura de Computadoras",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -118,7 +118,7 @@
     {
       "anio": 2,
       "codigo": "2040",
-      "nombre": "DISEÑO DE BASE DE DATOS I",
+      "nombre": "Diseño de Base de Datos I",
       "creditos": 5,
       "correlativas": [],
       "semestre": "1"
@@ -126,7 +126,7 @@
     {
       "anio": 2,
       "codigo": "2022II",
-      "nombre": "MATEM. DISCRETA Y DISEÑO LÓGICO",
+      "nombre": "Matem. Discreta y Diseño Lógico",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -134,7 +134,7 @@
     {
       "anio": 2,
       "codigo": "2032",
-      "nombre": "REDES DE DATOS",
+      "nombre": "Redes de Datos",
       "creditos": 6,
       "correlativas": [],
       "semestre": "1"
@@ -142,7 +142,7 @@
     {
       "anio": 2,
       "codigo": "0004",
-      "nombre": "CÁLCULO II",
+      "nombre": "Cálculo II",
       "creditos": 6,
       "correlativas": [
         "0003"
@@ -152,7 +152,7 @@
     {
       "anio": 2,
       "codigo": "2024",
-      "nombre": "ESTADÍSTICA APLICADA I",
+      "nombre": "Estadística Aplicada I",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -160,7 +160,7 @@
     {
       "anio": 2,
       "codigo": "2020",
-      "nombre": "FÍSICA",
+      "nombre": "Física",
       "creditos": 5,
       "correlativas": [
         "CP00"
@@ -170,7 +170,7 @@
     {
       "anio": 2,
       "codigo": "2026",
-      "nombre": "SISTEMAS OPERATIVOS",
+      "nombre": "Sistemas Operativos",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -178,7 +178,7 @@
     {
       "anio": 2,
       "codigo": "2027",
-      "nombre": "ÁLGEBRA LINEAL",
+      "nombre": "Álgebra Lineal",
       "creditos": 3,
       "correlativas": [
         "0007"
@@ -188,7 +188,7 @@
     {
       "anio": 2,
       "codigo": "2028",
-      "nombre": "COMPUTACIÓN",
+      "nombre": "Computación",
       "creditos": 6,
       "correlativas": [
         "0009"
@@ -198,7 +198,7 @@
     {
       "anio": 3,
       "codigo": "2030",
-      "nombre": "ANÁLISIS NUMÉRICO",
+      "nombre": "Análisis Numérico",
       "creditos": 5,
       "correlativas": [
         "2027"
@@ -208,7 +208,7 @@
     {
       "anio": 3,
       "codigo": "2035",
-      "nombre": "AUTÓMATAS Y GRAMÁTICAS",
+      "nombre": "Autómatas y Gramáticas",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -216,7 +216,7 @@
     {
       "anio": 3,
       "codigo": "2033",
-      "nombre": "ESTADÍSTICA APLICADA II",
+      "nombre": "Estadística Aplicada II",
       "creditos": 3,
       "correlativas": [
         "2024"
@@ -226,7 +226,7 @@
     {
       "anio": 3,
       "codigo": "2043",
-      "nombre": "ORGANIZACIÓN",
+      "nombre": "Organización",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -234,7 +234,7 @@
     {
       "anio": 3,
       "codigo": "2054",
-      "nombre": "DISEÑO DE BASE DE DATOS II",
+      "nombre": "Diseño de Base de Datos II",
       "creditos": 5,
       "correlativas": [
         "2040"
@@ -244,7 +244,7 @@
     {
       "anio": 3,
       "codigo": "2046",
-      "nombre": "ECONOMÍA",
+      "nombre": "Economía",
       "creditos": 3,
       "correlativas": [],
       "semestre": "2"
@@ -252,7 +252,7 @@
     {
       "anio": 3,
       "codigo": "2036",
-      "nombre": "DISEÑO DE SISTEMAS",
+      "nombre": "Diseño de Sistemas",
       "creditos": 5,
       "correlativas": [
         "2031"
@@ -262,7 +262,7 @@
     {
       "anio": 3,
       "codigo": "2037",
-      "nombre": "COMUNICACIÓN DE DATOS",
+      "nombre": "Comunicación de Datos",
       "creditos": 3,
       "correlativas": [
         "2032"
@@ -272,7 +272,7 @@
     {
       "anio": 3,
       "codigo": "2034",
-      "nombre": "PROGRAMACIÓN I",
+      "nombre": "Programación I",
       "creditos": 4,
       "correlativas": [
         "2028"
@@ -282,7 +282,7 @@
     {
       "anio": 3,
       "codigo": "2038",
-      "nombre": "COMPUTACIÓN II",
+      "nombre": "Computación II",
       "creditos": 6,
       "correlativas": [
         "2028"
@@ -292,7 +292,7 @@
     {
       "anio": 4,
       "codigo": "2041",
-      "nombre": "INGENIERÍA DE SOFTWARE",
+      "nombre": "Ingeniería de Software",
       "creditos": 5,
       "correlativas": [
         "2036"
@@ -302,7 +302,7 @@
     {
       "anio": 4,
       "codigo": "2044",
-      "nombre": "SEGURIDAD INFORMÁTICA I",
+      "nombre": "Seguridad Informática I",
       "creditos": 5,
       "correlativas": [],
       "semestre": "1"
@@ -310,7 +310,7 @@
     {
       "anio": 4,
       "codigo": "2042",
-      "nombre": "TELEINFORMÁTICA",
+      "nombre": "Teleinformática",
       "creditos": 5,
       "correlativas": [
         "2037"
@@ -320,7 +320,7 @@
     {
       "anio": 4,
       "codigo": "2404",
-      "nombre": "TRABAJO INTEGRADOR FINAL I",
+      "nombre": "Trabajo Integrador Final I",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -328,7 +328,7 @@
     {
       "anio": 4,
       "codigo": "2048",
-      "nombre": "FORM. Y EVALUACIÓN DE PROYECTOS",
+      "nombre": "Form. y Evaluación de Proyectos",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -336,7 +336,7 @@
     {
       "anio": 4,
       "codigo": "2080",
-      "nombre": "INGENIERÍA DE SOFTWARE APLICADA",
+      "nombre": "Ingeniería de Software Aplicada",
       "creditos": 4,
       "correlativas": [
         "2041"
@@ -346,7 +346,7 @@
     {
       "anio": 4,
       "codigo": "2055",
-      "nombre": "INTELIGENCIA ARTIFICIAL",
+      "nombre": "Inteligencia Artificial",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -354,7 +354,7 @@
     {
       "anio": 4,
       "codigo": "2047",
-      "nombre": "INVESTIGACIÓN OPERATIVA",
+      "nombre": "Investigación Operativa",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -362,7 +362,7 @@
     {
       "anio": 4,
       "codigo": "2409",
-      "nombre": "TRABAJO INTEGRADOR FINAL II",
+      "nombre": "Trabajo Integrador Final II",
       "creditos": 3,
       "correlativas": [
         "2404"
@@ -372,7 +372,7 @@
     {
       "anio": 4,
       "codigo": "2049II",
-      "nombre": "PROGRAMACIÓN II",
+      "nombre": "Programación II",
       "creditos": 6,
       "correlativas": [
         "2034"
@@ -382,7 +382,7 @@
     {
       "anio": 5,
       "codigo": "2501",
-      "nombre": "ASEG. DE CALIDAD DE SOFTWARE",
+      "nombre": "Aseg. de Calidad de Software",
       "creditos": 4,
       "correlativas": [],
       "semestre": "1"
@@ -390,7 +390,7 @@
     {
       "anio": 5,
       "codigo": "2502",
-      "nombre": "GESTIÓN DE CAL. Y MEDIO AMBIENTE",
+      "nombre": "Gestión de Cal. y Medio Ambiente",
       "creditos": 0,
       "correlativas": [],
       "semestre": "1"
@@ -398,7 +398,7 @@
     {
       "anio": 5,
       "codigo": "2503",
-      "nombre": "HIGIENE Y SEGURIDAD DEL TRABAJO",
+      "nombre": "Higiene y Seguridad del Trabajo",
       "creditos": 3,
       "correlativas": [],
       "semestre": "1"
@@ -406,7 +406,7 @@
     {
       "anio": 5,
       "codigo": "2504",
-      "nombre": "MODELOS Y SIMULACIÓN",
+      "nombre": "Modelos y Simulación",
       "creditos": 3,
       "correlativas": [
         "2020"
@@ -416,7 +416,7 @@
     {
       "anio": 5,
       "codigo": "2505II",
-      "nombre": "TRABAJO INTEGRADOR FINAL III",
+      "nombre": "Trabajo Integrador Final III",
       "creditos": 3,
       "correlativas": [
         "2409"
@@ -426,7 +426,7 @@
     {
       "anio": 5,
       "codigo": "2506",
-      "nombre": "SEGURIDAD INFORMÁTICA II",
+      "nombre": "Seguridad Informática II",
       "creditos": 4,
       "correlativas": [
         "2044"
@@ -436,7 +436,7 @@
     {
       "anio": 5,
       "codigo": "2507",
-      "nombre": "ING., DERECHO Y ÉTICA PROFESIONAL",
+      "nombre": "Ing., Derecho y Ética Profesional",
       "creditos": 3,
       "correlativas": [],
       "semestre": "2"
@@ -444,7 +444,7 @@
     {
       "anio": 5,
       "codigo": "2508",
-      "nombre": "AUDITORÍA DE SISTEMAS",
+      "nombre": "Auditoría de Sistemas",
       "creditos": 4,
       "correlativas": [],
       "semestre": "2"
@@ -452,7 +452,7 @@
     {
       "anio": 5,
       "codigo": "2509",
-      "nombre": "PLANEAM. Y GESTIÓN DE EMPRESAS",
+      "nombre": "Planeam. y Gestión de Empresas",
       "creditos": 5,
       "correlativas": [],
       "semestre": "2"
@@ -460,7 +460,7 @@
     {
       "anio": 5,
       "codigo": "2510",
-      "nombre": "TRABAJO INTEGRADOR FINAL IV",
+      "nombre": "Trabajo Integrador Final IV",
       "creditos": 3,
       "correlativas": [
         "2505II"
@@ -470,7 +470,7 @@
     {
       "anio": 5,
       "codigo": "2500",
-      "nombre": "PRÁCTICA PROFESIONAL SUPERVISADA",
+      "nombre": "Práctica Profesional Supervisada",
       "creditos": 0,
       "correlativas": [],
       "semestre": "2"
