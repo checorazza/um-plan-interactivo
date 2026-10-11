@@ -93,7 +93,31 @@ def test_me_devuelve_el_perfil(client, auth, usuario):
 
 
 def test_me_sin_token(client):
-    assert client.get('/me').status_code == 401
+    respuesta = client.get('/me')
+    assert respuesta.status_code == 401
+    assert 'message' in respuesta.json
+
+
+def test_me_con_token_mal_formado(client):
+    # flask-jwt-extended contesta 422 por defecto; lo unificamos en 401 para
+    # que el cliente pueda distinguir "sesión muerta" de "regla incumplida".
+    respuesta = client.get('/me', headers={'Authorization': 'Bearer no-es-un-jwt'})
+    assert respuesta.status_code == 401
+    assert 'message' in respuesta.json
+
+
+def test_me_con_firma_invalida(client, auth):
+    token = auth['Authorization'].removeprefix('Bearer ')
+    roto = token[:-4] + 'xxxx'
+    respuesta = client.get('/me', headers={'Authorization': f'Bearer {roto}'})
+    assert respuesta.status_code == 401
+    assert 'message' in respuesta.json
+
+
+def test_los_errores_de_auth_no_se_confunden_con_los_de_reglas(client, auth):
+    # 422 queda reservado para las violaciones de reglas del plan
+    sin_sesion = client.get('/me/estados')
+    assert sin_sesion.status_code == 401
 
 
 def test_me_con_token_de_usuario_borrado(client, auth, usuario):

@@ -4,28 +4,44 @@
  * Toda la lógica de reglas vive en `src/domain/reglas.ts`; acá sólo se
  * orquesta. En particular, `marcar` nunca aplica un cambio que requiera
  * revertir otras materias: lo deja pendiente de confirmación y la UI pregunta.
+ *
+ * localStorage es siempre la fuente inmediata, con o sin sesión. El servidor
+ * es una copia que se empuja detrás: así un backend caído no rompe nada, que
+ * es el caso principal de la app.
  */
 
 import { create } from "zustand";
 
-import { ErrorDeApi, getCarreras, getPlan } from "../api/cliente";
+import {
+  ErrorDeApi,
+  getCarreras,
+  getMisEstados,
+  getPlan,
+  putMisEstados,
+} from "../api/cliente";
 import { armarPlan } from "../domain/plan";
 import {
   aplicarCambio,
+  combinarEstados,
   sanearEstados,
   type Conflicto,
   type Revertida,
 } from "../domain/reglas";
 import {
-  borrarTodo,
+  borrarProgreso,
   guardarCarrera,
-  guardarEstados,
+  guardarDeCarrera,
+  guardarTodo,
   leerCarrera,
-  leerEstados,
+  leerDeCarrera,
+  leerTodo,
+  adoptarBasicas,
+  registrarBasica,
 } from "../storage/local";
 import type { Carrera } from "../types/carrera";
 import type { Estado, Estados } from "../types/estado";
 import type { Plan } from "../types/plan";
+import { useSesion } from "./useSesion";
 
 /** Un cambio que espera confirmación porque revierte otras materias. */
 export interface CascadaPendiente {
@@ -36,10 +52,25 @@ export interface CascadaPendiente {
   revertidas: Revertida[];
 }
 
+/** Cómo resolver un progreso local y uno de la nube que no coinciden. */
+export type OpcionConflicto = "dispositivo" | "nube" | "combinar";
+
+export interface ConflictoSync {
+  local: Estados;
+  nube: Estados;
+}
+
+export type EstadoSync =
+  | "local" // sin sesión: sólo este dispositivo
+  | "sincronizando"
+  | "sincronizado"
+  | "error";
+
 interface EstadoMalla {
   carreras: Carrera[];
   idCarrera: number | null;
   plan: Plan | null;
+  /** Progreso de la carrera abierta. El de las otras vive en el storage. */
   estados: Estados;
 
   cargando: boolean;
@@ -51,6 +82,10 @@ interface EstadoMalla {
   descartadas: Conflicto[];
   /** El navegador no deja escribir (incógnito, cuota llena, cookies off). */
   sinPersistencia: boolean;
+
+  sync: EstadoSync;
+  errorSync: string | null;
+  conflicto: ConflictoSync | null;
 
   /** Materia con el menú de acciones abierto. */
   seleccionada: number | null;
@@ -64,22 +99,25 @@ interface EstadoMalla {
   cancelarCascada: () => void;
   reiniciar: () => void;
   descartarAviso: () => void;
+
+  /** Compara el progreso local con el de la nube. Se llama al iniciar sesión. */
+  sincronizar: () => Promise<void>;
+  resolverConflicto: (opcion: OpcionConflicto) => Promise<void>;
+  /** Vuelve al modo local. `borrar` limpia el progreso de este dispositivo. */
+  salirDeLaSesion: (borrar: boolean) => void;
 }
 
-/**
- * Guarda el progreso.
- *
- * Se escribe en cada cambio en vez de con debounce: los cambios los dispara un
- * click, así que son pocos y espaciados, y escribir ya deja a salvo el último
- * aunque la pestaña se cierre enseguida.
- */
-function persistir(
-  idCarrera: number | null,
-  estados: Estados,
-  set: (parcial: Partial<EstadoMalla>) => void,
-) {
-  if (idCarrera === null) return;
-  set({ sinPersistencia: !guardarEstados(idCarrera, estados) });
+function mensajeDe(error: unknown): string {
+  if (error instanceof ErrorDeApi) return error.message;
+  if (error instanceof Error) return error.message;
+  return "Error inesperado";
+}
+
+function iguales(a: Estados, b: Estados): boolean {
+  const clavesA = Object.keys(a);
+  const clavesB = Object.keys(b);
+  if (clavesA.length !== clavesB.length) return false;
+  return clavesA.every((clave) => a[Number(clave)] === b[Number(clave)]);
 }
 
 /**
@@ -92,124 +130,295 @@ function persistir(
  */
 let cargaEnCurso: Promise<void> | null = null;
 
-function mensajeDe(error: unknown): string {
-  if (error instanceof ErrorDeApi) return error.message;
-  if (error instanceof Error) return error.message;
-  return "Error inesperado";
-}
+/** Temporizador del push al servidor. */
+let empujeProgramado: ReturnType<typeof setTimeout> | null = null;
+const ESPERA_EMPUJE = 700;
 
-export const useMalla = create<EstadoMalla>((set, get) => ({
-  carreras: [],
-  idCarrera: null,
-  plan: null,
-  estados: {},
-  cargando: false,
-  error: null,
-  descartadas: [],
-  sinPersistencia: false,
-  seleccionada: null,
-  cascada: null,
+export const useMalla = create<EstadoMalla>((set, get) => {
+  /**
+   * Propaga a las otras carreras los cambios sobre materias básicas.
+   *
+   * Sólo ante un cambio explícito del usuario. Lo que descarta `sanearEstados`
+   * al abrir una carrera no se propaga: que una básica no sea alcanzable en
+   * este plan no quiere decir que deje de estar aprobada en el otro.
+   */
+  function anotarBasicas(plan: Plan, antes: Estados, despues: Estados) {
+    for (const [idMateria, materia] of plan.materias) {
+      if (materia.id_basica === null) continue;
+      const a = antes[idMateria];
+      const d = despues[idMateria];
+      if (a === d) continue;
+      registrarBasica(materia.id_basica, d ?? null);
+    }
+  }
 
-  cargarCarreras: async () => {
-    if (cargaEnCurso) return cargaEnCurso;
-    cargaEnCurso = (async () => {
-      set({ cargando: true, error: null });
+  /** Guarda en el dispositivo y, si hay sesión, programa el push. */
+  function persistir(estados: Estados, antes: Estados) {
+    const plan = get().plan;
+    if (!plan) return;
+
+    anotarBasicas(plan, antes, estados);
+    set({ sinPersistencia: !guardarDeCarrera(plan, estados) });
+    programarEmpuje();
+  }
+
+  /**
+   * Empuja **todo** el progreso al servidor, no sólo lo que cambió.
+   *
+   * Mandar el conjunto completo evita toda la coreografía de cambios
+   * puntuales (el 409 de las cascadas, el orden en que se aplican, los
+   * reintentos parciales): el servidor valida el conjunto entero y queda
+   * igual a lo que el usuario ve. Son unas decenas de materias, así que el
+   * payload es chico.
+   */
+  function programarEmpuje() {
+    if (!useSesion.getState().usuario) return;
+
+    if (empujeProgramado) clearTimeout(empujeProgramado);
+    empujeProgramado = setTimeout(() => {
+      empujeProgramado = null;
+      void empujar();
+    }, ESPERA_EMPUJE);
+  }
+
+  async function empujar() {
+    if (!useSesion.getState().usuario) return;
+
+    set({ sync: "sincronizando", errorSync: null });
+    try {
+      await putMisEstados(leerTodo());
+      set({ sync: "sincronizado" });
+    } catch (error) {
+      if (error instanceof ErrorDeApi && error.esSesionVencida) {
+        useSesion.getState().cerrar();
+        set({ sync: "local", errorSync: "La sesión venció. Volvé a entrar." });
+        return;
+      }
+      // El progreso sigue a salvo en el dispositivo; se reintenta en el
+      // próximo cambio.
+      set({ sync: "error", errorSync: mensajeDe(error) });
+    }
+  }
+
+  /** Vuelve a cargar en la vista el progreso del storage. */
+  function refrescarDesdeStorage() {
+    const plan = get().plan;
+    if (!plan) return;
+    adoptarBasicas(plan);
+    const { estados } = sanearEstados(plan, leerDeCarrera(plan).estados);
+    set({ estados });
+  }
+
+  return {
+    carreras: [],
+    idCarrera: null,
+    plan: null,
+    estados: {},
+    cargando: false,
+    error: null,
+    descartadas: [],
+    sinPersistencia: false,
+    sync: "local",
+    errorSync: null,
+    conflicto: null,
+    seleccionada: null,
+    cascada: null,
+
+    cargarCarreras: async () => {
+      if (cargaEnCurso) return cargaEnCurso;
+      cargaEnCurso = (async () => {
+        set({ cargando: true, error: null });
+        try {
+          const carreras = await getCarreras();
+          set({ carreras, cargando: false });
+
+          if (get().idCarrera !== null) return;
+
+          // Si la carrera que el usuario tenía abierta sigue existiendo, se
+          // vuelve a ella; si no, a la primera.
+          const guardada = leerCarrera();
+          const elegida =
+            carreras.find((c) => c.id_carrera === guardada) ?? carreras[0];
+          if (elegida) {
+            await get().seleccionarCarrera(elegida.id_carrera);
+          }
+        } catch (error) {
+          set({ cargando: false, error: mensajeDe(error) });
+        }
+      })();
+
       try {
-        const carreras = await getCarreras();
-        set({ carreras, cargando: false });
+        await cargaEnCurso;
+      } finally {
+        cargaEnCurso = null;
+      }
+    },
 
-        if (get().idCarrera !== null) return;
+    seleccionarCarrera: async (idCarrera) => {
+      set({ cargando: true, error: null, seleccionada: null });
+      try {
+        const respuesta = await getPlan(idCarrera);
+        const plan = armarPlan(respuesta);
 
-        // Si la carrera que el usuario tenía abierta sigue existiendo, se vuelve
-        // a ella; si no, a la primera.
-        const guardada = leerCarrera();
-        const elegida =
-          carreras.find((c) => c.id_carrera === guardada) ?? carreras[0];
-        if (elegida) {
-          await get().seleccionarCarrera(elegida.id_carrera);
+        // Lo guardado se valida contra el plan recién traído: puede haber
+        // cambiado (otra correlativa, otros créditos) desde la última visita.
+        // Lo que vino de la nube llega por materia: se adopta en los grupos
+        // antes de leer, para que las básicas queden en un solo lugar.
+        adoptarBasicas(plan);
+        const guardado = leerDeCarrera(plan);
+        const { estados, descartadas } = sanearEstados(plan, guardado.estados);
+
+        // Una básica que vino de otra carrera y que este plan no admite no es
+        // un dato perdido: sigue aprobada allá. No se anuncia como descarte.
+        const propagados = new Set(guardado.propagados);
+        const aAvisar = descartadas.filter((c) => !propagados.has(c.idMateria));
+
+        set({
+          idCarrera,
+          plan,
+          estados,
+          descartadas: aAvisar,
+          cargando: false,
+        });
+        guardarCarrera(idCarrera);
+
+        // Lo propagado todavía no estaba guardado como propio de esta carrera,
+        // y lo descartado ya no se muestra: en los dos casos hay que grabar.
+        if (descartadas.length > 0 || guardado.propagados.length > 0) {
+          set({ sinPersistencia: !guardarDeCarrera(plan, estados) });
+          programarEmpuje();
         }
       } catch (error) {
         set({ cargando: false, error: mensajeDe(error) });
       }
-    })();
+    },
 
-    try {
-      await cargaEnCurso;
-    } finally {
-      cargaEnCurso = null;
-    }
-  },
+    seleccionar: (idMateria) => set({ seleccionada: idMateria }),
 
-  seleccionarCarrera: async (idCarrera) => {
-    set({ cargando: true, error: null, seleccionada: null });
-    try {
-      const respuesta = await getPlan(idCarrera);
-      const plan = armarPlan(respuesta);
+    marcar: (idMateria, nuevoEstado) => {
+      const { plan, estados } = get();
+      if (!plan) return;
 
-      // Lo guardado se valida contra el plan recién traído: puede haber
-      // cambiado (otra correlativa, otros créditos) desde la última visita.
-      const { estados, descartadas } = sanearEstados(
-        plan,
-        leerEstados(idCarrera),
-      );
+      const cambio = aplicarCambio(plan, estados, idMateria, nuevoEstado);
 
-      set({ idCarrera, plan, estados, descartadas, cargando: false });
-      guardarCarrera(idCarrera);
+      if (!cambio.ok) {
+        // No debería pasar: la UI deshabilita las acciones imposibles. Si
+        // pasa, el motivo se muestra en vez de fallar en silencio.
+        set({ error: cambio.motivo });
+        return;
+      }
 
-      // Si algo se descartó, lo guardado ya no refleja lo que se muestra.
-      if (descartadas.length > 0) persistir(idCarrera, estados, set);
-    } catch (error) {
-      set({ cargando: false, error: mensajeDe(error) });
-    }
-  },
+      if (cambio.revertidas.length > 0) {
+        set({
+          cascada: {
+            idMateria,
+            nombre: plan.materias.get(idMateria)?.nombre ?? `#${idMateria}`,
+            nuevoEstado,
+            estados: cambio.estados,
+            revertidas: cambio.revertidas,
+          },
+        });
+        return;
+      }
 
-  seleccionar: (idMateria) => set({ seleccionada: idMateria }),
+      set({ estados: cambio.estados, error: null });
+      persistir(cambio.estados, estados);
+    },
 
-  marcar: (idMateria, nuevoEstado) => {
-    const { plan, estados } = get();
-    if (!plan) return;
+    confirmarCascada: () => {
+      const { cascada } = get();
+      if (!cascada) return;
+      const antes = get().estados;
+      set({ estados: cascada.estados, cascada: null, error: null });
+      persistir(cascada.estados, antes);
+    },
 
-    const cambio = aplicarCambio(plan, estados, idMateria, nuevoEstado);
+    cancelarCascada: () => set({ cascada: null }),
 
-    if (!cambio.ok) {
-      // No debería pasar: la UI deshabilita las acciones imposibles. Si pasa,
-      // el motivo se muestra en vez de fallar en silencio.
-      set({ error: cambio.motivo });
-      return;
-    }
+    reiniciar: () => {
+      set({ estados: {}, seleccionada: null, cascada: null, descartadas: [] });
+      borrarProgreso();
+      programarEmpuje();
+    },
 
-    if (cambio.revertidas.length > 0) {
-      set({
-        cascada: {
-          idMateria,
-          nombre: plan.materias.get(idMateria)?.nombre ?? `#${idMateria}`,
-          nuevoEstado,
-          estados: cambio.estados,
-          revertidas: cambio.revertidas,
-        },
-      });
-      return;
-    }
+    descartarAviso: () => set({ descartadas: [] }),
 
-    set({ estados: cambio.estados, error: null });
-    persistir(get().idCarrera, cambio.estados, set);
-  },
+    sincronizar: async () => {
+      if (!useSesion.getState().usuario) return;
 
-  confirmarCascada: () => {
-    const { cascada } = get();
-    if (!cascada) return;
-    set({ estados: cascada.estados, cascada: null, error: null });
-    persistir(get().idCarrera, cascada.estados, set);
-  },
+      set({ sync: "sincronizando", errorSync: null });
+      try {
+        const nube = await getMisEstados();
+        const local = leerTodo();
 
-  cancelarCascada: () => set({ cascada: null }),
+        if (iguales(local, nube)) {
+          set({ sync: "sincronizado" });
+          return;
+        }
 
-  reiniciar: () => {
-    set({ estados: {}, seleccionada: null, cascada: null, descartadas: [] });
-    borrarTodo();
-    const idCarrera = get().idCarrera;
-    if (idCarrera !== null) guardarCarrera(idCarrera);
-  },
+        // Si uno de los dos está vacío no hay nada que perder: se resuelve
+        // solo. Preguntar ahí sería una pregunta sin consecuencias.
+        if (Object.keys(nube).length === 0) {
+          await putMisEstados(local);
+          set({ sync: "sincronizado" });
+          return;
+        }
+        if (Object.keys(local).length === 0) {
+          guardarTodo(nube);
+          refrescarDesdeStorage();
+          set({ sync: "sincronizado" });
+          return;
+        }
 
-  descartarAviso: () => set({ descartadas: [] }),
-}));
+        set({ conflicto: { local, nube }, sync: "sincronizando" });
+      } catch (error) {
+        if (error instanceof ErrorDeApi && error.esSesionVencida) {
+          useSesion.getState().cerrar();
+          set({ sync: "local", errorSync: "La sesión venció. Volvé a entrar." });
+          return;
+        }
+        set({ sync: "error", errorSync: mensajeDe(error) });
+      }
+    },
+
+    resolverConflicto: async (opcion) => {
+      const conflicto = get().conflicto;
+      if (!conflicto) return;
+
+      const elegido =
+        opcion === "dispositivo"
+          ? conflicto.local
+          : opcion === "nube"
+            ? conflicto.nube
+            : combinarEstados(conflicto.local, conflicto.nube);
+
+      set({ conflicto: null, sync: "sincronizando", errorSync: null });
+
+      // Se guarda primero en el dispositivo: si el push falla, el usuario no
+      // pierde lo que acaba de elegir.
+      guardarTodo(elegido);
+      refrescarDesdeStorage();
+
+      try {
+        await putMisEstados(elegido);
+        set({ sync: "sincronizado" });
+      } catch (error) {
+        set({ sync: "error", errorSync: mensajeDe(error) });
+      }
+    },
+
+    salirDeLaSesion: (borrar) => {
+      if (empujeProgramado) {
+        clearTimeout(empujeProgramado);
+        empujeProgramado = null;
+      }
+      useSesion.getState().cerrar();
+
+      if (borrar) {
+        borrarProgreso();
+        set({ estados: {} });
+      }
+      set({ sync: "local", errorSync: null, conflicto: null });
+    },
+  };
+});

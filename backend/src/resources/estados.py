@@ -10,6 +10,7 @@ from flask_restful import Resource, abort
 from src.auth.guards import requiere_usuario
 from src.domain.reglas import ESTADOS, puede_marcar, validar_conjunto
 from src.models import EstadoMateria, db
+from src.services.basicas import expandir, propagar
 from src.services.plan import carrera_de_materia, carreras_de_materias, cargar_plan
 
 
@@ -95,6 +96,11 @@ class MisEstados(Resource):
                 )
             propuesto[id_materia] = estado
 
+        # Las básicas se comparten entre carreras: marcar una marca a sus
+        # equivalentes. Se expande antes de validar para que cada plan se
+        # evalúe con lo que realmente va a quedar guardado.
+        propuesto = expandir(propuesto)
+
         por_materia = carreras_de_materias(propuesto.keys())
         desconocidas = sorted(set(propuesto) - set(por_materia))
         if desconocidas:
@@ -172,10 +178,15 @@ class MiEstadoMateria(Resource):
             )
 
         _guardar(usuario.id_usuario, id_materia, estado)
+        aplicados, omitidos = propagar(usuario.id_usuario, id_materia, estado)
         db.session.commit()
 
         fila = db.session.get(EstadoMateria, (usuario.id_usuario, id_materia))
-        return fila.to_json(), 200
+        cuerpo = fila.to_json()
+        if aplicados or omitidos:
+            cuerpo['propagado_a'] = aplicados
+            cuerpo['no_propagado'] = omitidos
+        return cuerpo, 200
 
     @requiere_usuario
     def delete(self, usuario, id_materia):
@@ -201,5 +212,9 @@ class MiEstadoMateria(Resource):
             )
 
         db.session.delete(fila)
+        aplicados, omitidos = propagar(usuario.id_usuario, id_materia, None)
         db.session.commit()
+
+        if aplicados or omitidos:
+            return {'propagado_a': aplicados, 'no_propagado': omitidos}, 200
         return '', 204

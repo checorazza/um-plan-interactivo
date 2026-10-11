@@ -7,9 +7,14 @@
  */
 
 import type { Carrera } from "../types/carrera";
+import type { Estado, EstadoMateria, Estados } from "../types/estado";
 import type { RespuestaPlan } from "../types/plan";
+import type { Usuario } from "../types/usuario";
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
+
+/** Client ID de Google. Vacío = la app es sólo local, sin botón de login. */
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";
 
 export class ErrorDeApi extends Error {
   readonly estado: number;
@@ -22,18 +27,33 @@ export class ErrorDeApi extends Error {
     this.estado = estado;
     this.conflictos = conflictos;
   }
+
+  /** El token venció o ya no sirve: hay que volver a iniciar sesión. */
+  get esSesionVencida() {
+    return this.estado === 401;
+  }
+}
+
+/**
+ * El JWT de la sesión. Lo setea el store de sesión; el cliente no lo lee de
+ * localStorage para no tener dos dueños del mismo dato.
+ */
+let token: string | null = null;
+
+export function usarToken(nuevo: string | null) {
+  token = nuevo;
 }
 
 async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
+  const cabeceras: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(opciones.headers as Record<string, string> | undefined),
+  };
+  if (token) cabeceras.Authorization = `Bearer ${token}`;
+
   let respuesta: Response;
   try {
-    respuesta = await fetch(`${BASE}${ruta}`, {
-      ...opciones,
-      headers: {
-        "Content-Type": "application/json",
-        ...opciones.headers,
-      },
-    });
+    respuesta = await fetch(`${BASE}${ruta}`, { ...opciones, headers: cabeceras });
   } catch {
     throw new ErrorDeApi("No se pudo conectar con el servidor", 0);
   }
@@ -57,10 +77,51 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   return cuerpo as T;
 }
 
+// --- catálogo (público) ---
+
 export function getCarreras(): Promise<Carrera[]> {
   return pedir<Carrera[]>("/carreras");
 }
 
 export function getPlan(idCarrera: number): Promise<RespuestaPlan> {
   return pedir<RespuestaPlan>(`/carreras/${idCarrera}/plan`);
+}
+
+// --- sesión ---
+
+export interface RespuestaLogin {
+  access_token: string;
+  usuario: Usuario;
+}
+
+export function postAuthGoogle(idToken: string): Promise<RespuestaLogin> {
+  return pedir<RespuestaLogin>("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ id_token: idToken }),
+  });
+}
+
+export function getMe(): Promise<Usuario> {
+  return pedir<Usuario>("/me");
+}
+
+// --- progreso ---
+
+export async function getMisEstados(): Promise<Estados> {
+  const filas = await pedir<EstadoMateria[]>("/me/estados");
+  const estados: Estados = {};
+  for (const fila of filas) estados[fila.id_materia] = fila.estado;
+  return estados;
+}
+
+/** Reemplaza todo el progreso del usuario en el servidor. */
+export function putMisEstados(estados: Estados): Promise<EstadoMateria[]> {
+  const cuerpo = Object.entries(estados).map(([clave, estado]) => ({
+    id_materia: Number(clave),
+    estado: estado as Estado,
+  }));
+  return pedir<EstadoMateria[]>("/me/estados", {
+    method: "PUT",
+    body: JSON.stringify({ estados: cuerpo }),
+  });
 }

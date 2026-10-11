@@ -1,0 +1,46 @@
+/* Reusa .telon y .dialogo de ConfirmacionCascada.css */
+
+.dialogo--conflicto {
+  width: min(480px, 100%);
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opcion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  text-align: left;
+  background: var(--superficie-2);
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-chico);
+  color: var(--texto);
+}
+
+.opcion:hover {
+  border-color: var(--acento);
+}
+
+.opcion--destacada {
+  border-color: var(--acento);
+}
+
+.opcion strong {
+  font-size: 14px;
+}
+
+.opcion__cuenta {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+}
+
+.opcion__detalle {
+  font-size: 12px;
+  color: var(--texto-suave);
+}

@@ -6,6 +6,7 @@
 
 ```mermaid
 erDiagram
+    BASICA ||--o{ MATERIA : "es la misma en varias carreras"
     CARRERA ||--|{ ANIO : tiene
     ANIO ||--|{ MATERIA : tiene
     MATERIA }o--o{ MATERIA : "correlativa de"
@@ -29,6 +30,12 @@ erDiagram
         int creditos
         string semestre
         int id_anio FK
+        int id_basica FK
+    }
+    BASICA {
+        int id_basica PK
+        string codigo UK
+        string nombre
     }
     CORRELATIVA {
         int id_materia PK_FK
@@ -60,6 +67,7 @@ progreso de cada usuario sobre ese plan. Se compone de seis tablas:
 - **Materia**: cada materia de la carrera, que pertenece a un año.
 - **Correlativa**: tabla de cruce que dice qué materias hay que aprobar antes de
   poder aprobar otra. Una materia puede tener **varias** correlativas.
+- **Basica**: un grupo de materias que son **la misma** en varias ingenierías.
 - **Usuario**: una cuenta de Google que sincronizó su progreso.
 - **EstadoMateria**: el estado de cursado (`regular` o `aprobada`) de una materia
   **para un usuario**.
@@ -99,6 +107,7 @@ foráneas que referencian a otra tabla; `UK` es una restricción de unicidad.
 | `nombre`     | String  | NOT NULL                      | Nombre de la materia                               |
 | `creditos`   | Integer | NOT NULL                      | Créditos que otorga la materia una vez es aprobada |
 | `semestre`   | String  | NOT NULL, CHECK (`1`,`2`,`anual`) | Semestre del año en que se cursa               |
+| `id_basica`  | Integer | FK → `basica.id_basica`, NULL | Grupo de básicas, o NULL si es propia de la carrera |
 | `id_anio`    | Integer | FK → `anio.id_anio`, NOT NULL | Año al que pertenece la materia                    |
 
 El `semestre` se guarda como texto (`'1'`, `'2'` o `'anual'`) en lugar de un
@@ -113,6 +122,34 @@ seed resuelva las correlativas por código en vez de por nombre. **No es único 
 nivel global**: el mismo código aparece en varias carreras para las materias
 básicas, y en este modelo cada carrera tiene su propia fila. La unicidad dentro
 de una carrera la garantiza el script de carga.
+
+### Basica
+
+Las materias básicas (Química General, Cálculo I, Álgebra y Geometría
+Analítica...) son **la misma materia** en todas las ingenierías que las tienen:
+aprobarla en una cuenta en las demás.
+
+| Columna     | Tipo    | Restricciones       | Descripción                                   |
+| ----------- | ------- | ------------------- | --------------------------------------------- |
+| `id_basica` | Integer | PK, autoincremental | Identificador del grupo                       |
+| `codigo`    | String  | NOT NULL, UNIQUE    | Código del plan, el mismo en todas las carreras |
+| `nombre`    | String  | NOT NULL            | Nombre de la materia                          |
+
+Lo que se comparte es **el progreso**, no la materia: cada carrera conserva su
+propia fila en `materia`, porque una básica puede estar en distinto año, con
+distinto semestre, distintos créditos y distintas correlativas según el plan.
+
+De ahí sale el caso incómodo: la misma materia puede ser alcanzable en una
+carrera y no en otra. Cálculo I puede estar en 2º de Informática (12 créditos)
+y en 3º de Industrial (38). **El progreso se propaga sólo donde el plan destino
+queda consistente**, y lo que no se pudo propagar se informa en la respuesta de
+la API en vez de hacerse en silencio. Rechazar el cambio entero castigaría al
+usuario en la carrera que está mirando por culpa de otra que quizá ni cursa.
+
+El agrupado lo hace `scripts/agrupar_basicas.py`, por código. Los códigos que
+aparecen en varias carreras con nombres distintos **no se agrupan solos**: se
+listan para revisión. En los planes de la UM pasa con el `5044`, que es
+"Modelos y Simulación" en un plan y "Modelado y Sistemas de Control" en otro.
 
 ### Correlativa
 
@@ -169,16 +206,15 @@ limpia sus estados.
 | Carrera → Anio         | 1 : 1..\*    | Una carrera tiene uno o más años. Cada año pertenece a una sola carrera.                         |
 | Anio → Materia         | 1 : 1..\*    | Un año tiene una o más materias. Cada materia pertenece a un solo año.                           |
 | Materia ↔ Materia      | \* : \*      | Vía `correlativa`. Una materia puede tener N requisitos y ser requisito de N materias.           |
+| Basica → Materia       | 1 : 0..\*    | Una básica agrupa las materias equivalentes de cada carrera.                                     |
 | Usuario → EstadoMateria | 1 : 0..\*   | Un usuario tiene un estado por cada materia que marcó.                                           |
 | Materia → EstadoMateria | 1 : 0..\*   | Una materia tiene un estado por cada usuario que la marcó.                                       |
 
 ## Notas y limitaciones conocidas
 
-- **Las carreras no comparten materias.** Las materias básicas (Química General,
-  Cálculo I, Cálculo II, Álgebra y Geometría Analítica, Álgebra Lineal, Análisis
-  Numérico, etc.) son comunes a todas las ingenierías, pero en este modelo cada
-  carrera tiene su propia fila. Aprobar Cálculo I en una carrera no la marca
-  aprobada en otra.
+- **Las carreras comparten el progreso de las básicas, no las materias.** Cada
+  carrera tiene su propia fila en `materia`; la tabla `basica` dice cuáles son
+  la misma. Ver más arriba.
 - **No hay electivas ni créditos libres.** Toda materia pertenece a un año y
   tiene créditos fijos.
 - **No se guardan las horas.** Los planes traen horas semanales y totales por

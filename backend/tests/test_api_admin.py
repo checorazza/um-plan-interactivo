@@ -51,6 +51,16 @@ def test_crear_materia_requiere_admin(client, auth, plan):
     assert client.post('/materias', headers=auth, json=cuerpo).status_code == 403
 
 
+def test_borrar_una_carrera_se_lleva_sus_anios_y_materias(client, auth_admin, plan):
+    from src.models import Anio, Materia
+
+    id_carrera = plan['carrera'].id_carrera
+    assert client.delete(f'/carreras/{id_carrera}', headers=auth_admin).status_code == 204
+
+    assert Anio.query.count() == 0
+    assert Materia.query.count() == 0
+
+
 def test_borrar_materia_requiere_admin(client, auth_admin, plan):
     id_materia = plan['materias']['calculo1'].id_materia
     assert (

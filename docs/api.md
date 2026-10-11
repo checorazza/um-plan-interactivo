@@ -45,8 +45,14 @@ configurado.
 
 ### `GET /me`
 
-→ `200` con el perfil. `401` si no hay token, está vencido, o el usuario fue
-borrado.
+→ `200` con el perfil.
+
+**Todos los fallos de autenticación son `401` con `{"message": ...}`**: falta
+el token, está vencido, está mal formado, la firma no verifica, o el usuario
+fue borrado. Por defecto `flask-jwt-extended` contesta `422` en varios de esos
+casos; se unifican a propósito, porque `422` acá significa "el progreso no
+cumple las reglas del plan" y el cliente tiene que poder distinguir una cosa
+de la otra.
 
 ### `DELETE /me`
 
@@ -80,6 +86,7 @@ hace falta para dibujar la malla.
       "creditos": 6,
       "semestre": "1",
       "id_anio": 1,
+      "id_basica": 7,
       "correlativas": []
     },
     {
@@ -89,6 +96,7 @@ hace falta para dibujar la malla.
       "creditos": 3,
       "semestre": "anual",
       "id_anio": 2,
+      "id_basica": null,
       "correlativas": [1]
     }
   ]
@@ -154,7 +162,25 @@ se guardan filas en null.
 
 ### `PUT /me/estados/<id_materia>`
 
-Cambia el estado de una materia.
+Cambia el estado de una materia. Si es una **básica** (`id_basica` no nulo), el
+cambio se propaga a las materias equivalentes de las otras carreras, y la
+respuesta lo informa:
+
+```json
+{
+  "id_materia": 4,
+  "estado": "aprobada",
+  "actualizado_en": "...",
+  "propagado_a": [31],
+  "no_propagado": [
+    { "id_materia": 58, "nombre": "Cálculo I", "motivo": "Te faltan 26 créditos para 3º año (tenés 12 de 38)", "causa": "creditos" }
+  ]
+}
+```
+
+`no_propagado` son las carreras donde aplicar el cambio dejaría el plan en un
+estado inalcanzable; ahí no se toca nada. Los dos campos sólo aparecen si la
+materia es una básica.
 
 ```json
 { "estado": "aprobada" }
@@ -187,6 +213,8 @@ servidor nunca guarda un estado inconsistente.
 ### `DELETE /me/estados/<id_materia>`
 
 Quita el estado. Es idempotente: `204` también si la materia no tenía estado.
+Si es una básica, responde `200` con `propagado_a` y `no_propagado` en vez de
+`204`.
 → `409` con `conflictos` si desmarcarla rompe otras (mismo contrato que arriba).
 
 ### `PUT /me/estados`
@@ -203,7 +231,10 @@ que resuelve las cascadas.
 }
 ```
 
-- `200` con el progreso guardado (mismo formato que `GET /me/estados`).
+- `200` con el progreso guardado (mismo formato que `GET /me/estados`). Puede
+  traer **más** materias de las enviadas: las básicas se expanden a sus
+  equivalentes antes de validar y guardar. Si el cuerpo manda explícitamente
+  dos equivalentes con estados distintos, se respeta lo que mandó.
 - `400` si el cuerpo está mal formado.
 - `422` si alguna materia no existe, o si el conjunto **no es alcanzable**: no
   existe ningún orden en el que se pudiera haber llegado a él respetando los

@@ -4,6 +4,7 @@ import type { Estados } from "../types/estado";
 import { planDePrueba } from "./fixtures";
 import {
   aplicarCambio,
+  combinarEstados,
   correlativasFaltantes,
   creditosAprobados,
   creditosPorAnio,
@@ -269,6 +270,53 @@ describe("validarConjunto", () => {
     expect(validarConjunto(PLAN, { 999: "aprobada" })[0]?.causa).toBe(
       "desconocida",
     );
+  });
+});
+
+describe("combinarEstados", () => {
+  it("une los dos lados", () => {
+    expect(
+      combinarEstados({ [PRECALCULO]: "aprobada" }, { [QUIMICA]: "regular" }),
+    ).toEqual({ [PRECALCULO]: "aprobada", [QUIMICA]: "regular" });
+  });
+
+  it("aprobada le gana a regular, venga del lado que venga", () => {
+    expect(
+      combinarEstados({ [PRECALCULO]: "regular" }, { [PRECALCULO]: "aprobada" }),
+    ).toEqual({ [PRECALCULO]: "aprobada" });
+
+    expect(
+      combinarEstados({ [PRECALCULO]: "aprobada" }, { [PRECALCULO]: "regular" }),
+    ).toEqual({ [PRECALCULO]: "aprobada" });
+  });
+
+  it("regular le gana a no tener estado", () => {
+    expect(combinarEstados({}, { [PRECALCULO]: "regular" })).toEqual({
+      [PRECALCULO]: "regular",
+    });
+  });
+
+  it("es conmutativo", () => {
+    const a: Estados = { [PRECALCULO]: "aprobada", [QUIMICA]: "regular" };
+    const b: Estados = { [QUIMICA]: "aprobada", [INFORMATICA]: "regular" };
+    expect(combinarEstados(a, b)).toEqual(combinarEstados(b, a));
+  });
+
+  it("no muta ninguna de las dos entradas", () => {
+    const a: Estados = { [PRECALCULO]: "regular" };
+    const b: Estados = { [PRECALCULO]: "aprobada" };
+    combinarEstados(a, b);
+    expect(a).toEqual({ [PRECALCULO]: "regular" });
+    expect(b).toEqual({ [PRECALCULO]: "aprobada" });
+  });
+
+  it("nunca pierde una materia", () => {
+    const a: Estados = { [PRECALCULO]: "aprobada", [QUIMICA]: "regular" };
+    const b: Estados = { [INFORMATICA]: "aprobada" };
+    const combinado = combinarEstados(a, b);
+    for (const clave of [...Object.keys(a), ...Object.keys(b)]) {
+      expect(combinado[Number(clave)]).toBeDefined();
+    }
   });
 });
 

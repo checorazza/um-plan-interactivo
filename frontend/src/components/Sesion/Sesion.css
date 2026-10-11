@@ -1,0 +1,82 @@
+.sesion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
+}
+
+.sesion h2 {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+}
+
+.sesion__ayuda {
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.sesion__estado {
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.sesion__error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--peligro);
+}
+
+.sesion__usuario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sesion__usuario img {
+  flex: none;
+  border-radius: 50%;
+}
+
+.sesion__datos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sesion__datos strong {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sesion__sync {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.sesion__sync--sincronizado {
+  color: var(--aprobada-borde);
+}
+
+.sesion__sync--error {
+  color: var(--peligro);
+}
+
+.sesion__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sesion__acciones .boton {
+  flex: 1 1 auto;
+  font-size: 12px;
+  padding: 6px 8px;
+}

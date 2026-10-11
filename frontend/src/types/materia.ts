@@ -9,6 +9,12 @@ export interface Materia {
   creditos: number;
   semestre: Semestre;
   id_anio: number;
+  /**
+   * Grupo de materias básicas al que pertenece, o `null` si es propia de la
+   * carrera. Dos materias con la misma básica son la misma materia en dos
+   * planes distintos: el progreso se comparte.
+   */
+  id_basica: number | null;
   /** Ids de las materias que hay que aprobar antes de poder aprobar esta. */
   correlativas: number[];
 }

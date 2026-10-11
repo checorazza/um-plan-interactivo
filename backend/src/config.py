@@ -13,6 +13,22 @@ def _lista(valor):
     return [x.strip() for x in valor.split(',') if x.strip()]
 
 
+def normalizar_url(url):
+    """Deja la URL de la base en la forma que espera SQLAlchemy.
+
+    Los proveedores gestionados (Neon entre ellos) entregan la cadena como
+    `postgres://` o `postgresql://`. SQLAlchemy no entiende la primera, y la
+    segunda la resuelve con psycopg2, que no está instalado: usamos psycopg 3.
+    Las dos se reescriben a `postgresql+psycopg://`.
+    """
+    if not url:
+        return url
+    for prefijo in ('postgres://', 'postgresql://'):
+        if url.startswith(prefijo):
+            return 'postgresql+psycopg://' + url[len(prefijo):]
+    return url
+
+
 def ruta_base_de_datos():
     """Directorio donde vive el SQLite. Lo crea si no existe."""
     directorio = os.path.join(BASE_DIR, os.getenv('DATABASE_PATH', 'database'))
@@ -30,10 +46,9 @@ class Config:
 
     def __init__(self):
         nombre = os.getenv('DATABASE_NAME', 'planinteractivo.db')
-        self.SQLALCHEMY_DATABASE_URI = os.getenv(
-            'DATABASE_URL',
-            f'sqlite:///{os.path.join(ruta_base_de_datos(), nombre)}',
-        )
+        self.SQLALCHEMY_DATABASE_URI = normalizar_url(
+            os.getenv('DATABASE_URL')
+        ) or f'sqlite:///{os.path.join(ruta_base_de_datos(), nombre)}'
         self.JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
         self.JWT_ACCESS_TOKEN_EXPIRES = int(
             os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 60 * 60 * 24 * 7)

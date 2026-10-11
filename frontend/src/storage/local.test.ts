@@ -1,14 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { planDePrueba } from "../domain/fixtures";
 import {
   VERSION,
-  borrarEstados,
+  adoptarBasicas,
+  borrarProgreso,
+  borrarSesion,
   borrarTodo,
   guardarCarrera,
-  guardarEstados,
+  guardarDeCarrera,
+  guardarSesion,
+  guardarTodo,
   leerActualizadoEn,
   leerCarrera,
-  leerEstados,
+  leerDeCarrera,
+  leerBasicas,
+  leerSesion,
+  leerTodo,
+  registrarBasica,
 } from "./local";
 
 /** Un localStorage de mentira, con la misma API que el del navegador. */
@@ -38,6 +47,16 @@ class AlmacenFalso implements Storage {
   }
 }
 
+const PLAN = planDePrueba();
+
+/** El mismo plan, pero con Precálculo marcada como básica 100. */
+function armarPlanConBasica() {
+  const plan = planDePrueba();
+  const precalculo = plan.materias.get(1);
+  if (precalculo) plan.materias.set(1, { ...precalculo, id_basica: 100 });
+  return plan;
+}
+
 let almacen: AlmacenFalso;
 
 beforeEach(() => {
@@ -49,102 +68,239 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("estados", () => {
+describe("progreso", () => {
   it("devuelve vacío cuando no hay nada guardado", () => {
-    expect(leerEstados(1)).toEqual({});
+    expect(leerTodo()).toEqual({});
   });
 
   it("guarda y vuelve a leer", () => {
-    expect(guardarEstados(1, { 3: "aprobada", 7: "regular" })).toBe(true);
-    expect(leerEstados(1)).toEqual({ 3: "aprobada", 7: "regular" });
-  });
-
-  it("separa el progreso de cada carrera", () => {
-    guardarEstados(1, { 3: "aprobada" });
-    guardarEstados(2, { 9: "regular" });
-
-    expect(leerEstados(1)).toEqual({ 3: "aprobada" });
-    expect(leerEstados(2)).toEqual({ 9: "regular" });
-  });
-
-  it("borra el progreso de una carrera sin tocar el de otra", () => {
-    guardarEstados(1, { 3: "aprobada" });
-    guardarEstados(2, { 9: "regular" });
-
-    borrarEstados(1);
-
-    expect(leerEstados(1)).toEqual({});
-    expect(leerEstados(2)).toEqual({ 9: "regular" });
+    expect(guardarTodo({ 3: "aprobada", 7: "regular" })).toBe(true);
+    expect(leerTodo()).toEqual({ 3: "aprobada", 7: "regular" });
   });
 
   it("registra cuándo se guardó", () => {
-    guardarEstados(1, { 3: "aprobada" });
-    const cuando = leerActualizadoEn(1);
+    guardarTodo({ 3: "aprobada" });
+    const cuando = leerActualizadoEn();
     expect(cuando).toBeTruthy();
     expect(new Date(cuando ?? "").getTime()).not.toBeNaN();
   });
 });
 
+describe("vista por carrera", () => {
+  it("lee sólo las materias del plan", () => {
+    guardarTodo({ 1: "aprobada", 999: "regular" });
+    expect(leerDeCarrera(PLAN).estados).toEqual({ 1: "aprobada" });
+  });
+
+  it("guardar una carrera no toca el progreso de otra", () => {
+    // 999 no está en el plan de prueba: hace de "otra carrera"
+    guardarTodo({ 1: "aprobada", 999: "aprobada" });
+
+    guardarDeCarrera(PLAN, { 2: "regular" });
+
+    expect(leerTodo()).toEqual({ 2: "regular", 999: "aprobada" });
+  });
+
+  it("guardar reemplaza, no mezcla, dentro de la carrera", () => {
+    guardarTodo({ 1: "aprobada", 2: "aprobada" });
+    guardarDeCarrera(PLAN, { 1: "regular" });
+    expect(leerDeCarrera(PLAN).estados).toEqual({ 1: "regular" });
+  });
+});
+
+describe("materias básicas", () => {
+  // En el plan de prueba, Precálculo (1) pertenece a la básica 100.
+  const PLAN_CON_BASICA = armarPlanConBasica();
+
+  it("guarda y lee el estado de una básica", () => {
+    registrarBasica(100, "aprobada");
+    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+  });
+
+  it("lo borra con null", () => {
+    registrarBasica(100, "aprobada");
+    registrarBasica(100, null);
+    expect(leerBasicas()).toEqual({});
+  });
+
+  it("una básica aprobada en otra carrera aparece acá", () => {
+    registrarBasica(100, "aprobada");
+    const { estados, propagados } = leerDeCarrera(PLAN_CON_BASICA);
+
+    expect(estados[1]).toBe("aprobada");
+    expect(propagados).toEqual([1]);
+  });
+
+  it("el estado de una básica vive sólo en el grupo", () => {
+    // Guardar la carrera no deja una copia por materia: si quedaran las dos,
+    // desmarcarla en una carrera dejaría viva la copia de la otra.
+    registrarBasica(100, "aprobada");
+    guardarDeCarrera(PLAN_CON_BASICA, { 1: "aprobada", 2: "regular" });
+
+    const { estados: todo } = { estados: leerTodo() };
+    expect(todo[1]).toBeUndefined();
+    expect(todo[2]).toBe("regular");
+    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+  });
+
+  it("desmarcarla en una carrera la desmarca en todas", () => {
+    registrarBasica(100, "aprobada");
+    expect(leerDeCarrera(PLAN_CON_BASICA).estados[1]).toBe("aprobada");
+
+    registrarBasica(100, null);
+    expect(leerDeCarrera(PLAN_CON_BASICA).estados[1]).toBeUndefined();
+  });
+
+  it("adopta en el grupo lo que vino por materia desde el servidor", () => {
+    // El servidor guarda por materia, sin saber de grupos
+    guardarTodo({ 1: "aprobada" });
+
+    adoptarBasicas(PLAN_CON_BASICA);
+
+    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+    expect(leerTodo()[1]).toBeUndefined();
+    expect(leerDeCarrera(PLAN_CON_BASICA).estados[1]).toBe("aprobada");
+  });
+
+  it("al adoptar, lo que ya estaba en el grupo manda", () => {
+    registrarBasica(100, "aprobada");
+    guardarTodo({ 1: "regular" }, { 100: "aprobada" });
+
+    adoptarBasicas(PLAN_CON_BASICA);
+
+    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+  });
+
+  it("no toca las materias propias de la carrera", () => {
+    registrarBasica(100, "aprobada");
+    const { estados } = leerDeCarrera(PLAN_CON_BASICA);
+    // Química General (2) no tiene básica
+    expect(estados[2]).toBeUndefined();
+  });
+
+  it("guardar el progreso de una carrera no pisa el mapa de básicas", () => {
+    registrarBasica(100, "aprobada");
+    guardarDeCarrera(PLAN_CON_BASICA, {});
+    expect(leerBasicas()).toEqual({ 100: "aprobada" });
+  });
+});
+
+describe("migración del formato 1", () => {
+  function guardarComoV1(idCarrera: number, estados: Record<number, string>) {
+    almacen.setItem(
+      `um-plan:estados:${idCarrera}`,
+      JSON.stringify({ version: 1, estados, actualizadoEn: "2026-01-01T00:00:00Z" }),
+    );
+  }
+
+  it("junta las claves por carrera en una sola", () => {
+    guardarComoV1(1, { 3: "aprobada" });
+    guardarComoV1(2, { 9: "regular" });
+
+    expect(leerTodo()).toEqual({ 3: "aprobada", 9: "regular" });
+  });
+
+  it("deja el dato ya convertido y borra las claves viejas", () => {
+    guardarComoV1(1, { 3: "aprobada" });
+
+    leerTodo();
+
+    expect(almacen.getItem("um-plan:estados:1")).toBe(null);
+    const guardado = JSON.parse(almacen.getItem("um-plan:estados") ?? "null");
+    expect(guardado.version).toBe(VERSION);
+    expect(guardado.estados).toEqual({ 3: "aprobada" });
+  });
+
+  it("sanea lo que venía mal en el formato viejo", () => {
+    guardarComoV1(1, { 3: "aprobada", 4: "promocionada" });
+    expect(leerTodo()).toEqual({ 3: "aprobada" });
+  });
+
+  it("no migra si ya hay dato en el formato nuevo", () => {
+    guardarTodo({ 5: "regular" });
+    guardarComoV1(1, { 3: "aprobada" });
+
+    expect(leerTodo()).toEqual({ 5: "regular" });
+  });
+});
+
+describe("migración del formato 2", () => {
+  it("adopta el progreso y arranca sin básicas", () => {
+    almacen.setItem(
+      "um-plan:estados",
+      JSON.stringify({
+        version: 2,
+        estados: { 3: "aprobada" },
+        actualizadoEn: "2026-01-01T00:00:00Z",
+      }),
+    );
+
+    expect(leerTodo()).toEqual({ 3: "aprobada" });
+    expect(leerBasicas()).toEqual({});
+  });
+});
+
 describe("datos corruptos o manipulados", () => {
   it("ignora un JSON inválido", () => {
-    almacen.setItem("um-plan:estados:1", "{no es json");
-    expect(leerEstados(1)).toEqual({});
+    almacen.setItem("um-plan:estados", "{no es json");
+    expect(leerTodo()).toEqual({});
   });
 
   it("ignora una versión desconocida", () => {
     almacen.setItem(
-      "um-plan:estados:1",
+      "um-plan:estados",
       JSON.stringify({ version: 99, estados: { 3: "aprobada" } }),
     );
-    expect(leerEstados(1)).toEqual({});
+    expect(leerTodo()).toEqual({});
   });
 
   it("descarta estados que no son válidos", () => {
     almacen.setItem(
-      "um-plan:estados:1",
+      "um-plan:estados",
       JSON.stringify({
         version: VERSION,
         estados: { 3: "aprobada", 4: "promocionada", 5: "regular" },
       }),
     );
-    expect(leerEstados(1)).toEqual({ 3: "aprobada", 5: "regular" });
+    expect(leerTodo()).toEqual({ 3: "aprobada", 5: "regular" });
   });
 
   it("descarta claves que no son ids de materia", () => {
     almacen.setItem(
-      "um-plan:estados:1",
+      "um-plan:estados",
       JSON.stringify({
         version: VERSION,
-        estados: { 3: "aprobada", hola: "regular", "-1": "regular", "1.5": "regular" },
+        estados: { 3: "aprobada", hola: "regular", "-1": "regular", "1.5": "x" },
       }),
     );
-    expect(leerEstados(1)).toEqual({ 3: "aprobada" });
+    expect(leerTodo()).toEqual({ 3: "aprobada" });
   });
 
   it("tolera que `estados` no sea un objeto", () => {
     almacen.setItem(
-      "um-plan:estados:1",
+      "um-plan:estados",
       JSON.stringify({ version: VERSION, estados: [1, 2, 3] }),
     );
-    expect(leerEstados(1)).toEqual({});
+    expect(leerTodo()).toEqual({});
   });
 });
 
 describe("cuando el navegador no deja guardar", () => {
   it("avisa que la escritura falló en vez de romper", () => {
     almacen.fallaAlEscribir = true;
-    expect(guardarEstados(1, { 3: "aprobada" })).toBe(false);
+    expect(guardarTodo({ 3: "aprobada" })).toBe(false);
   });
 
   it("leer sigue funcionando sin localStorage", () => {
     vi.stubGlobal("localStorage", undefined);
-    expect(leerEstados(1)).toEqual({});
+    expect(leerTodo()).toEqual({});
     expect(leerCarrera()).toBe(null);
+    expect(leerSesion()).toBe(null);
   });
 
   it("guardar sin localStorage devuelve false y no tira", () => {
     vi.stubGlobal("localStorage", undefined);
-    expect(guardarEstados(1, { 3: "aprobada" })).toBe(false);
+    expect(guardarTodo({ 3: "aprobada" })).toBe(false);
     expect(() => borrarTodo()).not.toThrow();
   });
 });
@@ -161,17 +317,76 @@ describe("carrera elegida", () => {
   });
 });
 
-describe("borrarTodo", () => {
-  it("borra sólo las claves de la app", () => {
-    guardarEstados(1, { 3: "aprobada" });
-    guardarEstados(2, { 9: "regular" });
+describe("sesión", () => {
+  const sesion = {
+    token: "jwt-de-prueba",
+    usuario: {
+      id_usuario: 1,
+      email: "ceci@example.com",
+      nombre: "Ceci",
+      foto_url: null,
+      es_admin: false,
+    },
+  };
+
+  it("guarda y lee la sesión", () => {
+    guardarSesion(sesion);
+    expect(leerSesion()).toEqual(sesion);
+  });
+
+  it("la borra", () => {
+    guardarSesion(sesion);
+    borrarSesion();
+    expect(leerSesion()).toBe(null);
+  });
+
+  it("rechaza una sesión sin token", () => {
+    almacen.setItem(
+      "um-plan:sesion",
+      JSON.stringify({ usuario: sesion.usuario }),
+    );
+    expect(leerSesion()).toBe(null);
+  });
+
+  it("rechaza una sesión sin usuario válido", () => {
+    almacen.setItem(
+      "um-plan:sesion",
+      JSON.stringify({ token: "x", usuario: { email: "a@b.com" } }),
+    );
+    expect(leerSesion()).toBe(null);
+  });
+});
+
+describe("borrados", () => {
+  it("borrarProgreso deja la sesión y la carrera", () => {
+    guardarTodo({ 3: "aprobada" });
+    guardarCarrera(2);
+    guardarSesion({
+      token: "x",
+      usuario: {
+        id_usuario: 1,
+        email: "a@b.com",
+        nombre: null,
+        foto_url: null,
+        es_admin: false,
+      },
+    });
+
+    borrarProgreso();
+
+    expect(leerTodo()).toEqual({});
+    expect(leerCarrera()).toBe(2);
+    expect(leerSesion()).not.toBe(null);
+  });
+
+  it("borrarTodo borra sólo las claves de la app", () => {
+    guardarTodo({ 3: "aprobada" });
     guardarCarrera(2);
     almacen.setItem("otra-app:cosa", "no me toques");
 
     borrarTodo();
 
-    expect(leerEstados(1)).toEqual({});
-    expect(leerEstados(2)).toEqual({});
+    expect(leerTodo()).toEqual({});
     expect(leerCarrera()).toBe(null);
     expect(almacen.getItem("otra-app:cosa")).toBe("no me toques");
   });

@@ -10,8 +10,13 @@ class Anio(db.Model):
     # Relaciones
     id_carrera = db.Column(db.Integer, db.ForeignKey('carrera.id_carrera'), nullable=False)
 
-    # backref a materia
-    materias = db.relationship("Materia", backref="anio", lazy=True)
+    # Igual que con carrera → año: borrar un año se lleva sus materias.
+    materias = db.relationship(
+        "Materia",
+        backref="anio",
+        lazy=True,
+        cascade="all, delete-orphan",
+    )
 
     def to_json(self):
         return {

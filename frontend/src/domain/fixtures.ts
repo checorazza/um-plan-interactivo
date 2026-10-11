@@ -27,6 +27,7 @@ function materia(
   creditos: number,
   idAnio: number,
   correlativas: number[] = [],
+  idBasica: number | null = null,
 ): Materia {
   return {
     id_materia: id,
@@ -35,6 +36,7 @@ function materia(
     creditos,
     semestre: "1",
     id_anio: idAnio,
+    id_basica: idBasica,
     correlativas,
   };
 }

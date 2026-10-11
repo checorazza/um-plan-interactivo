@@ -21,8 +21,10 @@ load_dotenv()
 
 from src.factory import create_app  # noqa: E402
 from src.models import Anio, Carrera, Materia, db  # noqa: E402
+from src.services.agrupar_basicas import analizar, aplicar  # noqa: E402
 
 NOMBRE = 'Ingeniería en Informática (demo)'
+NOMBRE_2 = 'Ingeniería Industrial (demo)'
 
 # Créditos requeridos por año, confirmados para los planes de la UM.
 CREDITOS_REQUERIDOS = {1: 0, 2: 12, 3: 38, 4: 90, 5: 130}
@@ -52,26 +54,40 @@ MATERIAS = [
 ]
 
 
+# Segunda carrera, para ver las básicas compartidas. Comparte con Informática
+# los códigos 0001, 0002, CP00, 0007 y 0003, con los mismos nombres.
+MATERIAS_2 = [
+    ('0001', 'Tecnología, Ciencia y Sociedad', 3, 1, '1', []),
+    ('0002', 'Química General', 4, 1, '1', []),
+    ('CP00', 'Precálculo', 6, 1, '1', []),
+    ('0007', 'Álgebra y Geometría Analítica', 5, 1, '2', []),
+    ('3010', 'Introducción a la Ingeniería Industrial', 4, 1, '2', []),
+    ('0003', 'Cálculo I', 3, 2, '1', ['CP00']),
+    ('3020', 'Termodinámica', 5, 2, '1', ['CP00']),
+    ('3030', 'Investigación Operativa I', 5, 2, '2', ['0007']),
+]
+
+
 def borrar(app):
-    carrera = Carrera.query.filter_by(nombre=NOMBRE).first()
-    if carrera is None:
-        print('No había carrera de demo.')
-        return
-    db.session.delete(carrera)
+    borradas = []
+    for nombre in (NOMBRE, NOMBRE_2):
+        carrera = Carrera.query.filter_by(nombre=nombre).first()
+        if carrera is not None:
+            db.session.delete(carrera)
+            borradas.append(nombre)
     db.session.commit()
-    print(f'Borrada: {NOMBRE}')
+    if not borradas:
+        print('No había carreras de demo.')
+    for nombre in borradas:
+        print(f'Borrada: {nombre}')
 
 
-def cargar(app):
-    if Carrera.query.filter_by(nombre=NOMBRE).first():
-        print(f'Ya existe "{NOMBRE}". Corré con --borrar primero.')
-        return
-
-    carrera = Carrera(nombre=NOMBRE)
+def cargar_carrera(nombre, materias):
+    carrera = Carrera(nombre=nombre)
     db.session.add(carrera)
     db.session.flush()
 
-    numeros = sorted({m[3] for m in MATERIAS})
+    numeros = sorted({m[3] for m in materias})
     anios = {}
     for numero in numeros:
         anio = Anio(
@@ -84,10 +100,10 @@ def cargar(app):
     db.session.flush()
 
     por_codigo = {}
-    for codigo, nombre, creditos, numero, semestre, _ in MATERIAS:
+    for codigo, nombre_materia, creditos, numero, semestre, _ in materias:
         materia = Materia(
             codigo=codigo,
-            nombre=nombre,
+            nombre=nombre_materia,
             creditos=creditos,
             semestre=semestre,
             id_anio=anios[numero].id_anio,
@@ -96,7 +112,7 @@ def cargar(app):
         por_codigo[codigo] = materia
     db.session.flush()
 
-    for codigo, _, _, _, _, correlativas in MATERIAS:
+    for codigo, _, _, _, _, correlativas in materias:
         faltantes = [c for c in correlativas if c not in por_codigo]
         if faltantes:
             raise SystemExit(
@@ -104,16 +120,30 @@ def cargar(app):
             )
         por_codigo[codigo].correlativas = [por_codigo[c] for c in correlativas]
 
+    total = sum(m[2] for m in materias)
+    print(f'Cargada "{nombre}": {len(materias)} materias, {total} créditos.')
+
+
+def cargar(app):
+    if Carrera.query.filter_by(nombre=NOMBRE).first():
+        print(f'Ya existe "{NOMBRE}". Corré con --borrar primero.')
+        return
+
+    cargar_carrera(NOMBRE, MATERIAS)
+    cargar_carrera(NOMBRE_2, MATERIAS_2)
+    db.session.flush()
+
+    # Las materias que se repiten entre las dos carreras son la misma: se
+    # agrupan para que el progreso se comparta.
+    grupos, dudosos = analizar()
+    creadas, enlazadas = aplicar(grupos)
     db.session.commit()
 
-    total = sum(m[2] for m in MATERIAS)
-    print(f'Cargada "{NOMBRE}": {len(MATERIAS)} materias, {total} créditos.')
-    for numero in numeros:
-        del_anio = [m for m in MATERIAS if m[3] == numero]
-        print(
-            f'  {numero}º año: {len(del_anio)} materias, '
-            f'requiere {CREDITOS_REQUERIDOS[numero]} créditos'
-        )
+    print(f'Básicas: {creadas} grupos, {enlazadas} materias enlazadas.')
+    for codigo in sorted(grupos):
+        print(f'  {codigo}: {grupos[codigo]["nombre"]}')
+    for dudoso in dudosos:
+        print(f'  DUDOSO {dudoso["codigo"]}: {" / ".join(dudoso["nombres"])}')
 
 
 if __name__ == '__main__':

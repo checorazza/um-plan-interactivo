@@ -2,9 +2,11 @@ import { useEffect } from "react";
 
 import { Avisos } from "./components/Avisos/Avisos";
 import { ConfirmacionCascada } from "./components/ConfirmacionCascada/ConfirmacionCascada";
+import { DialogoConflicto } from "./components/DialogoConflicto/DialogoConflicto";
 import { Malla } from "./components/Malla/Malla";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { useMalla } from "./store/useMalla";
+import { useSesion } from "./store/useSesion";
 import "./App.css";
 
 function App() {
@@ -12,10 +14,17 @@ function App() {
   const error = useMalla((s) => s.error);
   const plan = useMalla((s) => s.plan);
   const cargarCarreras = useMalla((s) => s.cargarCarreras);
+  const sincronizar = useMalla((s) => s.sincronizar);
+  const restaurar = useSesion((s) => s.restaurar);
 
   useEffect(() => {
     void cargarCarreras();
   }, [cargarCarreras]);
+
+  // Si había una sesión guardada, se retoma y se sincroniza.
+  useEffect(() => {
+    void restaurar().then(() => sincronizar());
+  }, [restaurar, sincronizar]);
 
   return (
     <div className="app">
@@ -48,6 +57,7 @@ function App() {
       </main>
 
       <ConfirmacionCascada />
+      <DialogoConflicto />
     </div>
   );
 }

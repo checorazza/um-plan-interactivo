@@ -290,6 +290,25 @@ export function sanearEstados(
   return { estados: aceptados, descartadas };
 }
 
+/**
+ * Combina dos conjuntos de estados quedándose con el más avanzado de cada
+ * materia: `aprobada` gana sobre `regular`, y `regular` sobre no tener estado.
+ *
+ * Es la opción "combinar" del diálogo de conflicto al iniciar sesión: nunca
+ * pierde progreso, aunque puede dar un conjunto que no respete las reglas si
+ * los dos lados venían de planes distintos. Por eso el resultado se pasa
+ * siempre por `sanearEstados` antes de usarlo.
+ */
+export function combinarEstados(a: Estados, b: Estados): Estados {
+  const combinado: Estados = { ...a };
+  for (const [clave, estado] of Object.entries(b)) {
+    const idMateria = Number(clave);
+    if (combinado[idMateria] === "aprobada") continue;
+    combinado[idMateria] = estado;
+  }
+  return combinado;
+}
+
 /** Una materia que la cascada tuvo que revertir. */
 export interface Revertida {
   idMateria: number;

@@ -51,6 +51,12 @@ class Materia(db.Model):
 
     id_anio = db.Column(db.Integer, db.ForeignKey('anio.id_anio'), nullable=False)
 
+    # Si esta materia es una básica, apunta al grupo que la hermana con las
+    # equivalentes de otras carreras. `null` = materia propia de la carrera.
+    id_basica = db.Column(
+        db.Integer, db.ForeignKey('basica.id_basica', ondelete='SET NULL'), nullable=True
+    )
+
     # Materias que hay que tener aprobadas para poder aprobar esta.
     # `habilita` es el backref: las materias que esta destraba al aprobarse.
     correlativas = db.relationship(
@@ -86,5 +92,6 @@ class Materia(db.Model):
             'creditos': self.creditos,
             'semestre': self.semestre,
             'id_anio': self.id_anio,
+            'id_basica': self.id_basica,
             'correlativas': [m.id_materia for m in self.correlativas],
         }

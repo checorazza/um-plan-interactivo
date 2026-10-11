@@ -8,3 +8,6 @@ google-auth==2.42.1
 # google-auth usa requests para su transporte HTTP
 requests==2.34.2
 python-dotenv==1.2.3
+# Driver de PostgreSQL, para el deploy en Neon. En local la base sigue siendo
+# SQLite salvo que se defina DATABASE_URL.
+psycopg[binary]==3.3.3

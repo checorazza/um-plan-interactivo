@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
@@ -38,9 +38,40 @@ def create_app(config=None):
     jwt.init_app(app)
     CORS(app, origins=app.config['CORS_ORIGINS'])
 
+    _registrar_errores_de_jwt()
     _registrar_recursos(app)
 
     return app
+
+
+def _registrar_errores_de_jwt():
+    """Unifica los errores de autenticación en 401 con `message`.
+
+    Por defecto flask-jwt-extended contesta 422 cuando el token está mal
+    formado o la firma no verifica, y 401 sólo cuando venció. Para el cliente
+    las tres cosas significan lo mismo —hay que volver a iniciar sesión— y 422
+    ya lo usamos para las violaciones de reglas del plan, así que mezclarlos
+    hacía que una sesión muerta pasara por un error de validación.
+    """
+
+    def sesion_invalida(mensaje):
+        return jsonify({'message': mensaje}), 401
+
+    @jwt.expired_token_loader
+    def vencido(_cabecera, _datos):
+        return sesion_invalida('La sesión venció, volvé a iniciar sesión')
+
+    @jwt.invalid_token_loader
+    def invalido(_motivo):
+        return sesion_invalida('La sesión no es válida, volvé a iniciar sesión')
+
+    @jwt.unauthorized_loader
+    def sin_token(_motivo):
+        return sesion_invalida('Hace falta iniciar sesión')
+
+    @jwt.revoked_token_loader
+    def revocado(_cabecera, _datos):
+        return sesion_invalida('La sesión fue cerrada, volvé a iniciar sesión')
 
 
 def _verificar_secreto(app):

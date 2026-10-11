@@ -2,6 +2,7 @@
 
 import { creditosAprobados } from "../../domain/reglas";
 import { useMalla } from "../../store/useMalla";
+import { Sesion } from "../Sesion/Sesion";
 import "./Sidebar.css";
 
 export function Sidebar() {
@@ -94,6 +95,8 @@ export function Sidebar() {
           </section>
         </>
       )}
+
+      <Sesion />
 
       <footer className="sidebar__pie">
         <button
