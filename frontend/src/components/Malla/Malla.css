@@ -1,0 +1,254 @@
+.malla {
+  width: 100%;
+  height: 100%;
+}
+
+/* React Flow define sus propios colores; los atamos a los tokens de la app
+   para que el modo oscuro funcione sin tocar la librería. */
+.malla .react-flow__background-pattern {
+  color: var(--borde);
+}
+
+.malla .react-flow__controls-button {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+  fill: var(--texto);
+}
+
+.malla .react-flow__controls-button:hover {
+  background: var(--superficie-2);
+}
+
+.malla__minimapa {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.malla .react-flow__minimap-mask {
+  fill: color-mix(in srgb, var(--fondo) 70%, transparent);
+}
+
+.malla .react-flow__attribution {
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 10px;
+}
+
+/* --- aristas --- */
+
+.arista .react-flow__edge-path {
+  stroke: var(--arista);
+  stroke-width: 1.5;
+}
+
+.arista--cumplida .react-flow__edge-path {
+  stroke: var(--aprobada-borde);
+}
+
+.arista--activa .react-flow__edge-path {
+  stroke: var(--arista-activa);
+  stroke-width: 2.5;
+}
+
+/* --- encabezado de año --- */
+
+.anio {
+  width: 210px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie-2);
+}
+
+.anio__titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.anio__creditos {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.anio--cerrado {
+  opacity: 0.75;
+}
+
+.anio--cerrado .anio__creditos {
+  color: var(--peligro);
+}
+
+.anio__candado {
+  flex: none;
+  color: var(--texto-suave);
+}
+
+/* --- materia --- */
+
+.materia {
+  position: relative;
+  width: 210px;
+  height: 72px;
+  border: 1.5px solid var(--sin-estado-borde);
+  border-radius: var(--radio);
+  background: var(--sin-estado-fondo);
+  color: var(--sin-estado-texto);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.materia__cuerpo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  height: 100%;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+
+.materia__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.materia__codigo {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--texto-suave);
+}
+
+.materia__candado {
+  flex: none;
+  color: var(--bloqueada-texto);
+}
+
+.materia__nombre {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  /* Dos líneas como máximo: los nombres del plan son largos. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.materia__creditos {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* estados */
+
+.materia--regular {
+  background: var(--regular-fondo);
+  border-color: var(--regular-borde);
+  color: var(--regular-texto);
+}
+
+.materia--aprobada {
+  background: var(--aprobada-fondo);
+  border-color: var(--aprobada-borde);
+  color: var(--aprobada-texto);
+}
+
+.materia--regular .materia__codigo,
+.materia--regular .materia__creditos,
+.materia--aprobada .materia__codigo,
+.materia--aprobada .materia__creditos {
+  color: currentColor;
+  opacity: 0.75;
+}
+
+/* Bloqueada por créditos: no se puede ni regularizar. Se ve apagada. */
+.materia--bloqueada_por_creditos {
+  background: var(--bloqueada-fondo);
+  border-color: var(--bloqueada-borde);
+  color: var(--bloqueada-texto);
+}
+
+.materia--bloqueada_por_creditos .materia__codigo,
+.materia--bloqueada_por_creditos .materia__creditos {
+  color: var(--bloqueada-texto);
+}
+
+/* Bloqueada sólo por correlativa: se puede regularizar, así que no se apaga.
+   El borde cortado marca que falta algo. */
+.materia--bloqueada_por_correlativa {
+  border-style: dashed;
+}
+
+.materia--seleccionada {
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 25%, transparent);
+}
+
+.materia__handle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* --- acciones --- */
+
+/* Flotan debajo del nodo para no cambiarle el alto: si el nodo creciera, el
+   layout se correría al seleccionar. */
+.materia__acciones {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+.accion {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: var(--sombra);
+}
+
+.accion:hover:not(:disabled) {
+  border-color: var(--acento);
+}
+
+.accion:disabled {
+  opacity: 0.45;
+}
+
+.accion--regular[aria-pressed="true"] {
+  background: var(--regular-fondo);
+  border-color: var(--regular-borde);
+  color: var(--regular-texto);
+}
+
+.accion--aprobada[aria-pressed="true"] {
+  background: var(--aprobada-fondo);
+  border-color: var(--aprobada-borde);
+  color: var(--aprobada-texto);
+}

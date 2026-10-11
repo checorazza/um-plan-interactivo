@@ -1,0 +1,229 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 280px;
+  flex: none;
+  padding: 20px 18px;
+  overflow-y: auto;
+  background: var(--superficie);
+  border-right: 1px solid var(--borde);
+}
+
+.sidebar__marca h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.sidebar__marca p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.sidebar__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.sidebar__campo select {
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.sidebar__progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar__creditos {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.sidebar__creditos strong {
+  font-size: 28px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar__creditos span {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.barra {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  overflow: hidden;
+}
+
+.barra__relleno {
+  height: 100%;
+  background: var(--aprobada-borde);
+  transition: width 0.2s ease;
+}
+
+.sidebar__resumen {
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.sidebar__leyenda h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+}
+
+.sidebar__leyenda ul {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.sidebar__leyenda li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.muestra {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  border-radius: 4px;
+  border: 1.5px solid var(--sin-estado-borde);
+  background: var(--sin-estado-fondo);
+}
+
+.muestra--aprobada {
+  background: var(--aprobada-fondo);
+  border-color: var(--aprobada-borde);
+}
+
+.muestra--regular {
+  background: var(--regular-fondo);
+  border-color: var(--regular-borde);
+}
+
+.muestra--correlativa {
+  border-style: dashed;
+}
+
+.muestra--creditos {
+  background: var(--bloqueada-fondo);
+  border-color: var(--bloqueada-borde);
+}
+
+.sidebar__pie {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar__nota {
+  margin: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.boton {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+
+.boton:hover:not(:disabled) {
+  border-color: var(--acento);
+}
+
+.boton:disabled {
+  opacity: 0.45;
+}
+
+.boton--peligro:hover:not(:disabled) {
+  border-color: var(--peligro);
+  color: var(--peligro);
+}
+
+.boton--primario {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+}
+
+/* En el teléfono el panel se vuelve una barra compacta: la malla necesita
+   todo el alto que pueda. */
+@media (max-width: 720px) {
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 10px 14px;
+    overflow: visible;
+    border-right: none;
+    border-bottom: 1px solid var(--borde);
+  }
+
+  .sidebar__marca h1 {
+    font-size: 15px;
+  }
+
+  .sidebar__marca p,
+  .sidebar__leyenda,
+  .sidebar__nota,
+  .sidebar__resumen {
+    display: none;
+  }
+
+  .sidebar__campo {
+    flex: 1 1 140px;
+  }
+
+  .sidebar__progreso {
+    flex: 1 1 140px;
+    margin-left: auto;
+  }
+
+  .sidebar__creditos strong {
+    font-size: 20px;
+  }
+
+  .sidebar__pie {
+    margin-top: 0;
+  }
+
+  .boton {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

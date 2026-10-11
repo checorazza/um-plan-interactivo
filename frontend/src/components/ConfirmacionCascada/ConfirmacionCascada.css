@@ -1,0 +1,77 @@
+.telon {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, #000 45%, transparent);
+}
+
+.dialogo {
+  width: min(460px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.dialogo h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.dialogo__intro {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.dialogo__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.dialogo__lista li {
+  padding: 10px 12px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.dialogo__materia {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dialogo__materia strong {
+  font-size: 13px;
+}
+
+.dialogo__transicion {
+  flex: none;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.dialogo__motivo {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.dialogo__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
