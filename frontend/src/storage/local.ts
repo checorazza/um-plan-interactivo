@@ -46,8 +46,9 @@ import {
  * - 3: se agrega `basicas`, el estado por grupo de materia común.
  * - 4: se agregan las claves naturales, y las básicas pasan a ir por código
  *      en vez de por id de grupo.
+ * - 5: se agregan las materias desbloqueadas a mano.
  */
-export const VERSION = 4;
+export const VERSION = 5;
 
 const CLAVE_ESTADOS = `${PREFIJO}:estados`;
 const CLAVE_CARRERA = `${PREFIJO}:carrera`;
@@ -69,6 +70,8 @@ interface Guardado {
   claves: Record<string, Clave>;
   /** Estado de cada básica, por **código**: el id de grupo tampoco es estable. */
   basicas: Record<string, Estado>;
+  /** Ids de las materias que el usuario desbloqueó a mano. */
+  desbloqueadas: number[];
   actualizadoEn: string;
 }
 
@@ -107,6 +110,17 @@ function sanearClaves(valor: unknown): Record<string, Clave> {
     claves[id] = clave;
   }
   return claves;
+}
+
+/** Los ids de materia válidos de una lista cualquiera. */
+function sanearIds(valor: unknown): Set<number> {
+  if (!Array.isArray(valor)) return new Set();
+  const ids = new Set<number>();
+  for (const dato of valor) {
+    const id = Number(dato);
+    if (Number.isInteger(id) && id > 0) ids.add(id);
+  }
+  return ids;
 }
 
 /** Igual que `sanearForma`, pero indexado por código de básica. */
@@ -156,6 +170,7 @@ interface Contenido {
   estados: Estados;
   claves: Record<string, Clave>;
   basicas: Record<string, Estado>;
+  desbloqueadas: Set<number>;
 }
 
 /** Lo guardado, ya llevado al formato actual. */
@@ -169,6 +184,17 @@ function leerGuardado(): Contenido {
         estados: sanearForma(dato.estados),
         claves: sanearClaves(dato.claves),
         basicas: sanearPorCodigo(dato.basicas),
+        desbloqueadas: sanearIds(dato.desbloqueadas),
+      };
+    }
+    // La 4 es la 5 sin desbloqueos: no había ninguno, así que se adopta tal
+    // cual y el resto del progreso se conserva.
+    if (dato.version === 4) {
+      return {
+        estados: sanearForma(dato.estados),
+        claves: sanearClaves(dato.claves),
+        basicas: sanearPorCodigo(dato.basicas),
+        desbloqueadas: new Set(),
       };
     }
     // Las versiones 2 y 3 guardaban los estados por id, igual que ahora, pero
@@ -177,13 +203,23 @@ function leerGuardado(): Contenido {
     // grupo, que no sirve de clave; se descartan y se vuelven a sembrar
     // desde los estados por materia, que sí están.
     if (dato.version === 2 || dato.version === 3) {
-      return { estados: sanearForma(dato.estados), claves: {}, basicas: {} };
+      return {
+        estados: sanearForma(dato.estados),
+        claves: {},
+        basicas: {},
+        desbloqueadas: new Set(),
+      };
     }
     // Versión desconocida (de una app más nueva, o dato corrupto): se ignora.
-    return { estados: {}, claves: {}, basicas: {} };
+    return { estados: {}, claves: {}, basicas: {}, desbloqueadas: new Set() };
   }
 
-  return { estados: migrarDesdeV1() ?? {}, claves: {}, basicas: {} };
+  return {
+    estados: migrarDesdeV1() ?? {},
+    claves: {},
+    basicas: {},
+    desbloqueadas: new Set(),
+  };
 }
 
 /** Todo el progreso guardado, de todas las carreras. */
@@ -201,21 +237,32 @@ export function leerClaves(): Record<string, Clave> {
   return leerGuardado().claves;
 }
 
+/** Lo que acompaña a los estados. Lo que no se pasa se deja como estaba. */
+export interface Aparte {
+  basicas?: Record<string, Estado>;
+  claves?: Record<string, Clave>;
+  desbloqueadas?: Set<number>;
+}
+
 /** Guarda todo el progreso. Devuelve `false` si el navegador no lo permitió. */
-export function guardarTodo(
-  estados: Estados,
-  basicas?: Record<string, Estado>,
-  claves?: Record<string, Clave>,
-): boolean {
+export function guardarTodo(estados: Estados, aparte: Aparte = {}): boolean {
   const previo = leerGuardado();
   const guardado: Guardado = {
     version: VERSION,
     estados,
-    claves: claves ?? previo.claves,
-    basicas: basicas ?? previo.basicas,
+    claves: aparte.claves ?? previo.claves,
+    basicas: aparte.basicas ?? previo.basicas,
+    desbloqueadas: [...(aparte.desbloqueadas ?? previo.desbloqueadas)].sort(
+      (a, b) => a - b,
+    ),
     actualizadoEn: new Date().toISOString(),
   };
   return escribirCrudo(CLAVE_ESTADOS, guardado);
+}
+
+/** Las materias desbloqueadas a mano, de todas las carreras. */
+export function leerDesbloqueadas(): Set<number> {
+  return leerGuardado().desbloqueadas;
 }
 
 /**
@@ -230,7 +277,7 @@ export function registrarBasica(codigo: string, estado: Estado | null): void {
   const { estados, basicas, claves } = leerGuardado();
   if (estado === null) delete basicas[codigo];
   else basicas[codigo] = estado;
-  guardarTodo(estados, basicas, claves);
+  guardarTodo(estados, { basicas, claves });
 }
 
 /**
@@ -258,7 +305,7 @@ export function adoptarBasicas(plan: Plan): void {
     hubo = true;
   }
 
-  if (hubo) guardarTodo(estados, basicas, claves);
+  if (hubo) guardarTodo(estados, { basicas, claves });
 }
 
 /**
@@ -274,23 +321,42 @@ export function adoptarBasicas(plan: Plan): void {
  */
 export function leerDeCarrera(plan: Plan): {
   estados: Estados;
+  desbloqueadas: Set<number>;
   propagados: number[];
 } {
-  const { estados: todo, basicas, claves } = leerGuardado();
+  const {
+    estados: todo,
+    basicas,
+    claves,
+    desbloqueadas: todasDesbloqueadas,
+  } = leerGuardado();
 
   // Lo guardado, indexado por clave natural: así se puede recuperar aunque
   // el id haya cambiado porque se recargó el plan.
   const porClave = new Map<Clave, Estado>();
+  const desbloqueadasPorClave = new Set<Clave>();
   for (const [id, clave] of Object.entries(claves)) {
     const estado = todo[Number(id)];
     if (estado) porClave.set(clave, estado);
+    if (todasDesbloqueadas.has(Number(id))) desbloqueadasPorClave.add(clave);
   }
 
   const estados: Estados = {};
+  const desbloqueadas = new Set<number>();
   const propagados: number[] = [];
   let huboRecuperacion = false;
 
   for (const [idMateria, materia] of plan.materias) {
+    const clave = claveDe(plan.carrera.nombre, materia.codigo);
+    if (todasDesbloqueadas.has(idMateria)) {
+      desbloqueadas.add(idMateria);
+    } else if (desbloqueadasPorClave.has(clave)) {
+      // Mismo caso que los estados: el plan se recargó y la materia tiene
+      // otro id. El desbloqueo se recupera por carrera y código.
+      desbloqueadas.add(idMateria);
+      huboRecuperacion = true;
+    }
+
     if (materia.id_basica !== null) {
       const compartido = basicas[materia.codigo];
       if (compartido) {
@@ -308,9 +374,7 @@ export function leerDeCarrera(plan: Plan): {
 
     // El id no está: puede que el plan se haya recargado y la materia tenga
     // uno nuevo. Se la busca por carrera y código.
-    const recuperado = porClave.get(
-      claveDe(plan.carrera.nombre, materia.codigo),
-    );
+    const recuperado = porClave.get(clave);
     if (recuperado) {
       estados[idMateria] = recuperado;
       huboRecuperacion = true;
@@ -319,17 +383,26 @@ export function leerDeCarrera(plan: Plan): {
 
   // Lo recuperado se vuelve a guardar con los ids nuevos, así la próxima vez
   // se encuentra directo y los ids viejos dejan de ocupar lugar.
-  if (huboRecuperacion) guardarDeCarrera(plan, estados);
+  if (huboRecuperacion) guardarDeCarrera(plan, estados, desbloqueadas);
 
-  return { estados, propagados };
+  return { estados, desbloqueadas, propagados };
 }
 
 /**
  * Reemplaza el progreso de las materias de un plan, dejando intacto el del
  * resto de las carreras.
  */
-export function guardarDeCarrera(plan: Plan, estados: Estados): boolean {
-  const { estados: todo, basicas, claves } = leerGuardado();
+export function guardarDeCarrera(
+  plan: Plan,
+  estados: Estados,
+  desbloqueadas: Set<number> = new Set(),
+): boolean {
+  const {
+    estados: todo,
+    basicas,
+    claves,
+    desbloqueadas: todasDesbloqueadas,
+  } = leerGuardado();
 
   // Fuera lo viejo de esta carrera: por id actual y por clave natural, que
   // es lo que queda colgado cuando los ids cambiaron.
@@ -341,10 +414,12 @@ export function guardarDeCarrera(plan: Plan, estados: Estados): boolean {
     if (!deLaCarrera.has(clave)) continue;
     delete todo[Number(id)];
     delete claves[id];
+    todasDesbloqueadas.delete(Number(id));
   }
   for (const idMateria of plan.materias.keys()) {
     delete todo[idMateria];
     delete claves[idMateria];
+    todasDesbloqueadas.delete(idMateria);
   }
 
   // Las básicas no se guardan por materia: su estado vive en el grupo, y lo
@@ -358,7 +433,21 @@ export function guardarDeCarrera(plan: Plan, estados: Estados): boolean {
     claves[idMateria] = claveDe(plan.carrera.nombre, materia.codigo);
   }
 
-  return guardarTodo(todo, basicas, claves);
+  // Los desbloqueos sí se guardan por materia, también los de las básicas:
+  // desbloquear es una excepción a las reglas *de este plan*, y el mismo
+  // código puede estar disponible en otra carrera.
+  for (const idMateria of desbloqueadas) {
+    const materia = plan.materias.get(idMateria);
+    if (!materia) continue;
+    todasDesbloqueadas.add(idMateria);
+    claves[idMateria] = claveDe(plan.carrera.nombre, materia.codigo);
+  }
+
+  return guardarTodo(todo, {
+    basicas,
+    claves,
+    desbloqueadas: todasDesbloqueadas,
+  });
 }
 
 /** Cuándo se guardó el progreso por última vez. */

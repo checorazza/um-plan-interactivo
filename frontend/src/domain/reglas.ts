@@ -16,6 +16,9 @@
  * 5. Regularizar no exige correlativas: alcanza con el gate de créditos.
  * 6. Un conjunto de estados es válido sólo si existe algún orden en el que se
  *    pudo haber llegado a él respetando 3 y 4.
+ * 7. Una materia **desbloqueada a mano** queda exenta de 3 y 4. Es una
+ *    excepción explícita del usuario, no un agujero: la pide materia por
+ *    materia y se pierde en cuanto la desmarca.
  */
 
 import type { Estado, Estados } from "../types/estado";
@@ -47,6 +50,16 @@ export type Bloqueo =
   | "bloqueada_por_correlativa";
 
 const OK: Resultado = { ok: true, motivo: "" };
+
+/**
+ * Las materias que el usuario desbloqueó a mano.
+ *
+ * Va como último parámetro opcional en todo el motor: sin pasarlo, las reglas
+ * son las de siempre.
+ */
+export type Desbloqueadas = ReadonlySet<number>;
+
+const NINGUNA: Desbloqueadas = new Set<number>();
 
 const ESTADOS: Estado[] = ["regular", "aprobada"];
 
@@ -124,6 +137,7 @@ export function puedeMarcar(
   estados: Estados,
   idMateria: number,
   nuevoEstado: Estado | null,
+  desbloqueadas: Desbloqueadas = NINGUNA,
 ): Resultado {
   if (nuevoEstado === null) return OK;
 
@@ -143,6 +157,11 @@ export function puedeMarcar(
       causa: "desconocida",
     };
   }
+
+  // Desbloqueada a mano: ni créditos ni correlativas. La materia tiene que
+  // existir igual —eso no es una regla del plan sino un dato roto—, por eso
+  // esto va después de buscarla y no antes.
+  if (desbloqueadas.has(idMateria)) return OK;
 
   const anio = plan.anios.get(materia.id_anio);
   const requeridos = anio?.creditos_requeridos ?? 0;
@@ -177,8 +196,9 @@ export function puedeRegularizar(
   plan: Plan,
   estados: Estados,
   idMateria: number,
+  desbloqueadas: Desbloqueadas = NINGUNA,
 ): Resultado {
-  return puedeMarcar(plan, estados, idMateria, "regular");
+  return puedeMarcar(plan, estados, idMateria, "regular", desbloqueadas);
 }
 
 /** `puedeMarcar` con `aprobada`, para el icono de aprobada. */
@@ -186,8 +206,9 @@ export function puedeAprobar(
   plan: Plan,
   estados: Estados,
   idMateria: number,
+  desbloqueadas: Desbloqueadas = NINGUNA,
 ): Resultado {
-  return puedeMarcar(plan, estados, idMateria, "aprobada");
+  return puedeMarcar(plan, estados, idMateria, "aprobada", desbloqueadas);
 }
 
 /**
@@ -200,11 +221,12 @@ export function estadoDeBloqueo(
   plan: Plan,
   estados: Estados,
   idMateria: number,
+  desbloqueadas: Desbloqueadas = NINGUNA,
 ): Bloqueo {
-  if (!puedeRegularizar(plan, estados, idMateria).ok) {
+  if (!puedeRegularizar(plan, estados, idMateria, desbloqueadas).ok) {
     return "bloqueada_por_creditos";
   }
-  if (!puedeAprobar(plan, estados, idMateria).ok) {
+  if (!puedeAprobar(plan, estados, idMateria, desbloqueadas).ok) {
     return "bloqueada_por_correlativa";
   }
   return "disponible";
@@ -220,7 +242,11 @@ export function estadoDeBloqueo(
  * ahora, tampoco va a entrar con menos aceptado. Por eso el resultado no
  * depende del orden en que vengan los estados.
  */
-function separarAlcanzable(plan: Plan, estados: Estados) {
+function separarAlcanzable(
+  plan: Plan,
+  estados: Estados,
+  desbloqueadas: Desbloqueadas = NINGUNA,
+) {
   const pendientes = new Map<number, Estado>();
   for (const [clave, estado] of Object.entries(estados)) {
     pendientes.set(Number(clave), estado);
@@ -231,7 +257,7 @@ function separarAlcanzable(plan: Plan, estados: Estados) {
   while (huboProgreso) {
     huboProgreso = false;
     for (const [idMateria, estado] of [...pendientes]) {
-      if (puedeMarcar(plan, aceptados, idMateria, estado).ok) {
+      if (puedeMarcar(plan, aceptados, idMateria, estado, desbloqueadas).ok) {
         aceptados[idMateria] = estado;
         pendientes.delete(idMateria);
         huboProgreso = true;
@@ -248,12 +274,16 @@ function separarAlcanzable(plan: Plan, estados: Estados) {
  * Devuelve los conflictos de las materias que no se podrían haber marcado en
  * ningún orden. Array vacío = conjunto consistente.
  */
-export function validarConjunto(plan: Plan, estados: Estados): Conflicto[] {
-  const { aceptados, pendientes } = separarAlcanzable(plan, estados);
+export function validarConjunto(
+  plan: Plan,
+  estados: Estados,
+  desbloqueadas: Desbloqueadas = NINGUNA,
+): Conflicto[] {
+  const { aceptados, pendientes } = separarAlcanzable(plan, estados, desbloqueadas);
 
   const conflictos: Conflicto[] = [];
   for (const [idMateria, estado] of pendientes) {
-    const resultado = puedeMarcar(plan, aceptados, idMateria, estado);
+    const resultado = puedeMarcar(plan, aceptados, idMateria, estado, desbloqueadas);
     conflictos.push({
       idMateria,
       motivo: resultado.motivo,
@@ -274,12 +304,13 @@ export function validarConjunto(plan: Plan, estados: Estados): Conflicto[] {
 export function sanearEstados(
   plan: Plan,
   estados: Estados,
+  desbloqueadas: Desbloqueadas = NINGUNA,
 ): { estados: Estados; descartadas: Conflicto[] } {
-  const { aceptados, pendientes } = separarAlcanzable(plan, estados);
+  const { aceptados, pendientes } = separarAlcanzable(plan, estados, desbloqueadas);
 
   const descartadas: Conflicto[] = [];
   for (const [idMateria, estado] of pendientes) {
-    const resultado = puedeMarcar(plan, aceptados, idMateria, estado);
+    const resultado = puedeMarcar(plan, aceptados, idMateria, estado, desbloqueadas);
     descartadas.push({
       idMateria,
       motivo: resultado.motivo,
@@ -345,11 +376,12 @@ export function aplicarCambio(
   estados: Estados,
   idMateria: number,
   nuevoEstado: Estado | null,
+  desbloqueadas: Desbloqueadas = NINGUNA,
 ): Cambio {
   const sinEsta = { ...estados };
   delete sinEsta[idMateria];
 
-  const resultado = puedeMarcar(plan, sinEsta, idMateria, nuevoEstado);
+  const resultado = puedeMarcar(plan, sinEsta, idMateria, nuevoEstado, desbloqueadas);
   if (!resultado.ok) {
     return {
       estados,
@@ -365,7 +397,7 @@ export function aplicarCambio(
   const revertidas: Revertida[] = [];
 
   for (;;) {
-    const conflictos = validarConjunto(plan, siguiente);
+    const conflictos = validarConjunto(plan, siguiente, desbloqueadas);
     if (conflictos.length === 0) break;
 
     for (const conflicto of conflictos) {
@@ -379,7 +411,7 @@ export function aplicarCambio(
       // correlativas. Si tampoco se puede, se le quita el estado.
       const destino: Estado | null =
         actual === "aprobada" &&
-        puedeMarcar(plan, resto, conflicto.idMateria, "regular").ok
+        puedeMarcar(plan, resto, conflicto.idMateria, "regular", desbloqueadas).ok
           ? "regular"
           : null;
 

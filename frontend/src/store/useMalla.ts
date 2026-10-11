@@ -72,6 +72,11 @@ interface EstadoMalla {
   plan: Plan | null;
   /** Progreso de la carrera abierta. El de las otras vive en el storage. */
   estados: Estados;
+  /**
+   * Materias de esta carrera desbloqueadas a mano: quedan exentas de los
+   * créditos del año y de las correlativas hasta que se las desmarca.
+   */
+  desbloqueadas: Set<number>;
 
   cargando: boolean;
   error: string | null;
@@ -102,6 +107,11 @@ interface EstadoMalla {
     precargado?: Promise<RespuestaPlan>,
   ) => Promise<void>;
   seleccionar: (idMateria: number | null) => void;
+  /**
+   * Exime a una materia de las reglas y la marca. El desbloqueo se pierde en
+   * cuanto se la desmarca.
+   */
+  desbloquear: (idMateria: number, estado: Estado) => void;
   marcar: (idMateria: number, nuevoEstado: Estado | null) => void;
   confirmarCascada: () => void;
   cancelarCascada: () => void;
@@ -167,7 +177,9 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     if (!plan) return;
 
     anotarBasicas(plan, antes, estados);
-    set({ sinPersistencia: !guardarDeCarrera(plan, estados) });
+    set({
+      sinPersistencia: !guardarDeCarrera(plan, estados, get().desbloqueadas),
+    });
     programarEmpuje();
   }
 
@@ -214,8 +226,13 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     const plan = get().plan;
     if (!plan) return;
     adoptarBasicas(plan);
-    const { estados } = sanearEstados(plan, leerDeCarrera(plan).estados);
-    set({ estados });
+    const guardado = leerDeCarrera(plan);
+    const { estados } = sanearEstados(
+      plan,
+      guardado.estados,
+      guardado.desbloqueadas,
+    );
+    set({ estados, desbloqueadas: guardado.desbloqueadas });
   }
 
   return {
@@ -223,6 +240,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     idCarrera: null,
     plan: null,
     estados: {},
+    desbloqueadas: new Set(),
     cargando: false,
     error: null,
     descartadas: [],
@@ -290,7 +308,11 @@ export const useMalla = create<EstadoMalla>((set, get) => {
         // antes de leer, para que las básicas queden en un solo lugar.
         adoptarBasicas(plan);
         const guardado = leerDeCarrera(plan);
-        const { estados, descartadas } = sanearEstados(plan, guardado.estados);
+        const { estados, descartadas } = sanearEstados(
+          plan,
+          guardado.estados,
+          guardado.desbloqueadas,
+        );
 
         // Una básica que vino de otra carrera y que este plan no admite no es
         // un dato perdido: sigue aprobada allá. No se anuncia como descarte.
@@ -301,6 +323,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
           idCarrera,
           plan,
           estados,
+          desbloqueadas: guardado.desbloqueadas,
           descartadas: aAvisar,
           cargando: false,
         });
@@ -309,7 +332,13 @@ export const useMalla = create<EstadoMalla>((set, get) => {
         // Lo propagado todavía no estaba guardado como propio de esta carrera,
         // y lo descartado ya no se muestra: en los dos casos hay que grabar.
         if (descartadas.length > 0 || guardado.propagados.length > 0) {
-          set({ sinPersistencia: !guardarDeCarrera(plan, estados) });
+          set({
+            sinPersistencia: !guardarDeCarrera(
+              plan,
+              estados,
+              guardado.desbloqueadas,
+            ),
+          });
           programarEmpuje();
         }
       } catch (error) {
@@ -319,11 +348,36 @@ export const useMalla = create<EstadoMalla>((set, get) => {
 
     seleccionar: (idMateria) => set({ seleccionada: idMateria }),
 
-    marcar: (idMateria, nuevoEstado) => {
-      const { plan, estados } = get();
+    desbloquear: (idMateria, estado) => {
+      const { plan, desbloqueadas } = get();
       if (!plan) return;
 
-      const cambio = aplicarCambio(plan, estados, idMateria, nuevoEstado);
+      // Primero el desbloqueo y después la marca, en ese orden: `marcar` lee
+      // el conjunto del store, así que la materia ya le llega exenta.
+      set({ desbloqueadas: new Set(desbloqueadas).add(idMateria) });
+      get().marcar(idMateria, estado);
+    },
+
+    marcar: (idMateria, nuevoEstado) => {
+      const { plan, estados, desbloqueadas } = get();
+      if (!plan) return;
+
+      // Desmarcar devuelve la materia a las reglas: el desbloqueo era para
+      // este estado, no para siempre. Se quita antes de calcular el cambio,
+      // así la cascada ya la evalúa como una materia común.
+      if (nuevoEstado === null && desbloqueadas.has(idMateria)) {
+        const sinEsta = new Set(desbloqueadas);
+        sinEsta.delete(idMateria);
+        set({ desbloqueadas: sinEsta });
+      }
+
+      const cambio = aplicarCambio(
+        plan,
+        estados,
+        idMateria,
+        nuevoEstado,
+        get().desbloqueadas,
+      );
 
       if (!cambio.ok) {
         // No debería pasar: la UI deshabilita las acciones imposibles. Si
@@ -360,7 +414,13 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     cancelarCascada: () => set({ cascada: null }),
 
     reiniciar: () => {
-      set({ estados: {}, seleccionada: null, cascada: null, descartadas: [] });
+      set({
+        estados: {},
+        desbloqueadas: new Set(),
+        seleccionada: null,
+        cascada: null,
+        descartadas: [],
+      });
       borrarProgreso();
       programarEmpuje();
     },
@@ -440,7 +500,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
 
       if (borrar) {
         borrarProgreso();
-        set({ estados: {} });
+        set({ estados: {}, desbloqueadas: new Set() });
       }
       set({ sync: "local", errorSync: null, conflicto: null });
     },

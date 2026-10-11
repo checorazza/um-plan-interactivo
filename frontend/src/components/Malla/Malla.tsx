@@ -5,7 +5,7 @@
  * destraba. Las posiciones se calculan en `layout.ts` a partir del plan.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Background,
   Controls,
@@ -16,12 +16,23 @@ import {
   type NodeMouseHandler,
   type ReactFlowInstance,
 } from "@xyflow/react";
+
+import {
+  estadoDeBloqueo,
+  puedeAprobar,
+  puedeRegularizar,
+} from "../../domain/reglas";
 import "@xyflow/react/dist/style.css";
 
 import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
 import { useEsAngosto } from "../../hooks/useEsAngosto";
 import { AnioNode, type NodoAnio } from "./AnioNode";
+import {
+  ConfirmacionDesbloqueo,
+  type Desbloqueo,
+} from "./ConfirmacionDesbloqueo";
+import { MenuMateria, type Posicion } from "./MenuMateria";
 import { MateriaNode, type DatosMateria, type NodoMateria } from "./MateriaNode";
 import {
   ALTO_NODO_ANIO,
@@ -56,8 +67,16 @@ export function Malla() {
   const estados = useMalla((s) => s.estados);
   const seleccionada = useMalla((s) => s.seleccionada);
   const seleccionar = useMalla((s) => s.seleccionar);
+  const desbloqueadas = useMalla((s) => s.desbloqueadas);
+  const desbloquear = useMalla((s) => s.desbloquear);
   const esAngosto = useEsAngosto();
   const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
+
+  // El menú del click derecho y el diálogo que puede abrir. Viven acá y no
+  // en el store: no los necesita nadie más, y se pierden al cambiar de
+  // carrera, que es lo correcto.
+  const [menu, setMenu] = useState<Posicion | null>(null);
+  const [desbloqueo, setDesbloqueo] = useState<Desbloqueo | null>(null);
 
   const instancia = useRef<ReactFlowInstance | null>(null);
   const contenedor = useRef<HTMLDivElement>(null);
@@ -97,6 +116,7 @@ export function Malla() {
         // pintar, y cada tarjeta mide según su nombre.
         height: altoDeMateria(materia.nombre),
         data: {
+          desbloqueada: desbloqueadas.has(materia.id_materia),
           idMateria: materia.id_materia,
           codigo: materia.codigo,
           nombre: materia.nombre,
@@ -129,7 +149,7 @@ export function Malla() {
     }
 
     return { nodos: [...nodosAnio, ...nodosMateria], aristas };
-  }, [plan, estados, seleccionada, esAngosto]);
+  }, [plan, estados, seleccionada, esAngosto, desbloqueadas]);
 
   const alClickNodo: NodeMouseHandler = useCallback(
     (_evento, nodo) => {
@@ -141,6 +161,52 @@ export function Malla() {
   );
 
   const alClickFondo = useCallback(() => seleccionar(null), [seleccionar]);
+
+  /**
+   * Click derecho sobre un nodo.
+   *
+   * El menú sólo tiene sentido sobre una materia bloqueada y sin marcar: si
+   * ya se puede marcar, no hay nada que desbloquear, y si ya está marcada el
+   * camino es el menú de acciones del click común.
+   */
+  const alClickDerechoNodo: NodeMouseHandler = useCallback(
+    (evento, nodo) => {
+      if (!plan || nodo.type !== "materia") return;
+
+      const idMateria = Number(nodo.id);
+      if (estados[idMateria]) return;
+      if (desbloqueadas.has(idMateria)) return;
+
+      const bloqueo = estadoDeBloqueo(plan, estados, idMateria, desbloqueadas);
+      if (bloqueo === "disponible") return;
+
+      setMenu({
+        idMateria,
+        nombre: plan.materias.get(idMateria)?.nombre ?? `#${idMateria}`,
+        x: evento.clientX,
+        y: evento.clientY,
+      });
+    },
+    [plan, estados, desbloqueadas],
+  );
+
+  const abrirDesbloqueo = useCallback(() => {
+    if (!plan || !menu) return;
+    const bloqueo = estadoDeBloqueo(plan, estados, menu.idMateria, desbloqueadas);
+    // El motivo del bloqueo duro es el de créditos; el blando, el de la
+    // correlativa que falta, que es lo que devuelve `puedeAprobar`.
+    const motivo =
+      bloqueo === "bloqueada_por_creditos"
+        ? puedeRegularizar(plan, estados, menu.idMateria, desbloqueadas).motivo
+        : puedeAprobar(plan, estados, menu.idMateria, desbloqueadas).motivo;
+
+    setDesbloqueo({
+      idMateria: menu.idMateria,
+      nombre: menu.nombre,
+      bloqueo,
+      motivo,
+    });
+  }, [plan, estados, desbloqueadas, menu]);
 
   // Escape cierra el menú de acciones.
   useEffect(() => {
@@ -201,12 +267,18 @@ export function Malla() {
   if (!plan) return null;
 
   return (
-    <div className="malla" ref={contenedor}>
+    <div
+      className="malla"
+      ref={contenedor}
+      // El menú del navegador no sirve para nada acá y tapa el propio.
+      onContextMenu={(evento) => evento.preventDefault()}
+    >
       <ReactFlow
         nodes={nodos}
         edges={mostrarEnlaces ? aristas : SIN_ARISTAS}
         nodeTypes={TIPOS_DE_NODO}
         onNodeClick={alClickNodo}
+        onNodeContextMenu={alClickDerechoNodo}
         onPaneClick={alClickFondo}
         nodesDraggable={false}
         nodesConnectable={false}
@@ -236,6 +308,25 @@ export function Malla() {
           />
         )}
       </ReactFlow>
+
+      {menu && (
+        <MenuMateria
+          menu={menu}
+          onDesbloquear={abrirDesbloqueo}
+          onCerrar={() => setMenu(null)}
+        />
+      )}
+
+      {desbloqueo && (
+        <ConfirmacionDesbloqueo
+          desbloqueo={desbloqueo}
+          onElegir={(estado) => {
+            desbloquear(desbloqueo.idMateria, estado);
+            setDesbloqueo(null);
+          }}
+          onCancelar={() => setDesbloqueo(null)}
+        />
+      )}
     </div>
   );
 }

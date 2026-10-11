@@ -75,3 +75,33 @@
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* El aviso de una acción que el usuario no puede deshacer sola. */
+.dialogo__aviso {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  background: var(--regular-fondo);
+  color: var(--regular-texto);
+  border: 1px solid var(--regular-borde);
+  border-radius: var(--radio-chico);
+}
+
+/* Con tres botones, el de cancelar se despega de los dos que hacen algo. */
+.dialogo__acciones .boton:first-child {
+  margin-right: auto;
+}
+
+.dialogo__acciones .accion--regular,
+.dialogo__acciones .boton--primario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dialogo__acciones .accion--regular {
+  background: var(--regular-fondo);
+  border-color: var(--regular-borde);
+  color: var(--regular-texto);
+}

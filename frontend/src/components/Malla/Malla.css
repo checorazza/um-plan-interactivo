@@ -252,3 +252,50 @@
   border-color: var(--aprobada-borde);
   color: var(--aprobada-texto);
 }
+
+/* --- menú del click derecho --- */
+
+/* `fixed` y no `absolute`: las coordenadas vienen del evento del puntero, que
+   son de la ventana, y la malla tiene su propio sistema de coordenadas con
+   zoom y desplazamiento. */
+.menu-materia {
+  position: fixed;
+  z-index: 50;
+  min-width: 190px;
+  padding: 4px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra);
+}
+
+.menu-materia:focus-visible {
+  outline: none;
+}
+
+.menu-materia__opcion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 9px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--texto);
+  background: none;
+  border: none;
+  border-radius: 4px;
+}
+
+.menu-materia__opcion:hover {
+  background: var(--superficie-2);
+  color: var(--acento);
+}
+
+/* El candado abierto de una materia desbloqueada a mano: hereda el color del
+   texto de la tarjeta, no el apagado del candado cerrado. */
+.materia__candado--abierto {
+  color: currentColor;
+  opacity: 0.8;
+}

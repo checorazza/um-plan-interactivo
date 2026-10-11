@@ -14,6 +14,7 @@ import {
   leerActualizadoEn,
   leerCarrera,
   leerDeCarrera,
+  leerDesbloqueadas,
   leerBasicas,
   leerSesion,
   leerTodo,
@@ -180,7 +181,7 @@ describe("materias básicas", () => {
 
   it("al adoptar, lo que ya estaba en el grupo manda", () => {
     registrarBasica("CP00", "aprobada");
-    guardarTodo({ 1: "regular" }, { CP00: "aprobada" });
+    guardarTodo({ 1: "regular" }, { basicas: { CP00: "aprobada" } });
 
     adoptarBasicas(PLAN_CON_BASICA);
 
@@ -251,6 +252,18 @@ describe("cuando cambian los ids de la base", () => {
     expect(leerDeCarrera(nuevo).estados[1001]).toBe("aprobada");
   });
 
+  it("los desbloqueos también se recuperan por carrera y código", () => {
+    // Si no, recargar un plan volvía a bloquear una materia que el usuario
+    // había desbloqueado, y `sanearEstados` le tiraba la marca.
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, new Set([6]));
+
+    const nuevo = planConIdsNuevos();
+    const { desbloqueadas } = leerDeCarrera(nuevo);
+
+    expect([...desbloqueadas]).toEqual([1006]);
+    expect(leerDesbloqueadas().has(6)).toBe(false);
+  });
+
   it("desmarcar con los ids nuevos no deja el estado viejo colgado", () => {
     guardarDeCarrera(planDePrueba(), { 2: "aprobada" });
 
@@ -259,6 +272,66 @@ describe("cuando cambian los ids de la base", () => {
     guardarDeCarrera(nuevo, {});
 
     expect(leerTodo()).toEqual({});
+  });
+});
+
+describe("materias desbloqueadas a mano", () => {
+  it("se guardan y se vuelven a leer", () => {
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, new Set([6]));
+
+    expect([...leerDeCarrera(planDePrueba()).desbloqueadas]).toEqual([6]);
+  });
+
+  it("sin pasar ninguna, no queda ninguna", () => {
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, new Set([6]));
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" });
+
+    expect([...leerDeCarrera(planDePrueba()).desbloqueadas]).toEqual([]);
+  });
+
+  it("no se llevan las de otra carrera", () => {
+    guardarDeCarrera(planDePrueba(), {}, new Set([6]));
+
+    const otra = planConIdsNuevos();
+    otra.carrera = { id_carrera: 9, nombre: "Otra Carrera" };
+    guardarDeCarrera(otra, {}, new Set([1004]));
+
+    expect([...leerDeCarrera(planDePrueba()).desbloqueadas]).toEqual([6]);
+    expect([...leerDeCarrera(otra).desbloqueadas]).toEqual([1004]);
+  });
+
+  it("descarta lo que no sea un id de materia", () => {
+    // Lo guardado se edita a mano desde la consola como cualquier otra cosa.
+    almacen.setItem(
+      "um-plan:estados",
+      JSON.stringify({
+        version: VERSION,
+        estados: {},
+        claves: {},
+        basicas: {},
+        desbloqueadas: [3, "cuatro", -1, 0, null, 7.5, 9],
+      }),
+    );
+
+    expect([...leerDesbloqueadas()].sort((a, b) => a - b)).toEqual([3, 9]);
+  });
+});
+
+describe("migración del formato 4", () => {
+  it("conserva el progreso y arranca sin desbloqueos", () => {
+    almacen.setItem(
+      "um-plan:estados",
+      JSON.stringify({
+        version: 4,
+        estados: { 2: "aprobada" },
+        claves: { 2: "Ingeniería de Prueba|QG01" },
+        basicas: { CP00: "regular" },
+      }),
+    );
+
+    expect(leerTodo()).toEqual({ 2: "aprobada" });
+    expect(leerBasicas()).toEqual({ CP00: "regular" });
+    expect([...leerDesbloqueadas()]).toEqual([]);
   });
 });
 

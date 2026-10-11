@@ -12,7 +12,12 @@ import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import { estadoDeBloqueo, puedeAprobar, puedeRegularizar } from "../../domain/reglas";
 import { useMalla } from "../../store/useMalla";
 import type { Estado } from "../../types/estado";
-import { IconoAprobada, IconoCandado, IconoRegular } from "./iconos";
+import {
+  IconoAprobada,
+  IconoCandado,
+  IconoCandadoAbierto,
+  IconoRegular,
+} from "./iconos";
 
 export type DatosMateria = {
   idMateria: number;
@@ -22,6 +27,8 @@ export type DatosMateria = {
   creditos: number;
   /** Copia del estado, para que el minimapa pueda colorear sin leer el store. */
   estado: Estado | undefined;
+  /** Exenta de las reglas porque el usuario la desbloqueó a mano. */
+  desbloqueada: boolean;
 };
 
 export type NodoMateria = Node<DatosMateria, "materia">;
@@ -29,14 +36,15 @@ export type NodoMateria = Node<DatosMateria, "materia">;
 export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
   const plan = useMalla((s) => s.plan);
   const estados = useMalla((s) => s.estados);
+  const desbloqueadas = useMalla((s) => s.desbloqueadas);
   const marcar = useMalla((s) => s.marcar);
 
   if (!plan) return null;
 
   const estado: Estado | undefined = estados[data.idMateria];
-  const bloqueo = estadoDeBloqueo(plan, estados, data.idMateria);
-  const regular = puedeRegularizar(plan, estados, data.idMateria);
-  const aprobada = puedeAprobar(plan, estados, data.idMateria);
+  const bloqueo = estadoDeBloqueo(plan, estados, data.idMateria, desbloqueadas);
+  const regular = puedeRegularizar(plan, estados, data.idMateria, desbloqueadas);
+  const aprobada = puedeAprobar(plan, estados, data.idMateria, desbloqueadas);
 
   // Una materia ya marcada siempre se puede desmarcar, aunque hoy no cumpla
   // las reglas para volver a marcarse.
@@ -56,8 +64,9 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
     .filter(Boolean)
     .join(" ");
 
-  const etiquetaEstado =
-    estado === "aprobada"
+  const etiquetaEstado = data.desbloqueada
+    ? `${estado ?? "sin cursar"}, desbloqueada a mano`
+    : estado === "aprobada"
       ? "aprobada"
       : estado === "regular"
         ? "regular"
@@ -78,8 +87,15 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
             {data.creditos} {data.creditos === 1 ? "crédito" : "créditos"}
             <span className="visualmente-oculto"> — {etiquetaEstado}</span>
           </span>
-          {!estado && bloqueo === "bloqueada_por_creditos" && (
-            <IconoCandado className="materia__candado" />
+          {data.desbloqueada ? (
+            <IconoCandadoAbierto
+              className="materia__candado materia__candado--abierto"
+            />
+          ) : (
+            !estado &&
+            bloqueo === "bloqueada_por_creditos" && (
+              <IconoCandado className="materia__candado" />
+            )
           )}
         </span>
       </div>

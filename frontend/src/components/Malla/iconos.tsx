@@ -81,3 +81,37 @@ export function IconoCandado({ className }: Props) {
     </svg>
   );
 }
+
+/** Candado abierto: desbloquear una materia a mano. */
+export function IconoCandadoAbierto({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="14"
+      height="14"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {/* El arco mira para el otro lado que el del candado cerrado: es la
+          misma forma, abierta. */}
+      <path
+        d="M4.75 7V5a3.25 3.25 0 0 1 6.5 0v.75"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <rect
+        x="3"
+        y="7"
+        width="10"
+        height="7"
+        rx="1.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
