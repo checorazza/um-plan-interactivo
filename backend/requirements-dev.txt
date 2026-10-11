@@ -1,3 +1,6 @@
 -r requirements.txt
 pytest==9.0.1
 pypdf==6.20.0
+# Vercel construye con uv; tenerlo acá permite regenerar uv.lock cuando
+# cambian las dependencias: uv lock
+uv==0.13.0

@@ -1,5 +1,35 @@
-# Le dice a Vercel cuál es la app WSGI. Sin esto encuentra dos candidatos
-# —app.py y tests/conftest.py, que también expone un `app`— y no elige.
-# La ruta es relativa al `root` del servicio en vercel.json, o sea backend/.
+[project]
+name = "plan-interactivo-api"
+version = "0.1.0"
+description = "API del plan de estudios interactivo de la UM"
+# Permisivo a propósito: en local corre sobre 3.13, pero el runtime de Vercel
+# puede traer otra. Fijarlo a la versión local haría fallar el deploy.
+requires-python = ">=3.11"
+
+# Estas dependencias tienen que coincidir con `requirements.txt`, que es lo
+# que usa `boot.sh` en desarrollo. Hay un test que lo verifica
+# (`tests/test_dependencias.py`): mantener las dos listas a mano es pedir que
+# se desincronicen.
+dependencies = [
+    "Flask==3.1.3",
+    "Flask-Cors==6.0.1",
+    "Flask-JWT-Extended==4.7.4",
+    "Flask-Migrate==4.1.0",
+    "Flask-RESTful==0.3.10",
+    "Flask-SQLAlchemy==3.1.1",
+    "google-auth==2.42.1",
+    "requests==2.34.2",
+    "python-dotenv==1.2.3",
+    "psycopg[binary]==3.3.3",
+]
+
+[tool.uv]
+# Esto es una app, no una librería: uv instala las dependencias pero no
+# intenta construir el proyecto como paquete.
+package = false
+
 [tool.vercel]
+# Vercel busca sola la app WSGI y encuentra dos candidatas: `app.py` y
+# `tests/conftest.py`, que también expone una variable `app`. Esto desambigua.
+# La ruta es relativa al `root` del servicio en vercel.json, o sea backend/.
 entrypoint = "app:app"

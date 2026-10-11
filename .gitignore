@@ -1,3 +1,5 @@
 docs/imgs/modelo datos.drawio
 planes/
 PLAN.md
+# Variables de produccion: tiene el secreto de los JWT
+.env.vercel

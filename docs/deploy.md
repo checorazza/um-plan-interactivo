@@ -34,11 +34,34 @@ llamadas salen relativas al mismo dominio.
 
 ### Por qué hay un `pyproject.toml` en `backend/`
 
+Dos motivos, y los dos salieron de errores reales del build.
+
 Vercel busca sola la app WSGI y encuentra dos candidatas: `app.py` y
 `tests/conftest.py`, que también expone una variable `app`. El
-`[tool.vercel] entrypoint = "app:app"` desambigua. Además `.vercelignore` deja
-los tests afuera del deploy, junto con el venv, la base local y los PDF de los
-planes.
+`[tool.vercel] entrypoint = "app:app"` desambigua.
+
+Y **Vercel construye con `uv`**, que exige un proyecto PEP 621 de verdad: un
+`pyproject.toml` que sólo tenga `[tool.vercel]` falla con
+``No `project` table found``. Por eso están `[project]` con nombre, versión,
+`requires-python` y las dependencias, y `[tool.uv] package = false`, que le
+dice a uv que esto es una app y que instale las dependencias sin intentar
+construir el proyecto como paquete.
+
+Las dependencias quedan declaradas **dos veces**: en `requirements.txt`, que
+es lo que usa `boot.sh` en desarrollo, y en `[project].dependencies`, que es
+lo que instala Vercel. `tests/test_dependencias.py` verifica que coincidan;
+si no, el deploy falla con un `ModuleNotFoundError` que no se reproduce en
+local.
+
+`uv.lock` se versiona para que el build sea reproducible. Cuando cambien las
+dependencias hay que regenerarlo:
+
+```bash
+cd backend && .venv/Scripts/python.exe -m uv lock
+```
+
+`.vercelignore` deja afuera del deploy los tests, el venv, la base local, los
+scripts, los seeds y los PDF de los planes.
 
 ## Variables de entorno en Vercel
 
