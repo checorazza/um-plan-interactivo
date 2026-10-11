@@ -31,8 +31,13 @@ export function Sidebar() {
 
   const creditos = plan ? creditosAprobados(plan, estados) : 0;
   const creditosTotales = materias.reduce((suma, m) => suma + m.creditos, 0);
+  // El avance se mide en materias, que es lo que el número grande muestra.
+  // Por créditos daría otro porcentaje, y dos números distintos para lo
+  // mismo en el mismo panel confunden más de lo que informan.
   const porcentaje =
-    creditosTotales > 0 ? Math.round((creditos / creditosTotales) * 100) : 0;
+    materias.length > 0
+      ? Math.round((aprobadas.length / materias.length) * 100)
+      : 0;
 
   if (personalizando) {
     return (
@@ -70,9 +75,10 @@ export function Sidebar() {
       {plan && (
         <>
           <section className="sidebar__progreso">
-            <div className="sidebar__creditos">
-              <strong>{creditos}</strong>
-              <span>de {creditosTotales} créditos</span>
+            <div className="sidebar__avance">
+              <strong>{aprobadas.length}</strong>
+              <span>de {materias.length} materias</span>
+              <span className="sidebar__porcentaje">{porcentaje}%</span>
             </div>
             <div
               className="barra"
@@ -80,13 +86,13 @@ export function Sidebar() {
               aria-valuenow={porcentaje}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Créditos aprobados"
+              aria-label="Materias aprobadas"
             >
               <div className="barra__relleno" style={{ width: `${porcentaje}%` }} />
             </div>
             <p className="sidebar__resumen">
-              {aprobadas.length} aprobadas · {regulares.length} regulares ·{" "}
-              {materias.length} materias
+              {creditos} de {creditosTotales} créditos
+              {regulares.length > 0 && ` · ${regulares.length} regulares`}
             </p>
           </section>
 

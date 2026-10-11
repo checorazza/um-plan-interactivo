@@ -47,21 +47,28 @@
   gap: 8px;
 }
 
-.sidebar__creditos {
+.sidebar__avance {
   display: flex;
   align-items: baseline;
   gap: 6px;
 }
 
-.sidebar__creditos strong {
+.sidebar__avance strong {
   font-size: 28px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
-.sidebar__creditos span {
+.sidebar__avance span {
   font-size: 12px;
   color: var(--texto-suave);
+}
+
+.sidebar__porcentaje {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .barra {
@@ -167,7 +174,7 @@
     margin-left: auto;
   }
 
-  .sidebar__creditos strong {
+  .sidebar__avance strong {
     font-size: 20px;
   }
 
