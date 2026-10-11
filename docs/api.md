@@ -78,6 +78,7 @@ hace falta para dibujar la malla.
       "codigo": "CP00",
       "nombre": "Precálculo",
       "creditos": 6,
+      "semestre": "1",
       "id_anio": 1,
       "correlativas": []
     },
@@ -86,12 +87,17 @@ hace falta para dibujar la malla.
       "codigo": "0003",
       "nombre": "Cálculo I",
       "creditos": 3,
+      "semestre": "anual",
       "id_anio": 2,
       "correlativas": [1]
     }
   ]
 }
 ```
+
+Las materias vienen ordenadas por año, después por semestre (las anuales
+primero, porque atraviesan los dos) y después por código: es el orden en que la
+malla las dibuja.
 
 → `404` si la carrera no existe.
 
@@ -114,10 +120,13 @@ Body de materia:
   "codigo": "0004",
   "nombre": "Cálculo II",
   "creditos": 6,
+  "semestre": "2",
   "id_anio": 3,
   "correlativas": [4]
 }
 ```
+
+`semestre` es obligatorio y tiene que ser `"1"`, `"2"` o `"anual"`.
 
 `correlativas` es opcional y, en `PUT`, **reemplaza** la lista completa.
 → `422` si alguna correlativa no existe, si la materia se pide como correlativa

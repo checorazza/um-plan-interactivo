@@ -3,13 +3,23 @@ from flask_restful import Resource, abort, reqparse
 from src.auth.guards import requiere_admin
 from src.domain.correlativas import CorrelativaInvalida, validar_correlativas_db
 from src.models import db
-from src.models.materia import Materia as MateriaModel
+from src.models.materia import SEMESTRES, Materia as MateriaModel
 
 parser = reqparse.RequestParser()
 parser.add_argument('codigo', type=str, required=True, help="El código del plan es obligatorio")
 parser.add_argument('nombre', type=str, required=True, help="El nombre es obligatorio")
 parser.add_argument('creditos', type=int, required=True, help="Los créditos son obligatorios")
 parser.add_argument('id_anio', type=int, required=True, help="El año es obligatorio")
+parser.add_argument(
+    'semestre',
+    type=str,
+    required=True,
+    choices=SEMESTRES,
+    help=(
+        "El semestre es obligatorio y tiene que ser '1', '2' o 'anual' "
+        "({error_msg})"
+    ),
+)
 parser.add_argument(
     'correlativas',
     type=int,
@@ -41,6 +51,7 @@ class Materias(Resource):  # Lista de materias
             codigo=args['codigo'],
             nombre=args['nombre'],
             creditos=args['creditos'],
+            semestre=args['semestre'],
             id_anio=args['id_anio'],
         )
         db.session.add(materia)
@@ -62,6 +73,7 @@ class Materia(Resource):  # Materia individual
         materia.codigo = args['codigo']
         materia.nombre = args['nombre']
         materia.creditos = args['creditos']
+        materia.semestre = args['semestre']
         materia.id_anio = args['id_anio']
         _asignar_correlativas(materia, args['correlativas'])
         db.session.commit()

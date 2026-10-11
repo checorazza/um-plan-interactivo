@@ -1,14 +1,21 @@
 """Carga del plan de una carrera desde la base, para el motor de reglas y la API."""
 
+from sqlalchemy import case
+
 from src.domain.reglas import AnioPlan, MateriaPlan, Plan
 from src.models import Anio, Carrera, Materia, db
+from src.models.materia import ORDEN_SEMESTRE
+
+# Las anuales primero, después 1er semestre, después 2do: el orden en que la
+# malla las apila dentro de cada año.
+_ORDEN_SEMESTRE_SQL = case(ORDEN_SEMESTRE, value=Materia.semestre, else_=99)
 
 
 def _materias_de(id_carrera):
     return (
         Materia.query.join(Anio, Materia.id_anio == Anio.id_anio)
         .filter(Anio.id_carrera == id_carrera)
-        .order_by(Anio.numero, Materia.codigo)
+        .order_by(Anio.numero, _ORDEN_SEMESTRE_SQL, Materia.codigo)
         .all()
     )
 

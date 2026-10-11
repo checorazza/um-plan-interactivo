@@ -3,3 +3,4 @@ Collection/
 database/
 .venv/
 __pycache__
+migrations

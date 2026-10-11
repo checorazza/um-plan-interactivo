@@ -42,9 +42,18 @@ def plan(app):
     db.session.add_all([primero, segundo])
     db.session.flush()
 
-    calculo1 = Materia(codigo='0003', nombre='Cálculo I', creditos=6, id_anio=primero.id_anio)
-    algebra = Materia(codigo='0007', nombre='Álgebra', creditos=6, id_anio=primero.id_anio)
-    calculo2 = Materia(codigo='0004', nombre='Cálculo II', creditos=6, id_anio=segundo.id_anio)
+    calculo1 = Materia(
+        codigo='0003', nombre='Cálculo I', creditos=6, semestre='1',
+        id_anio=primero.id_anio,
+    )
+    algebra = Materia(
+        codigo='0007', nombre='Álgebra', creditos=6, semestre='1',
+        id_anio=primero.id_anio,
+    )
+    calculo2 = Materia(
+        codigo='0004', nombre='Cálculo II', creditos=6, semestre='2',
+        id_anio=segundo.id_anio,
+    )
     db.session.add_all([calculo1, algebra, calculo2])
     db.session.commit()
 
@@ -84,22 +93,23 @@ def plan_um(app):
         anios[numero] = anio
     db.session.flush()
 
-    def materia(codigo, nombre, creditos, numero_anio):
+    def materia(codigo, nombre, creditos, numero_anio, semestre='1'):
         m = Materia(
             codigo=codigo,
             nombre=nombre,
             creditos=creditos,
+            semestre=semestre,
             id_anio=anios[numero_anio].id_anio,
         )
         db.session.add(m)
         return m
 
-    precalculo = materia('CP00', 'Precálculo', 6, 1)
-    quimica = materia('0002', 'Química General', 4, 1)
-    informatica = materia('0009', 'Informática', 7, 1)
-    calculo1 = materia('0003', 'Cálculo I', 3, 2)
-    fisica = materia('2020', 'Física', 5, 2)
-    calculo2 = materia('0004', 'Cálculo II', 6, 3)
+    precalculo = materia('CP00', 'Precálculo', 6, 1, '1')
+    quimica = materia('0002', 'Química General', 4, 1, '2')
+    informatica = materia('0009', 'Informática', 7, 1, 'anual')
+    calculo1 = materia('0003', 'Cálculo I', 3, 2, '1')
+    fisica = materia('2020', 'Física', 5, 2, '2')
+    calculo2 = materia('0004', 'Cálculo II', 6, 3, '1')
     db.session.flush()
 
     calculo1.correlativas = [precalculo]

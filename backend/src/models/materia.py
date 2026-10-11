@@ -1,5 +1,17 @@
 from . import db
 
+# Los planes de la UM ubican cada materia en un semestre, o la marcan como
+# anual (ocupa los dos). Se guarda como texto en vez de un entero con NULL
+# para "anual": un NULL con significado es más fácil de leer mal.
+PRIMER_SEMESTRE = '1'
+SEGUNDO_SEMESTRE = '2'
+ANUAL = 'anual'
+SEMESTRES = (PRIMER_SEMESTRE, SEGUNDO_SEMESTRE, ANUAL)
+
+# Orden para dibujar la malla dentro de un año: las anuales van primero porque
+# atraviesan los dos semestres.
+ORDEN_SEMESTRE = {ANUAL: 0, PRIMER_SEMESTRE: 1, SEGUNDO_SEMESTRE: 2}
+
 # Tabla de correlativas: una materia puede tener N requisitos, y cada requisito
 # es otra materia. La PK compuesta evita duplicados.
 correlativa = db.Table(
@@ -34,6 +46,9 @@ class Materia(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     creditos = db.Column(db.Integer, nullable=False)
 
+    # '1', '2' o 'anual'
+    semestre = db.Column(db.String(5), nullable=False, default=PRIMER_SEMESTRE)
+
     id_anio = db.Column(db.Integer, db.ForeignKey('anio.id_anio'), nullable=False)
 
     # Materias que hay que tener aprobadas para poder aprobar esta.
@@ -57,12 +72,19 @@ class Materia(db.Model):
         passive_deletes=True,
     )
 
+    __table_args__ = (
+        db.CheckConstraint(
+            "semestre IN ('1', '2', 'anual')", name='ck_materia_semestre'
+        ),
+    )
+
     def to_json(self):
         return {
             'id_materia': self.id_materia,
             'codigo': self.codigo,
             'nombre': self.nombre,
             'creditos': self.creditos,
+            'semestre': self.semestre,
             'id_anio': self.id_anio,
             'correlativas': [m.id_materia for m in self.correlativas],
         }

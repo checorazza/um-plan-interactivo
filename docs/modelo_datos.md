@@ -27,6 +27,7 @@ erDiagram
         string codigo
         string nombre
         int creditos
+        string semestre
         int id_anio FK
     }
     CORRELATIVA {
@@ -97,7 +98,14 @@ foráneas que referencian a otra tabla; `UK` es una restricción de unicidad.
 | `codigo`     | String  | NOT NULL, indexado            | Código del plan de estudios (ej. `0003`, `2022II`) |
 | `nombre`     | String  | NOT NULL                      | Nombre de la materia                               |
 | `creditos`   | Integer | NOT NULL                      | Créditos que otorga la materia una vez es aprobada |
+| `semestre`   | String  | NOT NULL, CHECK (`1`,`2`,`anual`) | Semestre del año en que se cursa               |
 | `id_anio`    | Integer | FK → `anio.id_anio`, NOT NULL | Año al que pertenece la materia                    |
+
+El `semestre` se guarda como texto (`'1'`, `'2'` o `'anual'`) en lugar de un
+entero con `NULL` para las anuales: un `NULL` con significado se lee mal. Las
+materias anuales atraviesan los dos semestres, así que la malla las ubica
+primero dentro de cada año (ver `ORDEN_SEMESTRE` en
+`backend/src/models/materia.py`).
 
 El `codigo` es el identificador que usan los planes de estudio de la facultad, y
 es con lo que esos planes expresan las correlativas. Guardarlo permite que el
@@ -173,6 +181,8 @@ limpia sus estados.
   aprobada en otra.
 - **No hay electivas ni créditos libres.** Toda materia pertenece a un año y
   tiene créditos fijos.
+- **No se guardan las horas.** Los planes traen horas semanales y totales por
+  materia; el modelo sólo guarda los créditos, que son lo que la app usa.
 - **La correlativa no distingue el tipo de requisito.** Una fila de
   `correlativa` siempre significa "hay que tenerla aprobada". No se modela
   "alcanza con tenerla regular".

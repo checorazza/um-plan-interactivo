@@ -45,6 +45,7 @@ def test_crear_materia_requiere_admin(client, auth, plan):
         'codigo': '1111',
         'nombre': 'Nueva',
         'creditos': 4,
+        'semestre': '1',
         'id_anio': plan['anios'][1].id_anio,
     }
     assert client.post('/materias', headers=auth, json=cuerpo).status_code == 403
