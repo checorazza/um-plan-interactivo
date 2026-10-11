@@ -1,0 +1,477 @@
+{
+  "carrera": "Ingeniería Industrial",
+  "anios": [
+    {
+      "numero": 1,
+      "creditos_requeridos": 0
+    },
+    {
+      "numero": 2,
+      "creditos_requeridos": 12
+    },
+    {
+      "numero": 3,
+      "creditos_requeridos": 38
+    },
+    {
+      "numero": 4,
+      "creditos_requeridos": 90
+    },
+    {
+      "numero": 5,
+      "creditos_requeridos": 130
+    }
+  ],
+  "materias": [
+    {
+      "anio": 1,
+      "codigo": "0001",
+      "nombre": "TECNOLOGÍA CIENCIA Y SOCIEDAD",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0002",
+      "nombre": "QUÍMICA",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0003",
+      "nombre": "CÁLCULO I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0005",
+      "nombre": "SISTEMAS DE REPRESENTACIÓN",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0006",
+      "nombre": "FÍSICA",
+      "creditos": 6,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0007",
+      "nombre": "ÁLGEBRA Y GEOMETRÍA ANALÍTICA",
+      "creditos": 5,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0008",
+      "nombre": "INGLÉS TÉCNICO",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0009",
+      "nombre": "INFORMÁTICA",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 2,
+      "codigo": "4034",
+      "nombre": "SEG., HIGIENE INDUST. Y SANEAMIENTO",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "4100",
+      "nombre": "INDUSTRIA Y SERVICIOS I",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "0004",
+      "nombre": "CÁLCULO II",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "4023",
+      "nombre": "ECONOMÍA I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "4024",
+      "nombre": "ESTABILIDAD",
+      "creditos": 6,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "4025",
+      "nombre": "ESTADÍSTICA APLICADA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "4026",
+      "nombre": "ORG. Y ADMINISTRACIÓN DE EMPRESAS",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "4022",
+      "nombre": "CÁLCULO III",
+      "creditos": 4,
+      "correlativas": [
+        "0004"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "4027",
+      "nombre": "ÁLGEBRA LINEAL",
+      "creditos": 3,
+      "correlativas": [
+        "0007"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "4028",
+      "nombre": "ECONOMÍA II",
+      "creditos": 3,
+      "correlativas": [
+        "4023"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "4029",
+      "nombre": "ELECTROTECNIA INDUSTRIAL",
+      "creditos": 4,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "4030",
+      "nombre": "MATERIALES Y ENSAYOS",
+      "creditos": 3,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4032",
+      "nombre": "ANÁLISIS NUMÉRICO",
+      "creditos": 4,
+      "correlativas": [
+        "4027"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4036",
+      "nombre": "COSTOS INDUSTRIALES",
+      "creditos": 4,
+      "correlativas": [
+        "4028"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4101",
+      "nombre": "GESTIÓN DE LA CADEN DE SUMINISTROS",
+      "creditos": 5,
+      "correlativas": [
+        "4028"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4102",
+      "nombre": "ELECTRÓNICA GENERAL",
+      "creditos": 4,
+      "correlativas": [
+        "4029"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4035",
+      "nombre": "MECÁNICA APLICADA",
+      "creditos": 4,
+      "correlativas": [
+        "4024"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "4042",
+      "nombre": "COMERCIALIZACIÓN",
+      "creditos": 3,
+      "correlativas": [
+        "4036"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "4037",
+      "nombre": "TERMODINÁMICA INDUSTRIAL",
+      "creditos": 5,
+      "correlativas": [
+        "4029"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "4038",
+      "nombre": "GESTIÓN DE CAL. Y MEDIO AMBIENTE",
+      "creditos": 3,
+      "correlativas": [
+        "4034"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "4031",
+      "nombre": "MECÁNICA DE LOS FLUIDOS",
+      "creditos": 5,
+      "correlativas": [
+        "4022"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "4040",
+      "nombre": "INVESTIGACIÓN OPERATIVA",
+      "creditos": 6,
+      "correlativas": [
+        "4025"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "4041",
+      "nombre": "EQUIP. INDUSTRIAL Y MANTENIMIENTO",
+      "creditos": 5,
+      "correlativas": [
+        "4037"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "4045",
+      "nombre": "ADMINISTRACIÓN DE OPERACIONES",
+      "creditos": 6,
+      "correlativas": [
+        "4101"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "4061",
+      "nombre": "INSTRUMENTACIÓN INDUSTRIAL",
+      "creditos": 4,
+      "correlativas": [
+        "4102"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "4103",
+      "nombre": "INDUSTRIA Y SERVICIOS II",
+      "creditos": 4,
+      "correlativas": [
+        "4100"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "4081",
+      "nombre": "TECNOLOGÍA INDUSTRIAL",
+      "creditos": 4,
+      "correlativas": [
+        "4037"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "4046",
+      "nombre": "SIST. AUTOMÁTICOS Y DE CONTROL",
+      "creditos": 5,
+      "correlativas": [
+        "4022"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "4047",
+      "nombre": "INFORMÁTICA INDUSTRIAL",
+      "creditos": 3,
+      "correlativas": [
+        "0009"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "4052",
+      "nombre": "OP. Y PROCESOS INDUSTRIALES",
+      "creditos": 4,
+      "correlativas": [
+        "0002"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "4044",
+      "nombre": "FINANZAS DE EMPRESAS",
+      "creditos": 4,
+      "correlativas": [
+        "4036"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "4051",
+      "nombre": "DIRECCIÓN ESTRATÉGICA",
+      "creditos": 4,
+      "correlativas": [
+        "4042"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "4091",
+      "nombre": "IDIOMA PORTUGUES",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "4104",
+      "nombre": "ENERGÍAS RENOVABLES",
+      "creditos": 4,
+      "correlativas": [
+        "4102"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "4085",
+      "nombre": "EVAL. Y GESTIÓN AMBIENTAL",
+      "creditos": 4,
+      "correlativas": [
+        "4038"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "4050",
+      "nombre": "ING. DERECHO Y ÉTICA PROFESIONAL",
+      "creditos": 3,
+      "correlativas": [
+        "4034"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "4054",
+      "nombre": "GESTIÓN DE RR HH",
+      "creditos": 4,
+      "correlativas": [
+        "4051"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "4105",
+      "nombre": "ADMINISTRACIÓN DE PROYECTOS",
+      "creditos": 5,
+      "correlativas": [
+        "4045"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "4053",
+      "nombre": "FORM. Y EVAL. DE PROY. - TRAB. FINAL",
+      "creditos": 10,
+      "correlativas": [
+        "4044"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 5,
+      "codigo": "3058",
+      "nombre": "PRÁCTICA PROFESIONAL SUPERVISADA",
+      "creditos": 0,
+      "correlativas": [],
+      "semestre": "2"
+    }
+  ]
+}

@@ -1,0 +1,501 @@
+{
+  "carrera": "Ingeniería Eléctrica",
+  "anios": [
+    {
+      "numero": 1,
+      "creditos_requeridos": 0
+    },
+    {
+      "numero": 2,
+      "creditos_requeridos": 12
+    },
+    {
+      "numero": 3,
+      "creditos_requeridos": 38
+    },
+    {
+      "numero": 4,
+      "creditos_requeridos": 90
+    },
+    {
+      "numero": 5,
+      "creditos_requeridos": 130
+    }
+  ],
+  "materias": [
+    {
+      "anio": 1,
+      "codigo": "0005",
+      "nombre": "SISTEMAS DE REPRESENTACIÓN",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0002",
+      "nombre": "QUÍMICA GENERAL",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0003",
+      "nombre": "CÁLCULO I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0001",
+      "nombre": "TECNOLOGÍA CIENCIA Y SOCIEDAD",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0006",
+      "nombre": "FÍSICA I",
+      "creditos": 6,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0007",
+      "nombre": "ÁLGEBRA Y GEOMETRÍA ANALÍTICA",
+      "creditos": 5,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0008",
+      "nombre": "INGLÉS TÉCNICO",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0009",
+      "nombre": "INFORMÁTICA",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 2,
+      "codigo": "1020",
+      "nombre": "FÍSICA II",
+      "creditos": 7,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "0004",
+      "nombre": "CÁLCULO II",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "4024",
+      "nombre": "ESTABILIDAD",
+      "creditos": 0,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1023",
+      "nombre": "TECNOLOGÍA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1024",
+      "nombre": "ESTADÍSTICA APLICADA I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "6025",
+      "nombre": "ANÁLISIS DE CIRCUITOS",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1021",
+      "nombre": "CÁLCULO III",
+      "creditos": 4,
+      "correlativas": [
+        "0004"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1027",
+      "nombre": "INSTRUMENTOS Y MEDICIONES",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1028",
+      "nombre": "ÁLGEBRA LINEAL",
+      "creditos": 3,
+      "correlativas": [
+        "0007"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "6029",
+      "nombre": "ELECTROTECNIA",
+      "creditos": 4,
+      "correlativas": [
+        "0004"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "1030",
+      "nombre": "ANÁLISIS NUMÉRICO",
+      "creditos": 4,
+      "correlativas": [
+        "1028"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4030",
+      "nombre": "MATERIALES Y ENSAYOS",
+      "creditos": 3,
+      "correlativas": [
+        "4024"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "6030",
+      "nombre": "CIRCUITOS DIGITALES",
+      "creditos": 4,
+      "correlativas": [
+        "1023"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "1032",
+      "nombre": "HIGIENE Y SEGURIDAD INDUSTRIAL",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "1033",
+      "nombre": "ORGANIZACIÓN",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "4037",
+      "nombre": "TERMODINÁMICA INDUSTRIAL",
+      "creditos": 5,
+      "correlativas": [
+        "1020"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "6031",
+      "nombre": "MECANISMOS Y ELEM. DE MÁQUINAS",
+      "creditos": 4,
+      "correlativas": [
+        "4024"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "6032",
+      "nombre": "ELECTRÓNICA ANALÓGICA",
+      "creditos": 4,
+      "correlativas": [
+        "6025"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1035",
+      "nombre": "ECONOMÍA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1037",
+      "nombre": "ANÁLISIS DE SEÑALES",
+      "creditos": 3,
+      "correlativas": [
+        "1021"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "6033",
+      "nombre": "MÁQUINAS ELÉCTRICAS",
+      "creditos": 4,
+      "correlativas": [
+        "6029"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 4,
+      "codigo": "6040",
+      "nombre": "LUMINOTECNIA",
+      "creditos": 4,
+      "correlativas": [
+        "6029"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "6041",
+      "nombre": "INSTALACIONES ELÉCTRICAS I",
+      "creditos": 4,
+      "correlativas": [
+        "6029"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "6042",
+      "nombre": "MÁQUINAS TÉRMICAS E HIDRÁULICAS",
+      "creditos": 3,
+      "correlativas": [
+        "4037"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "6043",
+      "nombre": "ENERGÍAS RENOVABLES I",
+      "creditos": 3,
+      "correlativas": [
+        "6029"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1043",
+      "nombre": "GESTIÓN DE CAL. Y MEDIO AMBIENTE",
+      "creditos": 4,
+      "correlativas": [
+        "1032"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1044",
+      "nombre": "ELECTRÓNICA DE POTENCIA",
+      "creditos": 4,
+      "correlativas": [
+        "6032"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "6044",
+      "nombre": "CENTRALES Y EST.DE TRANSFORMACIÓN I",
+      "creditos": 3,
+      "correlativas": [
+        "6042"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "5047",
+      "nombre": "SIST. AUTOMÁTICOS Y DE CONTROL",
+      "creditos": 5,
+      "correlativas": [
+        "1021"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "1046",
+      "nombre": "EVALUACIÓN Y SEGUIM.DE PROYECTOS",
+      "creditos": 5,
+      "correlativas": [
+        "1035"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "6045",
+      "nombre": "ENERGÍAS RENOVABLES II",
+      "creditos": 3,
+      "correlativas": [
+        "6043"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "6046",
+      "nombre": "LÍNEAS Y REDES ELÉCTRICAS",
+      "creditos": 4,
+      "correlativas": [
+        "6041"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 5,
+      "codigo": "6050",
+      "nombre": "ANÁLISIS Y OPR. DE SIST. ELECTRÍCOS I",
+      "creditos": 5,
+      "correlativas": [
+        "6044"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "6051",
+      "nombre": "INSTALACIONES ELÉCTRICAS II",
+      "creditos": 5,
+      "correlativas": [
+        "6041"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "1058",
+      "nombre": "ING., DERECHO Y ÉTICA PROFESIONAL",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "6052",
+      "nombre": "PRPOYECTO DE MÁQUINAS ELÉCTRICAS",
+      "creditos": 4,
+      "correlativas": [
+        "6033"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "6053",
+      "nombre": "CENTRALES Y EST. DE TRANSFORM. II",
+      "creditos": 4,
+      "correlativas": [
+        "6044"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "6054",
+      "nombre": "ANÁLISIS Y OPR. DE SIST. ELECTRÍCOS II",
+      "creditos": 5,
+      "correlativas": [
+        "6050"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "6055",
+      "nombre": "CALIDAD DE POTENCIA",
+      "creditos": 4,
+      "correlativas": [
+        "6044"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "1057",
+      "nombre": "PLANEAM. Y GESTIÓN DE EMPRESAS",
+      "creditos": 5,
+      "correlativas": [
+        "1046"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "6058",
+      "nombre": "PROTECCIÓN DE SISTEMAS ELÉCTRICOS",
+      "creditos": 0,
+      "correlativas": [
+        "6050"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "6056",
+      "nombre": "TRABAJO FINAL",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "6057",
+      "nombre": "PRÁCTICA PROFESIONAL SUPERVISADA",
+      "creditos": 0,
+      "correlativas": [],
+      "semestre": "2"
+    }
+  ]
+}

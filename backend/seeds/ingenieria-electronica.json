@@ -1,0 +1,501 @@
+{
+  "carrera": "Ingeniería Electrónica",
+  "anios": [
+    {
+      "numero": 1,
+      "creditos_requeridos": 0
+    },
+    {
+      "numero": 2,
+      "creditos_requeridos": 12
+    },
+    {
+      "numero": 3,
+      "creditos_requeridos": 38
+    },
+    {
+      "numero": 4,
+      "creditos_requeridos": 90
+    },
+    {
+      "numero": 5,
+      "creditos_requeridos": 130
+    }
+  ],
+  "materias": [
+    {
+      "anio": 1,
+      "codigo": "0005",
+      "nombre": "SISTEMAS DE REPRESENTACIÓN",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0002",
+      "nombre": "QUÍMICA GENERAL",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0003",
+      "nombre": "CÁLCULO I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0001",
+      "nombre": "TECNOLOGÍA CIENCIA Y SOCIEDAD",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0006",
+      "nombre": "FÍSICA I",
+      "creditos": 6,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0007",
+      "nombre": "ÁLGEBRA Y GEOMETRÍA ANALÍTICA",
+      "creditos": 5,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0008",
+      "nombre": "INGLÉS TÉCNICO",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0009",
+      "nombre": "INFORMÁTICA",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 2,
+      "codigo": "1020",
+      "nombre": "FÍSICA II",
+      "creditos": 7,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "0004",
+      "nombre": "CÁLCULO II",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1022",
+      "nombre": "ELECTROTECNIA",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1033",
+      "nombre": "ORGANIZACIÓN",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1023",
+      "nombre": "TECNOLOGÍA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1024",
+      "nombre": "ESTADÍSTICA APLICADA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1025",
+      "nombre": "ANÁLISIS DE CIRCUITOS I",
+      "creditos": 4,
+      "correlativas": [
+        "1022"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1021",
+      "nombre": "CÁLCULO III",
+      "creditos": 3,
+      "correlativas": [
+        "0004"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1027",
+      "nombre": "INSTRUMENTOS Y MEDICIONES",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1028",
+      "nombre": "ÁLGEBRA LINEAL",
+      "creditos": 3,
+      "correlativas": [
+        "0007"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1029",
+      "nombre": "COMPUTACIÓN",
+      "creditos": 4,
+      "correlativas": [
+        "0009"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "1030",
+      "nombre": "ANÁLISIS NUMÉRICO",
+      "creditos": 4,
+      "correlativas": [
+        "1028"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "1031",
+      "nombre": "DISPOSITIVOS ELECTRÓNICOS",
+      "creditos": 3,
+      "correlativas": [
+        "1023"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "1032",
+      "nombre": "HIGIENE Y SEGURIDAD INDUSTRIAL",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "3022",
+      "nombre": "ARQUITECTURA DE COMPUTADORAS",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "1034",
+      "nombre": "ANÁLISIS DE CIRCUITOS II",
+      "creditos": 3,
+      "correlativas": [
+        "1025"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1037",
+      "nombre": "ANÁLISIS DE SEÑALES",
+      "creditos": 3,
+      "correlativas": [
+        "1021"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1036",
+      "nombre": "ELECTRÓNICA ANALÓGICA I",
+      "creditos": 6,
+      "correlativas": [
+        "1025"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1035",
+      "nombre": "ECONOMÍA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1038",
+      "nombre": "PROPAGACIÓN Y RADIACIÓN",
+      "creditos": 4,
+      "correlativas": [
+        "1021"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "1039",
+      "nombre": "CIRCUITOS DIGITALES I",
+      "creditos": 5,
+      "correlativas": [
+        "1023"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 4,
+      "codigo": "1040",
+      "nombre": "CIRCUITOS DIGITALES II",
+      "creditos": 5,
+      "correlativas": [
+        "1039"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1041",
+      "nombre": "SISTEMA DE COMUNICACIONES I",
+      "creditos": 3,
+      "correlativas": [
+        "1038"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1042",
+      "nombre": "ELECTRONICA ANALÓGICA II",
+      "creditos": 5,
+      "correlativas": [
+        "1036"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1061",
+      "nombre": "TELEINFORMÁTICA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1043",
+      "nombre": "GESTIÓN DE CAL. Y MEDIO AMBIENTE",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1044",
+      "nombre": "ELECTRÓNICA DE POTENCIA",
+      "creditos": 3,
+      "correlativas": [
+        "1036"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "1045",
+      "nombre": "ELECTRÓNICA DE ALTA FRECUENCIA",
+      "creditos": 4,
+      "correlativas": [
+        "1036"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "1046",
+      "nombre": "FORM. Y EVALUACIÓN DE PROYECTOS",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "5044",
+      "nombre": "MODELADO Y SISTEMAS DE CONTROL",
+      "creditos": 3,
+      "correlativas": [
+        "1037"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "1047",
+      "nombre": "INST. Y MÁQUINAS ELÉCTRICAS",
+      "creditos": 4,
+      "correlativas": [
+        "1022"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "3050",
+      "nombre": "TRABAJO INTEGRADOR I",
+      "creditos": 6,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 5,
+      "codigo": "3061",
+      "nombre": "TRABAJO INTEGRADOR II",
+      "creditos": 6,
+      "correlativas": [
+        "3050"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "1080",
+      "nombre": "SISTEMAS DE AUDIO",
+      "creditos": 3,
+      "correlativas": [
+        "1042"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "1051",
+      "nombre": "SISTEMAS DE TELEVISIÓN",
+      "creditos": 3,
+      "correlativas": [
+        "1045"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "3054",
+      "nombre": "SISTEMAS EMBEBIDOS",
+      "creditos": 5,
+      "correlativas": [
+        "1040"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "1052",
+      "nombre": "AUTOMÁTICA INDUSTRIAL",
+      "creditos": 3,
+      "correlativas": [
+        "1044"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "1054",
+      "nombre": "SISTEMAS DE COMUNICACIONES II",
+      "creditos": 3,
+      "correlativas": [
+        "1041"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "1058",
+      "nombre": "ING., DERECHO Y ÉTICA PROFESIONAL",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "1056",
+      "nombre": "TECNOLOGÍA DE MICROONDAS",
+      "creditos": 3,
+      "correlativas": [
+        "1045"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "1057",
+      "nombre": "PLANEAM. Y GESTIÓN DE EMPRESAS",
+      "creditos": 3,
+      "correlativas": [
+        "1046"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "4074",
+      "nombre": "HABILIDADES DIREC. Y DE LIDERAZGO",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "3057",
+      "nombre": "TRABAJO FINAL",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "1090",
+      "nombre": "PRÁCTICA PROFESIONAL SUPERVISADA",
+      "creditos": 0,
+      "correlativas": [],
+      "semestre": "2"
+    }
+  ]
+}

@@ -1,0 +1,493 @@
+{
+  "carrera": "Ingeniería en Computación",
+  "anios": [
+    {
+      "numero": 1,
+      "creditos_requeridos": 0
+    },
+    {
+      "numero": 2,
+      "creditos_requeridos": 12
+    },
+    {
+      "numero": 3,
+      "creditos_requeridos": 38
+    },
+    {
+      "numero": 4,
+      "creditos_requeridos": 90
+    },
+    {
+      "numero": 5,
+      "creditos_requeridos": 130
+    }
+  ],
+  "materias": [
+    {
+      "anio": 1,
+      "codigo": "3023",
+      "nombre": "TECNOLOGÍA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0002",
+      "nombre": "QUÍMICA GENERAL",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0003",
+      "nombre": "CÁLCULO I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0001",
+      "nombre": "TECNOLOGÍA CIENCIA Y SOCIEDAD",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0006",
+      "nombre": "FÍSICA I",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0007",
+      "nombre": "ÁLGEBRA Y GEOMETRÍA ANALÍTICA",
+      "creditos": 5,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0008",
+      "nombre": "INGLÉS TÉCNICO",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0009",
+      "nombre": "INFORMÁTICA",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 2,
+      "codigo": "3020",
+      "nombre": "FÍSICA II",
+      "creditos": 7,
+      "correlativas": [
+        "0006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "0004",
+      "nombre": "CÁLCULO II",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "2022",
+      "nombre": "MATEMÁTICA DISCRETA",
+      "creditos": 3,
+      "correlativas": [
+        "0007"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "3043",
+      "nombre": "ORGANIZACIÓN",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "3032",
+      "nombre": "HIGIENE Y SEGURIDAD INDUSTRIAL",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "3024",
+      "nombre": "ESTADÍSTICA APLICADA",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1027",
+      "nombre": "INSTRUMENTOS Y MEDICIONES",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "3021",
+      "nombre": "CÁLCULO III",
+      "creditos": 3,
+      "correlativas": [
+        "0004"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "3029",
+      "nombre": "CIRCUITOS ELÉCTRICOS",
+      "creditos": 3,
+      "correlativas": [
+        "3020"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "3027",
+      "nombre": "ÁLGEBRA LINEAL",
+      "creditos": 3,
+      "correlativas": [
+        "0007"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "3028",
+      "nombre": "COMPUTACIÓN",
+      "creditos": 5,
+      "correlativas": [
+        "0009"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "3030",
+      "nombre": "ANÁLISIS NUMÉRICO",
+      "creditos": 4,
+      "correlativas": [
+        "3027"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "3031",
+      "nombre": "DISPOSITIVOS ELECTRÓNICOS",
+      "creditos": 3,
+      "correlativas": [
+        "3021"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "3033",
+      "nombre": "REDES DE DATOS",
+      "creditos": 6,
+      "correlativas": [
+        "3028"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "3022",
+      "nombre": "ARQUITECTURA DE COMPUTADORAS",
+      "creditos": 3,
+      "correlativas": [
+        "2022"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "3026",
+      "nombre": "SISTEMAS OPERATIVOS",
+      "creditos": 4,
+      "correlativas": [
+        "3028"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "3035",
+      "nombre": "ANÁLISIS DE SEÑALES",
+      "creditos": 3,
+      "correlativas": [
+        "3021"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "3036",
+      "nombre": "ELECTRÓNICA ANALÓGICA I",
+      "creditos": 6,
+      "correlativas": [
+        "3023"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "3045",
+      "nombre": "ECONOMÍA",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "3034",
+      "nombre": "PROGRAMACIÓN",
+      "creditos": 3,
+      "correlativas": [
+        "3028"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "3039",
+      "nombre": "CIRCUITOS DIGITALES I",
+      "creditos": 5,
+      "correlativas": [
+        "3023"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 4,
+      "codigo": "3040",
+      "nombre": "CIRCUITOS DIGITALES II",
+      "creditos": 5,
+      "correlativas": [
+        "3039"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "3041",
+      "nombre": "INGENIERÍA DE SOFTWARE",
+      "creditos": 4,
+      "correlativas": [
+        "3034"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "3044",
+      "nombre": "ELECTRONICA ANALÓGICA II",
+      "creditos": 5,
+      "correlativas": [
+        "3036"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "3042",
+      "nombre": "SEGURIDAD INFORMÁTICA I",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "3051",
+      "nombre": "DISEÑO DE BASE DE DATOS I",
+      "creditos": 4,
+      "correlativas": [
+        "2022"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "3055",
+      "nombre": "INTELIGENCIA ARTIFICIAL",
+      "creditos": 4,
+      "correlativas": [
+        "3035"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "5044",
+      "nombre": "MODELADO Y SISTEMAS DE CONTROL",
+      "creditos": 3,
+      "correlativas": [
+        "3035"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "3047",
+      "nombre": "FORM. Y EVALUACIÓN DE PROYECTOS",
+      "creditos": 3,
+      "correlativas": [
+        "3045"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "3037",
+      "nombre": "COMUNICACIÓN DE DATOS",
+      "creditos": 3,
+      "correlativas": [
+        "3033"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "3038",
+      "nombre": "COMPUTACIÓN II",
+      "creditos": 3,
+      "correlativas": [
+        "3028"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 4,
+      "codigo": "3060",
+      "nombre": "TRABAJO INTEGRADOR I",
+      "creditos": 6,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 5,
+      "codigo": "3061",
+      "nombre": "TRABAJO INTEGRADOR II",
+      "creditos": 6,
+      "correlativas": [
+        "3050"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "3052",
+      "nombre": "GESTIÓN DE CAL. Y MEDIO AMBIENTE",
+      "creditos": 3,
+      "correlativas": [
+        "3032"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "2049",
+      "nombre": "TELEINFORMÁTICA",
+      "creditos": 4,
+      "correlativas": [
+        "3033"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "3054",
+      "nombre": "SISTEMAS EMBEBIDOS",
+      "creditos": 5,
+      "correlativas": [
+        "3040"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "3080",
+      "nombre": "ROBÓTICA",
+      "creditos": 3,
+      "correlativas": [
+        "3054"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "2080",
+      "nombre": "ING. DE SOFTWARE APLICADA",
+      "creditos": 4,
+      "correlativas": [
+        "3041"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "3050",
+      "nombre": "ING., DERECHO Y ÉTICA PROFESIONAL",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "2056",
+      "nombre": "PLANEAM. Y GESTIÓN DE EMPRESAS",
+      "creditos": 3,
+      "correlativas": [
+        "3047"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "3057",
+      "nombre": "TRABAJO FINAL",
+      "creditos": 7,
+      "correlativas": [
+        "3060"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "3058",
+      "nombre": "PRÁCTICA PROFESIONAL SUPERVISADA",
+      "creditos": 0,
+      "correlativas": [],
+      "semestre": "2"
+    }
+  ]
+}

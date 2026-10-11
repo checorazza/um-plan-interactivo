@@ -1,0 +1,475 @@
+{
+  "carrera": "Bioingeniería",
+  "anios": [
+    {
+      "numero": 1,
+      "creditos_requeridos": 0
+    },
+    {
+      "numero": 2,
+      "creditos_requeridos": 12
+    },
+    {
+      "numero": 3,
+      "creditos_requeridos": 38
+    },
+    {
+      "numero": 4,
+      "creditos_requeridos": 90
+    },
+    {
+      "numero": 5,
+      "creditos_requeridos": 130
+    }
+  ],
+  "materias": [
+    {
+      "anio": 1,
+      "codigo": "5092",
+      "nombre": "Sistemas de Representación y Modelado 3D",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "5002",
+      "nombre": "Química General y Orgánica",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "1"
+    },
+    {
+      "anio": 1,
+      "codigo": "0003",
+      "nombre": "Cálculo I",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "5003",
+      "nombre": "Introducción a la Bioingeniería",
+      "creditos": 3,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "5006",
+      "nombre": "Física I",
+      "creditos": 6,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "5022",
+      "nombre": "Química Biológica",
+      "creditos": 3,
+      "correlativas": [
+        "5002"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 1,
+      "codigo": "0007",
+      "nombre": "Álgebra y Geometría Analítica",
+      "creditos": 5,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0008",
+      "nombre": "Inglés Técnico",
+      "creditos": 4,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 1,
+      "codigo": "0009",
+      "nombre": "Informática I",
+      "creditos": 7,
+      "correlativas": [],
+      "semestre": "anual"
+    },
+    {
+      "anio": 2,
+      "codigo": "0004",
+      "nombre": "Cálculo II",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1020",
+      "nombre": "Física II",
+      "creditos": 6,
+      "correlativas": [
+        "5006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "5020",
+      "nombre": "Biología",
+      "creditos": 3,
+      "correlativas": [
+        "5002"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1022",
+      "nombre": "Electrotecnia",
+      "creditos": 6,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "1023",
+      "nombre": "Tecnología",
+      "creditos": 3,
+      "correlativas": [
+        "5006"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 2,
+      "codigo": "5021",
+      "nombre": "Anatomía",
+      "creditos": 3,
+      "correlativas": [
+        "5020"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1025",
+      "nombre": "Análisis de Circuitos",
+      "creditos": 4,
+      "correlativas": [
+        "1022"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1021",
+      "nombre": "Cálculo III",
+      "creditos": 4,
+      "correlativas": [
+        "0004"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1028",
+      "nombre": "Álgebra Lineal",
+      "creditos": 3,
+      "correlativas": [
+        "0007"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 2,
+      "codigo": "1027",
+      "nombre": "Instrumentos y Mediciones",
+      "creditos": 0,
+      "correlativas": [
+        "1022"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1030",
+      "nombre": "Análisis Numérico",
+      "creditos": 4,
+      "correlativas": [
+        "1028"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "5094",
+      "nombre": "Organización y gestión de sistemas de salud",
+      "creditos": 3,
+      "correlativas": [
+        "5093"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "5042",
+      "nombre": "Instalaciones Hospitalarias",
+      "creditos": 5,
+      "correlativas": [
+        "5092",
+        "1022",
+        "1027"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "5030",
+      "nombre": "Fisiología y Biofísica",
+      "creditos": 5,
+      "correlativas": [
+        "5021"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 3,
+      "codigo": "5031",
+      "nombre": "Fisiopatología",
+      "creditos": 4,
+      "correlativas": [
+        "5030"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1036",
+      "nombre": "Electrónica Analógica I",
+      "creditos": 7,
+      "correlativas": [
+        "1025"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1037",
+      "nombre": "Análisis de Señales",
+      "creditos": 3,
+      "correlativas": [
+        "1021",
+        "1030"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1024",
+      "nombre": "Estadística Aplicada",
+      "creditos": 3,
+      "correlativas": [
+        "0003"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 3,
+      "codigo": "1039",
+      "nombre": "Circuitos Digitales I",
+      "creditos": 4,
+      "correlativas": [
+        "1025"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 3,
+      "codigo": "5095",
+      "nombre": "Computación",
+      "creditos": 5,
+      "correlativas": [
+        "0009"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 4,
+      "codigo": "5040",
+      "nombre": "Biomateriales",
+      "creditos": 3,
+      "correlativas": [
+        "5030"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "1042",
+      "nombre": "Electrónica Analógica II",
+      "creditos": 6,
+      "correlativas": [
+        "1036"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "5041",
+      "nombre": "Radiaciones y Prot. Radiológica",
+      "creditos": 3,
+      "correlativas": [
+        "5031"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "5093",
+      "nombre": "Circuitos Digitales II",
+      "creditos": 3,
+      "correlativas": [
+        "1039"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 4,
+      "codigo": "5043",
+      "nombre": "Bioinstrumentación I",
+      "creditos": 6,
+      "correlativas": [
+        "5031",
+        "1037"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "5044",
+      "nombre": "Modelos y Simulación",
+      "creditos": 3,
+      "correlativas": [
+        "1021"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "5045",
+      "nombre": "Electrónica Nuclear",
+      "creditos": 4,
+      "correlativas": [
+        "1023",
+        "5041"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 4,
+      "codigo": "5046",
+      "nombre": "Biomecánica",
+      "creditos": 5,
+      "correlativas": [
+        "5030"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "5050",
+      "nombre": "Procesamiento de Imágenes",
+      "creditos": 4,
+      "correlativas": [
+        "1037",
+        "1039"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "5051",
+      "nombre": "Bioinstrumentación II",
+      "creditos": 4,
+      "correlativas": [
+        "5043"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "5052",
+      "nombre": "Equipamiento de Diagnóstico y Terapia",
+      "creditos": 4,
+      "correlativas": [
+        "5043",
+        "5045"
+      ],
+      "semestre": "1"
+    },
+    {
+      "anio": 5,
+      "codigo": "5054",
+      "nombre": "Medicina Nuclear",
+      "creditos": 3,
+      "correlativas": [
+        "5031",
+        "5045"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "1046",
+      "nombre": "Eval. y Seguimiento de Proyectos",
+      "creditos": 5,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "5055",
+      "nombre": "Ingeniería de Rehabilitación",
+      "creditos": 5,
+      "correlativas": [
+        "5092",
+        "5046",
+        "5043"
+      ],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "5091",
+      "nombre": "Trabajo Final",
+      "creditos": 0,
+      "correlativas": [],
+      "semestre": "2"
+    },
+    {
+      "anio": 5,
+      "codigo": "5096",
+      "nombre": "Ing. Clínica y Gestión de Productos Médicos",
+      "creditos": 5,
+      "correlativas": [
+        "5094"
+      ],
+      "semestre": "anual"
+    },
+    {
+      "anio": 5,
+      "codigo": "5090",
+      "nombre": "Práctica Profesional Supervisada",
+      "creditos": 0,
+      "correlativas": [],
+      "semestre": "2"
+    }
+  ]
+}
