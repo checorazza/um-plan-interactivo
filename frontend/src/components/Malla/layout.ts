@@ -10,18 +10,130 @@
 import type { Plan } from "../../types/plan";
 
 export const ANCHO_NODO = 210;
-export const ALTO_NODO = 72;
 /** Alto del encabezado de año. Fijo, para que el minimapa pueda dibujarlo. */
 export const ALTO_NODO_ANIO = 56;
 
 /** Separación entre columnas de años. */
 const SEPARACION_ANIO = 300;
-/** Separación vertical entre materias. Deja lugar al menú de acciones. */
-const SEPARACION_MATERIA = 120;
+/** Aire entre una materia y la siguiente. Deja lugar al menú de acciones. */
+const SEPARACION_MATERIA = 48;
 /** Espacio bajo el encabezado del año. */
 const ALTO_ENCABEZADO = 92;
 /** Aire entre el último nodo de un año y el encabezado del siguiente. */
 const AIRE_ENTRE_ANIOS = 48;
+
+// --- alto de una materia ---
+//
+// El nombre no se recorta, así que la tarjeta crece según cuántas líneas
+// ocupe. El alto se **calcula**, no se mide después de pintar: React Flow
+// necesita las posiciones antes, y medir implicaría dibujar, medir y
+// reacomodar, con el salto visual que eso trae.
+//
+// Estos números son los del CSS de `Malla.css`. Si allá cambia el tamaño de
+// letra, el interlineado o el padding, hay que cambiarlos acá: si se separan,
+// el síntoma es texto desbordado o tarjetas con aire de más.
+
+/**
+ * Ancho en el que fluye el nombre.
+ *
+ * No se deriva del ancho del nodo: con `box-sizing: border-box` los bordes se
+ * comen parte del ancho, y cuánto exactamente depende de cómo el navegador
+ * redondee el borde de 1.5 px según la densidad de pantalla. Un píxel de
+ * diferencia alcanza para que un nombre entre en un renglón o en dos, y
+ * entonces el alto calculado no coincide con el real.
+ *
+ * Por eso el número se fija acá y se repite como `max-width` en
+ * `.materia__nombre`: los dos lados tienen que usar el mismo.
+ */
+export const ANCHO_TEXTO = 185;
+const PADDING_VERTICAL = 8;
+const SEPARACION_INTERNA = 3;
+const ALTO_LINEA = 17;
+const ALTO_CREDITOS = 16.5;
+
+/** Padding arriba y abajo, la separación interna y la línea de créditos. */
+const ALTO_FIJO = PADDING_VERTICAL * 2 + SEPARACION_INTERNA + ALTO_CREDITOS;
+
+export const ALTO_NODO_MINIMO = ALTO_FIJO + ALTO_LINEA;
+
+/** La misma fuente que `.materia__nombre`. */
+const FUENTE_NOMBRE =
+  '600 13px ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+/** Ancho medio de un carácter, para cuando no hay con qué medir de verdad. */
+const ANCHO_CARACTER = 7.2;
+
+export type Medidor = (texto: string) => number;
+
+let medidorGuardado: Medidor | null = null;
+
+/**
+ * Mide texto con la fuente real, vía canvas.
+ *
+ * Estimar por cantidad de caracteres no alcanza: "Arquitectura de
+ * Computadoras" tiene 28 caracteres y mide 183 px, pero 28 caracteres
+ * angostos miden bastante menos. Con la estimación, esa tarjeta se quedaba
+ * corta y el texto desbordaba.
+ *
+ * Fuera del navegador (tests) cae en la aproximación por caracteres.
+ */
+export function medidor(): Medidor {
+  if (medidorGuardado) return medidorGuardado;
+
+  try {
+    const contexto = document.createElement("canvas").getContext("2d");
+    if (contexto) {
+      contexto.font = FUENTE_NOMBRE;
+      medidorGuardado = (texto) => contexto.measureText(texto).width;
+      return medidorGuardado;
+    }
+  } catch {
+    // Sin DOM: se usa la aproximación.
+  }
+
+  medidorGuardado = (texto) => texto.length * ANCHO_CARACTER;
+  return medidorGuardado;
+}
+
+/**
+ * Cuántas líneas ocupa un nombre dentro de la tarjeta.
+ *
+ * Simula el corte por palabras del navegador: las palabras no se parten,
+ * salvo que una sola no entre en un renglón.
+ */
+export function lineasDe(nombre: string, medir: Medidor = medidor()): number {
+  const palabras = (nombre ?? "").split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return 1;
+
+  let lineas = 1;
+  let actual = "";
+
+  for (const palabra of palabras) {
+    if (actual === "") {
+      actual = palabra;
+    } else if (medir(`${actual} ${palabra}`) <= ANCHO_TEXTO) {
+      actual = `${actual} ${palabra}`;
+    } else {
+      lineas += 1;
+      actual = palabra;
+    }
+
+    // Una palabra sola más larga que el renglón se parte sola.
+    while (medir(actual) > ANCHO_TEXTO && actual.length > 1) {
+      let corte = actual.length;
+      while (corte > 1 && medir(actual.slice(0, corte)) > ANCHO_TEXTO) corte -= 1;
+      lineas += 1;
+      actual = actual.slice(corte);
+    }
+  }
+
+  return lineas;
+}
+
+/** Alto de la tarjeta de una materia, según lo que ocupe su nombre. */
+export function altoDeMateria(nombre: string, medir?: Medidor): number {
+  return ALTO_FIJO + lineasDe(nombre, medir) * ALTO_LINEA;
+}
 
 export type Orientacion = "columnas" | "apilado";
 
@@ -58,13 +170,14 @@ export function calcularUbicaciones(
       const x = indice * SEPARACION_ANIO;
       anios.set(anio.id_anio, { x, y: 0 });
 
-      const delAnio = plan.materiasPorAnio.get(anio.id_anio) ?? [];
-      delAnio.forEach((idMateria, fila) => {
-        materias.set(idMateria, {
-          x,
-          y: ALTO_ENCABEZADO + fila * SEPARACION_MATERIA,
-        });
-      });
+      // Cada materia arranca donde terminó la anterior: las tarjetas no
+      // miden todas lo mismo.
+      let y = ALTO_ENCABEZADO;
+      for (const idMateria of plan.materiasPorAnio.get(anio.id_anio) ?? []) {
+        materias.set(idMateria, { x, y });
+        const nombre = plan.materias.get(idMateria)?.nombre ?? "";
+        y += altoDeMateria(nombre) + SEPARACION_MATERIA;
+      }
     });
     return { materias, anios };
   }
@@ -74,10 +187,10 @@ export function calcularUbicaciones(
     anios.set(anio.id_anio, { x: 0, y });
     y += ALTO_ENCABEZADO;
 
-    const delAnio = plan.materiasPorAnio.get(anio.id_anio) ?? [];
-    for (const idMateria of delAnio) {
+    for (const idMateria of plan.materiasPorAnio.get(anio.id_anio) ?? []) {
       materias.set(idMateria, { x: 0, y });
-      y += SEPARACION_MATERIA;
+      const nombre = plan.materias.get(idMateria)?.nombre ?? "";
+      y += altoDeMateria(nombre) + SEPARACION_MATERIA;
     }
 
     y += AIRE_ENTRE_ANIOS;

@@ -96,7 +96,9 @@
 .materia {
   position: relative;
   width: 210px;
-  height: 72px;
+  /* El alto lo fija React Flow desde `altoDeMateria`, que calcula cuántas
+     líneas ocupa el nombre. */
+  height: 100%;
   border: 1.5px solid var(--sin-estado-borde);
   border-radius: var(--radio);
   background: var(--sin-estado-fondo);
@@ -111,25 +113,24 @@
 .materia__cuerpo {
   display: flex;
   flex-direction: column;
+  /* El alto que fija `altoDeMateria` es exactamente el del contenido, así
+     que el padding queda igual en todas las tarjetas, tengan una línea o
+     tres. */
   justify-content: center;
-  gap: 1px;
+  gap: 3px;
   height: 100%;
-  padding: 8px 10px;
-  overflow: hidden;
+  padding: 8px 11px;
 }
 
-.materia__encabezado {
+/* El candado va en la línea de créditos y no al lado del nombre: ahí le
+   robaba ancho, y entonces la misma materia envolvía en una o dos líneas
+   según estuviera bloqueada. El alto de la tarjeta no puede depender de eso,
+   porque cambia a medida que se aprueban materias. */
+.materia__creditos {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-}
-
-.materia__codigo {
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  color: var(--texto-suave);
+  gap: 6px;
 }
 
 .materia__candado {
@@ -138,18 +139,20 @@
 }
 
 .materia__nombre {
+  /* El mismo número que `ANCHO_TEXTO` en layout.ts: ahí se calcula cuántas
+     líneas va a ocupar, y si los dos no coinciden el alto queda mal. */
+  max-width: 185px;
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.25;
-  /* Dos líneas como máximo: los nombres del plan son largos. */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  line-height: 17px;
+  /* Sin recorte: el nombre completo, y la tarjeta se estira. */
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .materia__creditos {
   font-size: 11px;
+  line-height: 16.5px;
   color: var(--texto-suave);
 }
 
@@ -167,9 +170,7 @@
   color: var(--aprobada-texto);
 }
 
-.materia--regular .materia__codigo,
 .materia--regular .materia__creditos,
-.materia--aprobada .materia__codigo,
 .materia--aprobada .materia__creditos {
   color: currentColor;
   opacity: 0.75;
@@ -182,7 +183,6 @@
   color: var(--bloqueada-texto);
 }
 
-.materia--bloqueada_por_creditos .materia__codigo,
 .materia--bloqueada_por_creditos .materia__creditos {
   color: var(--bloqueada-texto);
 }

@@ -23,9 +23,9 @@ import { useEsAngosto } from "../../hooks/useEsAngosto";
 import { AnioNode, type NodoAnio } from "./AnioNode";
 import { MateriaNode, type DatosMateria, type NodoMateria } from "./MateriaNode";
 import {
-  ALTO_NODO,
   ALTO_NODO_ANIO,
   ANCHO_NODO,
+  altoDeMateria,
   calcularUbicaciones,
 } from "./layout";
 import "./Malla.css";
@@ -88,7 +88,9 @@ export function Malla() {
         position: ubicaciones.materias.get(materia.id_materia) ?? { x: 0, y: 0 },
         selected: seleccionada === materia.id_materia,
         width: ANCHO_NODO,
-        height: ALTO_NODO,
+        // Explícita y calculada: React Flow necesita el alto antes de
+        // pintar, y cada tarjeta mide según su nombre.
+        height: altoDeMateria(materia.nombre),
         data: {
           idMateria: materia.id_materia,
           codigo: materia.codigo,

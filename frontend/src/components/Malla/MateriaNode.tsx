@@ -16,6 +16,7 @@ import { IconoAprobada, IconoCandado, IconoRegular } from "./iconos";
 
 export type DatosMateria = {
   idMateria: number;
+  /** No se muestra; sirve para el orden y para referirse a la materia. */
   codigo: string;
   nombre: string;
   creditos: number;
@@ -69,18 +70,17 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
       <Handle type="target" position={Position.Left} className="materia__handle" />
 
       <div className="materia__cuerpo">
-        <div className="materia__encabezado">
-          <span className="materia__codigo">{data.codigo}</span>
+        {/* El nombre entero, sin recortar: la tarjeta crece lo que haga
+            falta (ver `altoDeMateria` en layout.ts). */}
+        <span className="materia__nombre">{data.nombre}</span>
+        <span className="materia__creditos">
+          <span>
+            {data.creditos} {data.creditos === 1 ? "crédito" : "créditos"}
+            <span className="visualmente-oculto"> — {etiquetaEstado}</span>
+          </span>
           {!estado && bloqueo === "bloqueada_por_creditos" && (
             <IconoCandado className="materia__candado" />
           )}
-        </div>
-        <span className="materia__nombre" title={data.nombre}>
-          {data.nombre}
-        </span>
-        <span className="materia__creditos">
-          {data.creditos} {data.creditos === 1 ? "crédito" : "créditos"}
-          <span className="visualmente-oculto"> — {etiquetaEstado}</span>
         </span>
       </div>
 
