@@ -30,8 +30,13 @@
 import type { Estado, Estados } from "../types/estado";
 import type { Plan } from "../types/plan";
 import type { Usuario } from "../types/usuario";
-
-const PREFIJO = "um-plan";
+import {
+  PREFIJO,
+  borrarCrudo,
+  clavesConPrefijo,
+  escribirCrudo,
+  leerCrudo,
+} from "./crudo";
 
 /**
  * Versión del formato guardado.
@@ -70,64 +75,6 @@ interface Guardado {
 export interface Sesion {
   token: string;
   usuario: Usuario;
-}
-
-/** `localStorage`, o null si el navegador no lo deja usar. */
-function almacen(): Storage | null {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    // Acceder a la propiedad ya puede tirar si las cookies están bloqueadas.
-    return null;
-  }
-}
-
-function leerCrudo(clave: string): unknown {
-  const storage = almacen();
-  if (!storage) return null;
-  try {
-    const texto = storage.getItem(clave);
-    return texto === null ? null : JSON.parse(texto);
-  } catch {
-    return null;
-  }
-}
-
-function escribirCrudo(clave: string, valor: unknown): boolean {
-  const storage = almacen();
-  if (!storage) return false;
-  try {
-    storage.setItem(clave, JSON.stringify(valor));
-    return true;
-  } catch {
-    // Cuota llena o storage de sólo lectura.
-    return false;
-  }
-}
-
-function borrarCrudo(clave: string): void {
-  const storage = almacen();
-  if (!storage) return;
-  try {
-    storage.removeItem(clave);
-  } catch {
-    /* no hay nada que hacer */
-  }
-}
-
-function clavesConPrefijo(): string[] {
-  const storage = almacen();
-  if (!storage) return [];
-  try {
-    const claves: string[] = [];
-    for (let i = 0; i < storage.length; i += 1) {
-      const clave = storage.key(i);
-      if (clave?.startsWith(`${PREFIJO}:`)) claves.push(clave);
-    }
-    return claves;
-  } catch {
-    return [];
-  }
 }
 
 /**

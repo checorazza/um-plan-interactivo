@@ -14,18 +14,17 @@ import type { Usuario } from "../types/usuario";
 /**
  * Dónde vive la API.
  *
- * En producción el front y la API comparten dominio —Vercel manda `/api/*` al
- * servicio de Flask—, así que el origen va vacío y las llamadas salen
- * relativas. En desarrollo apunta al Flask de al lado. El prefijo `/api` es
- * el mismo en los dos casos.
+ * Siempre relativa: el front y la API comparten origen en los dos lados. En
+ * Vercel porque el proyecto manda `/api/*` al servicio de Flask; en
+ * desarrollo porque Vite hace de proxy hacia el Flask de al lado (ver
+ * `vite.config.ts`). El prefijo `/api` es el mismo en los dos casos.
  *
- * El default depende del tipo de build y no sólo de la variable: si en
- * producción faltara `VITE_API_URL`, caer en `127.0.0.1` dejaría la app
- * desplegada hablándole a la máquina de quien la abre. Definir la variable
- * sigue ganando sobre el default, para apuntar a una API en otro dominio.
+ * `VITE_API_URL` sigue ganando, para apuntar a una API en otro dominio, pero
+ * ya no hace falta para el camino normal. Antes el default en desarrollo era
+ * `127.0.0.1:5000`, y eso ataba la app a que el puerto de Vite estuviera en
+ * la lista de CORS del backend.
  */
-const ORIGEN_POR_DEFECTO = import.meta.env.DEV ? "http://127.0.0.1:5000" : "";
-const BASE = `${import.meta.env.VITE_API_URL ?? ORIGEN_POR_DEFECTO}/api`;
+const BASE = `${import.meta.env.VITE_API_URL ?? ""}/api`;
 
 /** Client ID de Google. Vacío = la app es sólo local, sin botón de login. */
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";

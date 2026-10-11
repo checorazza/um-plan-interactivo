@@ -1,0 +1,311 @@
+.personalizar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.personalizar__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.personalizar__cabecera h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.personalizar__volver {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--texto-suave);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.personalizar__volver:hover {
+  color: var(--texto);
+  border-color: var(--acento);
+}
+
+.personalizar__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.personalizar__grupo h3 {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* --- tema --- */
+
+.segmentado {
+  display: flex;
+  padding: 2px;
+  gap: 2px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.segmentado__opcion {
+  flex: 1;
+  padding: 5px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+}
+
+.segmentado__opcion:hover {
+  color: var(--texto);
+}
+
+.segmentado__opcion[aria-pressed="true"] {
+  color: var(--texto);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+/* --- enlaces --- */
+
+.interruptor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.interruptor input {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--acento);
+  cursor: pointer;
+}
+
+/* --- colores --- */
+
+.colores {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.colores__fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* La muestra es el botón que abre el selector. */
+.colores__muestra {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1.5px solid var(--borde);
+  border-radius: 5px;
+}
+
+.colores__muestra:hover {
+  border-color: var(--acento);
+}
+
+.colores__nombre {
+  padding: 0;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 12px;
+}
+
+.colores__nombre:hover {
+  color: var(--acento);
+}
+
+.colores__restablecer {
+  margin-left: auto;
+  padding: 0 5px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--texto-suave);
+  background: none;
+  border: none;
+}
+
+.colores__restablecer:hover {
+  color: var(--acento);
+}
+
+.personalizar__pie {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.personalizar__pie .boton {
+  width: 100%;
+}
+
+/* --- el selector de color --- */
+
+/* Flota sobre la fila: el panel es angosto y empujar las de abajo movería
+   todo cada vez que se abre uno. */
+.selector {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+/* El cuadrado de saturación y brillo. El color de fondo lo pone el
+   componente —es el tono puro— y encima van dos degradados: blanco hacia la
+   izquierda y negro hacia abajo. */
+.selector__area {
+  position: relative;
+  height: 128px;
+  border-radius: var(--radio-chico);
+  background-image:
+    linear-gradient(to top, #000, transparent),
+    linear-gradient(to right, #fff, transparent);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.selector__tono {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
+  cursor: pointer;
+  touch-action: none;
+}
+
+.selector__puntero {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+  pointer-events: none;
+}
+
+.selector__puntero--tono {
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+}
+
+.selector__area:focus-visible,
+.selector__tono:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.selector__campos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.selector__muestra {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+}
+
+.selector__numeral {
+  color: var(--texto-suave);
+  font-size: 12px;
+}
+
+.selector__texto {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+  background: none;
+  border: none;
+}
+
+.selector__texto:focus {
+  outline: none;
+}
+
+.selector__copiar {
+  flex: none;
+  padding: 0 3px;
+  font-size: 13px;
+  color: var(--texto-suave);
+  background: none;
+  border: none;
+}
+
+.selector__copiar:hover {
+  color: var(--acento);
+}
+
+.selector__formato {
+  flex: none;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+}

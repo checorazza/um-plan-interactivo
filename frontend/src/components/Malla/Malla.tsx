@@ -19,6 +19,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { useMalla } from "../../store/useMalla";
+import { usePreferencias } from "../../store/usePreferencias";
 import { useEsAngosto } from "../../hooks/useEsAngosto";
 import { AnioNode, type NodoAnio } from "./AnioNode";
 import { MateriaNode, type DatosMateria, type NodoMateria } from "./MateriaNode";
@@ -38,6 +39,9 @@ const ENCUADRE = { padding: 0.15, maxZoom: 1, minZoom: 0.5 };
 /** Margen al encuadrar por ancho, en píxeles de pantalla. */
 const MARGEN_APILADO = 16;
 
+/** Estable, para no rearmar las aristas cada vez que se ocultan. */
+const SIN_ARISTAS: Edge[] = [];
+
 /** Color de cada materia en el minimapa, según su estado. */
 function colorEnMinimapa(nodo: Node): string {
   if (nodo.type !== "materia") return "var(--superficie-2)";
@@ -53,6 +57,7 @@ export function Malla() {
   const seleccionada = useMalla((s) => s.seleccionada);
   const seleccionar = useMalla((s) => s.seleccionar);
   const esAngosto = useEsAngosto();
+  const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
 
   const instancia = useRef<ReactFlowInstance | null>(null);
   const contenedor = useRef<HTMLDivElement>(null);
@@ -112,11 +117,10 @@ export function Malla() {
           id: `${idRequisito}->${materia.id_materia}`,
           source: String(idRequisito),
           target: String(materia.id_materia),
-          className: [
-            "arista",
-            requisitoAprobado ? "arista--cumplida" : "",
-            tocaSeleccionada ? "arista--activa" : "",
-          ]
+          // El color de la arista no depende del estado de la materia: lo
+          // elige el usuario y no se mueve. Sólo se resalta la que toca a la
+          // materia seleccionada.
+          className: ["arista", tocaSeleccionada ? "arista--activa" : ""]
             .filter(Boolean)
             .join(" "),
           animated: tocaSeleccionada && !requisitoAprobado,
@@ -200,7 +204,7 @@ export function Malla() {
     <div className="malla" ref={contenedor}>
       <ReactFlow
         nodes={nodos}
-        edges={aristas}
+        edges={mostrarEnlaces ? aristas : SIN_ARISTAS}
         nodeTypes={TIPOS_DE_NODO}
         onNodeClick={alClickNodo}
         onPaneClick={alClickFondo}

@@ -42,10 +42,6 @@
   stroke-width: 1.5;
 }
 
-.arista--cumplida .react-flow__edge-path {
-  stroke: var(--aprobada-borde);
-}
-
 .arista--activa .react-flow__edge-path {
   stroke: var(--arista-activa);
   stroke-width: 2.5;
@@ -99,11 +95,15 @@
   /* El alto lo fija React Flow desde `altoDeMateria`, que calcula cuántas
      líneas ocupa el nombre. */
   height: 100%;
-  border: 1.5px solid var(--sin-estado-borde);
+  /* El color del borde va en una variable porque la sombra lo usa también, y
+     en CSS no se puede leer `border-color` desde `box-shadow`. Cada estado
+     la redefine y las dos cosas lo siguen juntas. */
+  --materia-borde: var(--sin-estado-borde);
+  border: 1.5px solid var(--materia-borde);
   border-radius: var(--radio);
   background: var(--sin-estado-fondo);
   color: var(--sin-estado-texto);
-  box-shadow: var(--sombra);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--materia-borde) 45%, transparent);
   cursor: pointer;
   transition:
     border-color 0.12s ease,
@@ -159,14 +159,14 @@
 /* estados */
 
 .materia--regular {
+  --materia-borde: var(--regular-borde);
   background: var(--regular-fondo);
-  border-color: var(--regular-borde);
   color: var(--regular-texto);
 }
 
 .materia--aprobada {
+  --materia-borde: var(--aprobada-borde);
   background: var(--aprobada-fondo);
-  border-color: var(--aprobada-borde);
   color: var(--aprobada-texto);
 }
 
@@ -178,8 +178,8 @@
 
 /* Bloqueada por créditos: no se puede ni regularizar. Se ve apagada. */
 .materia--bloqueada_por_creditos {
+  --materia-borde: var(--bloqueada-borde);
   background: var(--bloqueada-fondo);
-  border-color: var(--bloqueada-borde);
   color: var(--bloqueada-texto);
 }
 
@@ -194,7 +194,7 @@
 }
 
 .materia--seleccionada {
-  border-color: var(--acento);
+  --materia-borde: var(--acento);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 25%, transparent);
 }
 

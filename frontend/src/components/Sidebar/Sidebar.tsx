@@ -1,11 +1,22 @@
-/** Panel lateral: carrera, progreso de créditos y acciones generales. */
+/**
+ * Panel lateral: carrera, progreso de créditos y acciones generales.
+ *
+ * Tiene dos vistas y muestra una o la otra, no las dos: el panel es angosto y
+ * en el teléfono es una barra, así que la personalización ocupa su lugar en
+ * vez de agregarse abajo.
+ */
+
+import { useState } from "react";
 
 import { creditosAprobados } from "../../domain/reglas";
 import { useMalla } from "../../store/useMalla";
+import { Personalizar } from "../Personalizar/Personalizar";
 import { Sesion } from "../Sesion/Sesion";
+import { IconoPaleta } from "./iconos";
 import "./Sidebar.css";
 
 export function Sidebar() {
+  const [personalizando, setPersonalizando] = useState(false);
   const carreras = useMalla((s) => s.carreras);
   const idCarrera = useMalla((s) => s.idCarrera);
   const plan = useMalla((s) => s.plan);
@@ -22,6 +33,14 @@ export function Sidebar() {
   const creditosTotales = materias.reduce((suma, m) => suma + m.creditos, 0);
   const porcentaje =
     creditosTotales > 0 ? Math.round((creditos / creditosTotales) * 100) : 0;
+
+  if (personalizando) {
+    return (
+      <aside className="sidebar sidebar--personalizando">
+        <Personalizar alVolver={() => setPersonalizando(false)} />
+      </aside>
+    );
+  }
 
   return (
     <aside className="sidebar">
@@ -71,28 +90,14 @@ export function Sidebar() {
             </p>
           </section>
 
-          <section className="sidebar__leyenda">
-            <h2>Referencias</h2>
-            <ul>
-              <li>
-                <span className="muestra muestra--aprobada" /> Aprobada
-              </li>
-              <li>
-                <span className="muestra muestra--regular" /> Regular
-              </li>
-              <li>
-                <span className="muestra muestra--sin-estado" /> Disponible
-              </li>
-              <li>
-                <span className="muestra muestra--correlativa" /> Falta la
-                correlativa (se puede regularizar)
-              </li>
-              <li>
-                <span className="muestra muestra--creditos" /> Sin los créditos
-                del año
-              </li>
-            </ul>
-          </section>
+          <button
+            type="button"
+            className="boton sidebar__personalizar"
+            onClick={() => setPersonalizando(true)}
+          >
+            <IconoPaleta />
+            Personalizar
+          </button>
         </>
       )}
 

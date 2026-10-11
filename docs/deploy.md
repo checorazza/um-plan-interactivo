@@ -28,9 +28,20 @@ La API cuelga de `/api` **también en desarrollo** (`Api(app, prefix='/api')` en
 `src/factory.py`). Si en local colgara de la raíz y en producción de `/api`,
 cualquier ruta mal armada aparecería recién al desplegar.
 
-El front compone la URL como `VITE_API_URL + "/api" + ruta`. En local
-`VITE_API_URL` es `http://127.0.0.1:5000`; en Vercel va **vacío**, y las
-llamadas salen relativas al mismo dominio.
+El front compone la URL como `VITE_API_URL + "/api" + ruta`, y `VITE_API_URL`
+va **vacío** en los dos lados: las llamadas salen relativas al mismo dominio.
+En Vercel eso lo resuelve el propio proyecto, que manda `/api/*` al servicio
+de Flask; en desarrollo lo hace el proxy de Vite (`server.proxy` en
+`vite.config.ts`).
+
+Que en local también sea el mismo origen no es un detalle: con llamadas
+cruzadas, el front tenía que estar en la lista de `CORS_ORIGINS` del backend,
+y el puerto de Vite no es fijo —si 5173 está ocupado se mueve al 5174 sin
+avisar—. El navegador bloqueaba la llamada y la app lo mostraba como "no se
+pudo conectar con el servidor", que manda a buscar el problema en el lugar
+equivocado.
+
+`VITE_API_URL` sigue existiendo para apuntar a una API en otro dominio.
 
 ### Por qué hay un `pyproject.toml` en `backend/`
 
