@@ -1,5 +1,6 @@
 from flask_restful import Resource, abort, reqparse
 
+from src.auth.guards import requiere_admin
 from src.domain.correlativas import CorrelativaInvalida, validar_correlativas_db
 from src.models import db
 from src.models.materia import Materia as MateriaModel
@@ -33,6 +34,7 @@ class Materias(Resource):  # Lista de materias
     def get(self):
         return [m.to_json() for m in MateriaModel.query.all()], 200
 
+    @requiere_admin
     def post(self):
         args = parser.parse_args()
         materia = MateriaModel(
@@ -53,6 +55,7 @@ class Materia(Resource):  # Materia individual
     def get(self, id_materia):
         return db.get_or_404(MateriaModel, id_materia).to_json(), 200
 
+    @requiere_admin
     def put(self, id_materia):
         materia = db.get_or_404(MateriaModel, id_materia)
         args = parser.parse_args()
@@ -64,6 +67,7 @@ class Materia(Resource):  # Materia individual
         db.session.commit()
         return materia.to_json(), 200
 
+    @requiere_admin
     def delete(self, id_materia):
         materia = db.get_or_404(MateriaModel, id_materia)
         db.session.delete(materia)

@@ -20,12 +20,13 @@ def test_get_materias_lista_correlativas(client, plan):
     assert 'es_aprobada' not in por_nombre['Cálculo I']
 
 
-def test_post_materia_con_varias_correlativas(client, plan):
+def test_post_materia_con_varias_correlativas(client, plan, auth_admin):
     calculo1 = plan['materias']['calculo1']
     algebra = plan['materias']['algebra']
 
     respuesta = client.post(
         '/materias',
+        headers=auth_admin,
         json={
             'codigo': '2030',
             'nombre': 'Análisis Numérico',
@@ -41,9 +42,10 @@ def test_post_materia_con_varias_correlativas(client, plan):
     )
 
 
-def test_post_materia_sin_correlativas(client, plan):
+def test_post_materia_sin_correlativas(client, plan, auth_admin):
     respuesta = client.post(
         '/materias',
+        headers=auth_admin,
         json={
             'codigo': '0009',
             'nombre': 'Introducción a la Programación',
@@ -55,9 +57,10 @@ def test_post_materia_sin_correlativas(client, plan):
     assert respuesta.json['correlativas'] == []
 
 
-def test_post_rechaza_correlativa_inexistente(client, plan):
+def test_post_rechaza_correlativa_inexistente(client, plan, auth_admin):
     respuesta = client.post(
         '/materias',
+        headers=auth_admin,
         json={
             'codigo': 'XXXX',
             'nombre': 'Materia Fantasma',
@@ -70,7 +73,7 @@ def test_post_rechaza_correlativa_inexistente(client, plan):
     assert 'No existen' in respuesta.json['message']
 
 
-def test_put_rechaza_ciclo(client, plan):
+def test_put_rechaza_ciclo(client, plan, auth_admin):
     calculo1 = plan['materias']['calculo1']
     calculo2 = plan['materias']['calculo2']
     calculo2.correlativas = [calculo1]
@@ -79,6 +82,7 @@ def test_put_rechaza_ciclo(client, plan):
     # Cálculo I no puede requerir Cálculo II, que ya requiere Cálculo I
     respuesta = client.put(
         f'/materias/{calculo1.id_materia}',
+        headers=auth_admin,
         json={
             'codigo': '0003',
             'nombre': 'Cálculo I',
@@ -91,10 +95,11 @@ def test_put_rechaza_ciclo(client, plan):
     assert 'ciclo' in respuesta.json['message']
 
 
-def test_put_rechaza_autoreferencia(client, plan):
+def test_put_rechaza_autoreferencia(client, plan, auth_admin):
     calculo1 = plan['materias']['calculo1']
     respuesta = client.put(
         f'/materias/{calculo1.id_materia}',
+        headers=auth_admin,
         json={
             'codigo': '0003',
             'nombre': 'Cálculo I',
@@ -107,7 +112,7 @@ def test_put_rechaza_autoreferencia(client, plan):
     assert 'de sí misma' in respuesta.json['message']
 
 
-def test_put_reemplaza_las_correlativas(client, plan):
+def test_put_reemplaza_las_correlativas(client, plan, auth_admin):
     calculo1 = plan['materias']['calculo1']
     algebra = plan['materias']['algebra']
     calculo2 = plan['materias']['calculo2']
@@ -116,6 +121,7 @@ def test_put_reemplaza_las_correlativas(client, plan):
 
     respuesta = client.put(
         f'/materias/{calculo2.id_materia}',
+        headers=auth_admin,
         json={
             'codigo': '0004',
             'nombre': 'Cálculo II',

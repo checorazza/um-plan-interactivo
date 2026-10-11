@@ -2,6 +2,7 @@
 from flask_restful import Resource, reqparse
 from src.models import db
 from src.models.carrera import Carrera as CarreraModel
+from src.auth.guards import requiere_admin
 
 # El parser valida y extrae los datos que llegan en el body del request
 parser = reqparse.RequestParser()
@@ -15,6 +16,7 @@ class Carreras(Resource): #Listado de carreras
         carreras = CarreraModel.query.all()
         return [c.to_json() for c in carreras], 200
 
+    @requiere_admin
     def post(self):
         # Crea una carrera nueva
         args = parser.parse_args()
@@ -30,6 +32,7 @@ class Carrera(Resource): #Carrera individual
         carrera = db.get_or_404(CarreraModel, id_carrera)
         return carrera.to_json(), 200
 
+    @requiere_admin
     def put(self, id_carrera):
         carrera = db.get_or_404(CarreraModel, id_carrera)
         args = parser.parse_args()
@@ -37,6 +40,7 @@ class Carrera(Resource): #Carrera individual
         db.session.commit()
         return carrera.to_json(), 200
 
+    @requiere_admin
     def delete(self, id_carrera):
         carrera = db.get_or_404(CarreraModel, id_carrera)
         db.session.delete(carrera)

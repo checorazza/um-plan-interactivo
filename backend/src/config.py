@@ -4,6 +4,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ORIGENES_POR_DEFECTO = 'http://localhost:5173,http://127.0.0.1:5173'
 
+# HS256 firma con HMAC-SHA256: por debajo de 32 bytes la clave es más corta que
+# el hash y PyJWT avisa. Ver RFC 7518, sección 3.2.
+LARGO_MINIMO_SECRETO = 32
+
 
 def _lista(valor):
     return [x.strip() for x in valor.split(',') if x.strip()]
@@ -35,7 +39,11 @@ class Config:
             os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 60 * 60 * 24 * 7)
         )
         self.GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-        self.CORS_ORIGINS = _lista(os.getenv('CORS_ORIGINS', ORIGENES_POR_DEFECTO))
+        # Una variable definida pero vacía cuenta como ausente: si no, CORS
+        # quedaría con lista vacía y bloquearía todos los orígenes.
+        self.CORS_ORIGINS = _lista(
+            os.getenv('CORS_ORIGINS') or ORIGENES_POR_DEFECTO
+        )
         self.PORT = int(os.getenv('PORT', 5000))
 
     def as_dict(self):
@@ -54,6 +62,6 @@ class ConfigTest(Config):
     def __init__(self):
         super().__init__()
         self.SQLALCHEMY_DATABASE_URI = 'sqlite://'
-        self.JWT_SECRET_KEY = 'test'
+        self.JWT_SECRET_KEY = 'x' * LARGO_MINIMO_SECRETO
         self.GOOGLE_CLIENT_ID = 'test-client-id'
         self.CORS_ORIGINS = ['http://localhost:5173']
