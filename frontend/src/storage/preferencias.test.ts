@@ -54,6 +54,7 @@ describe("preferencias", () => {
     const preferencias = {
       tema: "oscuro" as const,
       mostrarEnlaces: false,
+      ocultarEnlacesAprobados: true,
       fondo: "#102030",
       colorEnlaces: "#445566",
       colores: {
@@ -84,6 +85,18 @@ describe("preferencias", () => {
   it("aguanta basura en el storage", () => {
     almacen.setItem(CLAVE, "no es json");
     expect(leerPreferencias()).toEqual(POR_DEFECTO);
+  });
+
+  it("las opciones de enlaces tienen su propio valor por defecto", () => {
+    // Mostrar los enlaces viene en sí; esconder los de las aprobadas, en no.
+    almacen.setItem(
+      CLAVE,
+      JSON.stringify({ version: VERSION_PREFERENCIAS }),
+    );
+
+    const preferencias = leerPreferencias();
+    expect(preferencias.mostrarEnlaces).toBe(true);
+    expect(preferencias.ocultarEnlacesAprobados).toBe(false);
   });
 
   it("descarta un tema que no existe", () => {

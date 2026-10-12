@@ -48,6 +48,11 @@ export type Colores = Record<ClaveColor, string | null>;
 export interface Preferencias {
   tema: Tema;
   mostrarEnlaces: boolean;
+  /**
+   * Esconde el enlace cuando las dos materias que une están aprobadas: ya no
+   * dice nada que el color de las tarjetas no diga.
+   */
+  ocultarEnlacesAprobados: boolean;
   fondo: string | null;
   /** El color de las líneas entre materias. */
   colorEnlaces: string | null;
@@ -57,6 +62,7 @@ export interface Preferencias {
 export const POR_DEFECTO: Preferencias = {
   tema: "auto",
   mostrarEnlaces: true,
+  ocultarEnlacesAprobados: false,
   fondo: null,
   colorEnlaces: null,
   colores: {
@@ -104,6 +110,7 @@ export function leerPreferencias(): Preferencias {
     tema: TEMAS.includes(crudo.tema as Tema) ? (crudo.tema as Tema) : "auto",
     mostrarEnlaces:
       typeof crudo.mostrarEnlaces === "boolean" ? crudo.mostrarEnlaces : true,
+    ocultarEnlacesAprobados: crudo.ocultarEnlacesAprobados === true,
     fondo: sanearColor(crudo.fondo),
     colorEnlaces: sanearColor(crudo.colorEnlaces),
     colores: sanearColores(crudo.colores),

@@ -70,6 +70,9 @@ export function Malla() {
   const desbloquear = useMalla((s) => s.desbloquear);
   const esAngosto = useEsAngosto();
   const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
+  const ocultarEnlacesAprobados = usePreferencias(
+    (s) => s.ocultarEnlacesAprobados,
+  );
 
   // El menú del click derecho y el diálogo que puede abrir. Viven acá y no
   // en el store: no los necesita nadie más, y se pierden al cambiar de
@@ -126,6 +129,17 @@ export function Malla() {
     for (const materia of plan.materias.values()) {
       for (const idRequisito of materia.correlativas) {
         const requisitoAprobado = estados[idRequisito] === "aprobada";
+
+        // Las dos aprobadas: el enlace ya no dice nada que no digan las
+        // tarjetas, y son los que más ensucian a medida que la malla avanza.
+        if (
+          ocultarEnlacesAprobados &&
+          requisitoAprobado &&
+          estados[materia.id_materia] === "aprobada"
+        ) {
+          continue;
+        }
+
         const tocaSeleccionada =
           seleccionada === materia.id_materia || seleccionada === idRequisito;
 
@@ -145,7 +159,7 @@ export function Malla() {
     }
 
     return { nodos: [...nodosAnio, ...nodosMateria], aristas };
-  }, [plan, estados, seleccionada, desbloqueadas]);
+  }, [plan, estados, seleccionada, desbloqueadas, ocultarEnlacesAprobados]);
 
   const alClickNodo: NodeMouseHandler = useCallback(
     (_evento, nodo) => {

@@ -309,3 +309,19 @@
   border: 1px solid var(--borde);
   border-radius: 4px;
 }
+
+/* La opción que depende de la de arriba: sangrada, y apagada cuando la
+   padre está destildada. */
+.interruptor--hijo {
+  margin-left: 23px;
+}
+
+.interruptor:has(input:disabled) {
+  color: var(--texto-suave);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.interruptor input:disabled {
+  cursor: default;
+}

@@ -103,6 +103,7 @@ export function aplicar(preferencias: Preferencias): void {
 interface EstadoPreferencias extends Preferencias {
   cambiarTema: (tema: Tema) => void;
   cambiarEnlaces: (mostrar: boolean) => void;
+  cambiarEnlacesAprobados: (ocultar: boolean) => void;
   cambiarFondo: (color: string | null) => void;
   cambiarColorEnlaces: (color: string | null) => void;
   cambiarColor: (clave: ClaveColor, color: string | null) => void;
@@ -128,6 +129,8 @@ export const usePreferencias = create<EstadoPreferencias>((set) => {
 
     cambiarTema: (tema) => asentar({ tema }),
     cambiarEnlaces: (mostrarEnlaces) => asentar({ mostrarEnlaces }),
+    cambiarEnlacesAprobados: (ocultarEnlacesAprobados) =>
+      asentar({ ocultarEnlacesAprobados }),
     cambiarFondo: (fondo) => asentar({ fondo }),
     cambiarColorEnlaces: (colorEnlaces) => asentar({ colorEnlaces }),
     cambiarColor: (clave, color) =>

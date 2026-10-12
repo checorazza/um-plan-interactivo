@@ -70,11 +70,17 @@ interface Props {
 export function Personalizar({ alVolver }: Props) {
   const tema = usePreferencias((s) => s.tema);
   const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
+  const ocultarEnlacesAprobados = usePreferencias(
+    (s) => s.ocultarEnlacesAprobados,
+  );
   const fondo = usePreferencias((s) => s.fondo);
   const colorEnlaces = usePreferencias((s) => s.colorEnlaces);
   const colores = usePreferencias((s) => s.colores);
   const cambiarTema = usePreferencias((s) => s.cambiarTema);
   const cambiarEnlaces = usePreferencias((s) => s.cambiarEnlaces);
+  const cambiarEnlacesAprobados = usePreferencias(
+    (s) => s.cambiarEnlacesAprobados,
+  );
   const cambiarFondo = usePreferencias((s) => s.cambiarFondo);
   const cambiarColorEnlaces = usePreferencias((s) => s.cambiarColorEnlaces);
   const cambiarColor = usePreferencias((s) => s.cambiarColor);
@@ -90,6 +96,7 @@ export function Personalizar({ alVolver }: Props) {
   const sinCambios =
     tema === "auto" &&
     mostrarEnlaces &&
+    !ocultarEnlacesAprobados &&
     fondo === null &&
     colorEnlaces === null &&
     CLAVES_COLOR.every((clave) => colores[clave] === null);
@@ -168,6 +175,19 @@ export function Personalizar({ alVolver }: Props) {
             onChange={(evento) => cambiarEnlaces(evento.target.checked)}
           />
           <span>Mostrar los enlaces entre materias</span>
+        </label>
+
+        {/* Sin enlaces no hay nada que esconder, así que la opción se
+            deshabilita en vez de desaparecer: si desapareciera, destildar la
+            de arriba movería la lista. */}
+        <label className="interruptor interruptor--hijo">
+          <input
+            type="checkbox"
+            checked={ocultarEnlacesAprobados}
+            disabled={!mostrarEnlaces}
+            onChange={(evento) => cambiarEnlacesAprobados(evento.target.checked)}
+          />
+          <span>Ocultar los que unen dos materias aprobadas</span>
         </label>
       </section>
 
