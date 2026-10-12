@@ -76,6 +76,7 @@ export function Personalizar({ alVolver }: Props) {
   const fondo = usePreferencias((s) => s.fondo);
   const colorEnlaces = usePreferencias((s) => s.colorEnlaces);
   const colores = usePreferencias((s) => s.colores);
+  const festejar = usePreferencias((s) => s.festejar);
   const cambiarTema = usePreferencias((s) => s.cambiarTema);
   const cambiarEnlaces = usePreferencias((s) => s.cambiarEnlaces);
   const cambiarEnlacesAprobados = usePreferencias(
@@ -84,6 +85,7 @@ export function Personalizar({ alVolver }: Props) {
   const cambiarFondo = usePreferencias((s) => s.cambiarFondo);
   const cambiarColorEnlaces = usePreferencias((s) => s.cambiarColorEnlaces);
   const cambiarColor = usePreferencias((s) => s.cambiarColor);
+  const cambiarFestejo = usePreferencias((s) => s.cambiarFestejo);
   const restablecer = usePreferencias((s) => s.restablecer);
 
   const [abierto, setAbierto] = useState<Abierto>(null);
@@ -97,6 +99,7 @@ export function Personalizar({ alVolver }: Props) {
     tema === "auto" &&
     mostrarEnlaces &&
     !ocultarEnlacesAprobados &&
+    festejar &&
     fondo === null &&
     colorEnlaces === null &&
     CLAVES_COLOR.every((clave) => colores[clave] === null);
@@ -188,6 +191,15 @@ export function Personalizar({ alVolver }: Props) {
             onChange={(evento) => cambiarEnlacesAprobados(evento.target.checked)}
           />
           <span>Ocultar los que unen dos materias aprobadas</span>
+        </label>
+
+        <label className="interruptor">
+          <input
+            type="checkbox"
+            checked={festejar}
+            onChange={(evento) => cambiarFestejo(evento.target.checked)}
+          />
+          <span>Festejar al aprobar, con confeti y sonido</span>
         </label>
       </section>
 

@@ -46,7 +46,7 @@ import {
   registrarBasica,
 } from "../storage/local";
 import type { Carrera } from "../types/carrera";
-import type { Estado, Estados } from "../types/estado";
+import type { Estado, Estados, Vencimientos } from "../types/estado";
 import type { Plan, RespuestaPlan } from "../types/plan";
 import { useSesion } from "./useSesion";
 
@@ -57,6 +57,14 @@ export interface CascadaPendiente {
   nuevoEstado: Estado | null;
   estados: Estados;
   revertidas: Revertida[];
+}
+
+/** Una regularidad esperando que el usuario elija hasta cuándo vale. */
+export interface RegularidadPendiente {
+  idMateria: number;
+  nombre: string;
+  /** La fecha que ya tenía, si se está editando en vez de estrenando. */
+  actual: string | null;
 }
 
 /** Cómo resolver un progreso local y uno de la nube que no coinciden. */
@@ -84,6 +92,13 @@ interface EstadoMalla {
    * créditos del año y de las correlativas hasta que se las desmarca.
    */
   desbloqueadas: Set<number>;
+  /**
+   * Hasta cuándo vale la regularidad de cada materia.
+   *
+   * No cambia ninguna regla: una regularidad vencida no desmarca ni bloquea
+   * nada, sólo se muestra en rojo.
+   */
+  vencimientos: Vencimientos;
 
   cargando: boolean;
   error: string | null;
@@ -102,6 +117,7 @@ interface EstadoMalla {
   /** Materia con el menú de acciones abierto. */
   seleccionada: number | null;
   cascada: CascadaPendiente | null;
+  regularidad: RegularidadPendiente | null;
 
   cargarCarreras: () => Promise<void>;
   /**
@@ -122,6 +138,11 @@ interface EstadoMalla {
   marcar: (idMateria: number, nuevoEstado: Estado | null) => void;
   confirmarCascada: () => void;
   cancelarCascada: () => void;
+  /** Abre el selector de fecha para una materia ya regular. */
+  pedirRegularidad: (idMateria: number) => void;
+  /** Guarda la fecha elegida, o la quita con `null`. */
+  fijarRegularidad: (fecha: string | null) => void;
+  cerrarRegularidad: () => void;
   reiniciar: () => void;
   descartarAviso: () => void;
 
@@ -184,8 +205,22 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     if (!plan) return;
 
     anotarBasicas(plan, antes, estados);
+    // Una materia que dejó de estar regular no conserva su vencimiento: la
+    // fecha era de esa regularidad, no de la materia.
+    const vencimientos: Vencimientos = {};
+    for (const [idMateria, fecha] of Object.entries(get().vencimientos)) {
+      if (estados[Number(idMateria)] === "regular") {
+        vencimientos[Number(idMateria)] = fecha;
+      }
+    }
     set({
-      sinPersistencia: !guardarDeCarrera(plan, estados, get().desbloqueadas),
+      vencimientos,
+      sinPersistencia: !guardarDeCarrera(
+        plan,
+        estados,
+        get().desbloqueadas,
+        vencimientos,
+      ),
     });
     programarEmpuje();
   }
@@ -239,7 +274,11 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       guardado.estados,
       guardado.desbloqueadas,
     );
-    set({ estados, desbloqueadas: guardado.desbloqueadas });
+    set({
+      estados,
+      desbloqueadas: guardado.desbloqueadas,
+      vencimientos: guardado.vencimientos,
+    });
   }
 
   return {
@@ -248,6 +287,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     plan: null,
     estados: {},
     desbloqueadas: new Set(),
+    vencimientos: {},
     cargando: false,
     error: null,
     descartadas: [],
@@ -257,6 +297,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     conflicto: null,
     seleccionada: null,
     cascada: null,
+    regularidad: null,
 
     cargarCarreras: async () => {
       if (cargaEnCurso) return cargaEnCurso;
@@ -331,6 +372,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
           plan,
           estados,
           desbloqueadas: guardado.desbloqueadas,
+          vencimientos: guardado.vencimientos,
           descartadas: aAvisar,
           cargando: false,
         });
@@ -344,6 +386,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
               plan,
               estados,
               guardado.desbloqueadas,
+              guardado.vencimientos,
             ),
           });
           programarEmpuje();
@@ -409,6 +452,9 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       set({ estados: cambio.estados, error: null });
       persistir(cambio.estados, estados);
       if (nuevoEstado === "aprobada") celebrar();
+      // Recién acá, con la materia ya regular: el diálogo sólo elige la
+      // fecha, no decide si el cambio se aplica.
+      if (nuevoEstado === "regular") get().pedirRegularidad(idMateria);
     },
 
     confirmarCascada: () => {
@@ -418,16 +464,59 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       set({ estados: cascada.estados, cascada: null, error: null });
       persistir(cascada.estados, antes);
       if (cascada.nuevoEstado === "aprobada") celebrar();
+      if (cascada.nuevoEstado === "regular") {
+        get().pedirRegularidad(cascada.idMateria);
+      }
     },
 
     cancelarCascada: () => set({ cascada: null }),
+
+    pedirRegularidad: (idMateria) => {
+      const { plan, estados, vencimientos } = get();
+      if (!plan || estados[idMateria] !== "regular") return;
+      set({
+        regularidad: {
+          idMateria,
+          nombre: plan.materias.get(idMateria)?.nombre ?? `#${idMateria}`,
+          actual: vencimientos[idMateria] ?? null,
+        },
+      });
+    },
+
+    fijarRegularidad: (fecha) => {
+      const { plan, estados, regularidad, vencimientos } = get();
+      if (!plan || !regularidad) return;
+
+      const siguiente = { ...vencimientos };
+      // Guardar una fecha de algo que ya no está regular no tiene sentido, y
+      // además reaparecería al volver a regularizar la materia.
+      if (fecha && estados[regularidad.idMateria] === "regular") {
+        siguiente[regularidad.idMateria] = fecha;
+      } else {
+        delete siguiente[regularidad.idMateria];
+      }
+
+      set({ vencimientos: siguiente, regularidad: null });
+      set({
+        sinPersistencia: !guardarDeCarrera(
+          plan,
+          estados,
+          get().desbloqueadas,
+          siguiente,
+        ),
+      });
+    },
+
+    cerrarRegularidad: () => set({ regularidad: null }),
 
     reiniciar: () => {
       set({
         estados: {},
         desbloqueadas: new Set(),
+        vencimientos: {},
         seleccionada: null,
         cascada: null,
+        regularidad: null,
         descartadas: [],
       });
       borrarProgreso();
@@ -509,7 +598,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
 
       if (borrar) {
         borrarProgreso();
-        set({ estados: {}, desbloqueadas: new Set() });
+        set({ estados: {}, desbloqueadas: new Set(), vencimientos: {} });
       }
       set({ sync: "local", errorSync: null, conflicto: null });
     },

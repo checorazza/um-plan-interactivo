@@ -1,0 +1,39 @@
+/* Un diálogo de una sola pregunta: más angosto que el de la cascada, que
+   lista materias. */
+.dialogo--angosto {
+  width: min(380px, 100%);
+}
+
+.regularidad__campo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.regularidad__campo label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.regularidad__campo input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+}
+
+.regularidad__campo input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+}

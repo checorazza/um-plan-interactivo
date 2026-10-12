@@ -63,6 +63,7 @@ describe("preferencias", () => {
         disponible: null,
         sinCreditos: "#123456",
       },
+      festejar: false,
     };
     expect(guardarPreferencias(preferencias)).toBe(true);
     expect(leerPreferencias()).toEqual(preferencias);
@@ -97,6 +98,9 @@ describe("preferencias", () => {
     const preferencias = leerPreferencias();
     expect(preferencias.mostrarEnlaces).toBe(true);
     expect(preferencias.ocultarEnlacesAprobados).toBe(false);
+    // El festejo viene en sí: apagarlo es la excepción, así que sólo un
+    // `false` explícito lo apaga.
+    expect(preferencias.festejar).toBe(true);
   });
 
   it("descarta un tema que no existe", () => {

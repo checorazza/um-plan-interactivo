@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Avisos } from "./components/Avisos/Avisos";
 import { ConfirmacionCascada } from "./components/ConfirmacionCascada/ConfirmacionCascada";
 import { DialogoConflicto } from "./components/DialogoConflicto/DialogoConflicto";
+import { DialogoRegularidad } from "./components/DialogoRegularidad/DialogoRegularidad";
 import { Malla } from "./components/Malla/Malla";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { useMalla } from "./store/useMalla";
@@ -57,6 +58,7 @@ function App() {
       </main>
 
       <ConfirmacionCascada />
+      <DialogoRegularidad />
       <DialogoConflicto />
     </div>
   );

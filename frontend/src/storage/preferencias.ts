@@ -57,6 +57,8 @@ export interface Preferencias {
   /** El color de las líneas entre materias. */
   colorEnlaces: string | null;
   colores: Colores;
+  /** Confeti y sonido al aprobar una materia. */
+  festejar: boolean;
 }
 
 export const POR_DEFECTO: Preferencias = {
@@ -71,6 +73,7 @@ export const POR_DEFECTO: Preferencias = {
     disponible: null,
     sinCreditos: null,
   },
+  festejar: true,
 };
 
 const HEXA = /^#[0-9a-f]{6}$/i;
@@ -114,6 +117,7 @@ export function leerPreferencias(): Preferencias {
     fondo: sanearColor(crudo.fondo),
     colorEnlaces: sanearColor(crudo.colorEnlaces),
     colores: sanearColores(crudo.colores),
+    festejar: crudo.festejar !== false,
   };
 }
 

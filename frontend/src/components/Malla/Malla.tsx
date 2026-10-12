@@ -79,6 +79,8 @@ export function Malla() {
   const seleccionada = useMalla((s) => s.seleccionada);
   const seleccionar = useMalla((s) => s.seleccionar);
   const desbloqueadas = useMalla((s) => s.desbloqueadas);
+  const vencimientos = useMalla((s) => s.vencimientos);
+  const pedirRegularidad = useMalla((s) => s.pedirRegularidad);
   const desbloquear = useMalla((s) => s.desbloquear);
   const esAngosto = useEsAngosto();
   const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
@@ -128,6 +130,7 @@ export function Malla() {
         height: altoDeMateria(materia.nombre),
         data: {
           desbloqueada: desbloqueadas.has(materia.id_materia),
+          vencimiento: vencimientos[materia.id_materia],
           idMateria: materia.id_materia,
           codigo: materia.codigo,
           nombre: materia.nombre,
@@ -172,7 +175,14 @@ export function Malla() {
     }
 
     return { nodos: [...nodosAnio, ...nodosMateria], aristas };
-  }, [plan, estados, seleccionada, desbloqueadas, ocultarEnlacesAprobados]);
+  }, [
+    plan,
+    estados,
+    seleccionada,
+    desbloqueadas,
+    vencimientos,
+    ocultarEnlacesAprobados,
+  ]);
 
   const alClickNodo: NodeMouseHandler = useCallback(
     (_evento, nodo) => {
@@ -188,26 +198,32 @@ export function Malla() {
   /**
    * Click derecho sobre un nodo.
    *
-   * El menú sólo tiene sentido sobre una materia bloqueada y sin marcar: si
-   * ya se puede marcar, no hay nada que desbloquear, y si ya está marcada el
-   * camino es el menú de acciones del click común.
+   * Tiene dos usos: desbloquear una materia que no se puede marcar, y
+   * ponerle o cambiarle la fecha a una regularidad. Sobre una materia
+   * disponible y sin marcar no hay nada que ofrecer.
    */
   const alClickDerechoNodo: NodeMouseHandler = useCallback(
     (evento, nodo) => {
       if (!plan || nodo.type !== "materia") return;
 
       const idMateria = Number(nodo.id);
-      if (estados[idMateria]) return;
-      if (desbloqueadas.has(idMateria)) return;
+      const estado = estados[idMateria];
 
-      const bloqueo = estadoDeBloqueo(plan, estados, idMateria, desbloqueadas);
-      if (bloqueo === "disponible") return;
+      const puedeDesbloquearse =
+        !estado &&
+        !desbloqueadas.has(idMateria) &&
+        estadoDeBloqueo(plan, estados, idMateria, desbloqueadas) !==
+          "disponible";
+
+      if (!puedeDesbloquearse && estado !== "regular") return;
 
       setMenu({
         idMateria,
         nombre: plan.materias.get(idMateria)?.nombre ?? `#${idMateria}`,
         x: evento.clientX,
         y: evento.clientY,
+        puedeDesbloquearse,
+        esRegular: estado === "regular",
       });
     },
     [plan, estados, desbloqueadas],
@@ -361,6 +377,7 @@ export function Malla() {
         <MenuMateria
           menu={menu}
           onDesbloquear={abrirDesbloqueo}
+          onRegularidad={() => pedirRegularidad(menu.idMateria)}
           onCerrar={() => setMenu(null)}
         />
       )}

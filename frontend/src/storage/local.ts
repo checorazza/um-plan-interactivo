@@ -27,7 +27,8 @@
  * corregir un plan borraba en silencio el progreso de todo el mundo.
  */
 
-import type { Estado, Estados } from "../types/estado";
+import { sanearFecha } from "../domain/fechas";
+import type { Estado, Estados, Vencimientos } from "../types/estado";
 import type { Plan } from "../types/plan";
 import type { Usuario } from "../types/usuario";
 import {
@@ -47,8 +48,9 @@ import {
  * - 4: se agregan las claves naturales, y las básicas pasan a ir por código
  *      en vez de por id de grupo.
  * - 5: se agregan las materias desbloqueadas a mano.
+ * - 6: se agregan las fechas de vencimiento de las regularidades.
  */
-export const VERSION = 5;
+export const VERSION = 6;
 
 const CLAVE_ESTADOS = `${PREFIJO}:estados`;
 const CLAVE_CARRERA = `${PREFIJO}:carrera`;
@@ -72,6 +74,8 @@ interface Guardado {
   basicas: Record<string, Estado>;
   /** Ids de las materias que el usuario desbloqueó a mano. */
   desbloqueadas: number[];
+  /** Vencimiento de cada regularidad, por id de materia. */
+  vencimientos: Vencimientos;
   actualizadoEn: string;
 }
 
@@ -123,6 +127,19 @@ function sanearIds(valor: unknown): Set<number> {
   return ids;
 }
 
+/** Igual que `sanearForma`, para las fechas de vencimiento. */
+function sanearVencimientos(valor: unknown): Vencimientos {
+  if (!valor || typeof valor !== "object" || Array.isArray(valor)) return {};
+  const vencimientos: Vencimientos = {};
+  for (const [clave, fecha] of Object.entries(valor as Record<string, unknown>)) {
+    const idMateria = Number(clave);
+    if (!Number.isInteger(idMateria) || idMateria <= 0) continue;
+    const sana = sanearFecha(fecha);
+    if (sana) vencimientos[idMateria] = sana;
+  }
+  return vencimientos;
+}
+
 /** Igual que `sanearForma`, pero indexado por código de básica. */
 function sanearPorCodigo(valor: unknown): Record<string, Estado> {
   if (!valor || typeof valor !== "object" || Array.isArray(valor)) return {};
@@ -171,6 +188,7 @@ interface Contenido {
   claves: Record<string, Clave>;
   basicas: Record<string, Estado>;
   desbloqueadas: Set<number>;
+  vencimientos: Vencimientos;
 }
 
 /** Lo guardado, ya llevado al formato actual. */
@@ -185,16 +203,18 @@ function leerGuardado(): Contenido {
         claves: sanearClaves(dato.claves),
         basicas: sanearPorCodigo(dato.basicas),
         desbloqueadas: sanearIds(dato.desbloqueadas),
+        vencimientos: sanearVencimientos(dato.vencimientos),
       };
     }
-    // La 4 es la 5 sin desbloqueos: no había ninguno, así que se adopta tal
-    // cual y el resto del progreso se conserva.
-    if (dato.version === 4) {
+    // Las 4 y 5 son ésta sin desbloqueos o sin vencimientos: lo que falta no
+    // existía, así que se adopta tal cual y el progreso se conserva.
+    if (dato.version === 4 || dato.version === 5) {
       return {
         estados: sanearForma(dato.estados),
         claves: sanearClaves(dato.claves),
         basicas: sanearPorCodigo(dato.basicas),
-        desbloqueadas: new Set(),
+        desbloqueadas: dato.version === 5 ? sanearIds(dato.desbloqueadas) : new Set(),
+        vencimientos: {},
       };
     }
     // Las versiones 2 y 3 guardaban los estados por id, igual que ahora, pero
@@ -208,10 +228,17 @@ function leerGuardado(): Contenido {
         claves: {},
         basicas: {},
         desbloqueadas: new Set(),
+        vencimientos: {},
       };
     }
     // Versión desconocida (de una app más nueva, o dato corrupto): se ignora.
-    return { estados: {}, claves: {}, basicas: {}, desbloqueadas: new Set() };
+    return {
+      estados: {},
+      claves: {},
+      basicas: {},
+      desbloqueadas: new Set(),
+      vencimientos: {},
+    };
   }
 
   return {
@@ -219,6 +246,7 @@ function leerGuardado(): Contenido {
     claves: {},
     basicas: {},
     desbloqueadas: new Set(),
+    vencimientos: {},
   };
 }
 
@@ -242,6 +270,7 @@ export interface Aparte {
   basicas?: Record<string, Estado>;
   claves?: Record<string, Clave>;
   desbloqueadas?: Set<number>;
+  vencimientos?: Vencimientos;
 }
 
 /** Guarda todo el progreso. Devuelve `false` si el navegador no lo permitió. */
@@ -255,6 +284,7 @@ export function guardarTodo(estados: Estados, aparte: Aparte = {}): boolean {
     desbloqueadas: [...(aparte.desbloqueadas ?? previo.desbloqueadas)].sort(
       (a, b) => a - b,
     ),
+    vencimientos: aparte.vencimientos ?? previo.vencimientos,
     actualizadoEn: new Date().toISOString(),
   };
   return escribirCrudo(CLAVE_ESTADOS, guardado);
@@ -263,6 +293,11 @@ export function guardarTodo(estados: Estados, aparte: Aparte = {}): boolean {
 /** Las materias desbloqueadas a mano, de todas las carreras. */
 export function leerDesbloqueadas(): Set<number> {
   return leerGuardado().desbloqueadas;
+}
+
+/** Los vencimientos de regularidad, de todas las carreras. */
+export function leerVencimientos(): Vencimientos {
+  return leerGuardado().vencimientos;
 }
 
 /**
@@ -322,6 +357,7 @@ export function adoptarBasicas(plan: Plan): void {
 export function leerDeCarrera(plan: Plan): {
   estados: Estados;
   desbloqueadas: Set<number>;
+  vencimientos: Vencimientos;
   propagados: number[];
 } {
   const {
@@ -329,20 +365,25 @@ export function leerDeCarrera(plan: Plan): {
     basicas,
     claves,
     desbloqueadas: todasDesbloqueadas,
+    vencimientos: todosVencimientos,
   } = leerGuardado();
 
   // Lo guardado, indexado por clave natural: así se puede recuperar aunque
   // el id haya cambiado porque se recargó el plan.
   const porClave = new Map<Clave, Estado>();
   const desbloqueadasPorClave = new Set<Clave>();
+  const vencimientosPorClave = new Map<Clave, string>();
   for (const [id, clave] of Object.entries(claves)) {
     const estado = todo[Number(id)];
     if (estado) porClave.set(clave, estado);
     if (todasDesbloqueadas.has(Number(id))) desbloqueadasPorClave.add(clave);
+    const vencimiento = todosVencimientos[Number(id)];
+    if (vencimiento) vencimientosPorClave.set(clave, vencimiento);
   }
 
   const estados: Estados = {};
   const desbloqueadas = new Set<number>();
+  const vencimientos: Vencimientos = {};
   const propagados: number[] = [];
   let huboRecuperacion = false;
 
@@ -355,6 +396,15 @@ export function leerDeCarrera(plan: Plan): {
       // otro id. El desbloqueo se recupera por carrera y código.
       desbloqueadas.add(idMateria);
       huboRecuperacion = true;
+    }
+
+    // Los vencimientos siguen el mismo camino que los estados: por id, y si
+    // el id ya no está, por carrera y código.
+    const vencimiento =
+      todosVencimientos[idMateria] ?? vencimientosPorClave.get(clave);
+    if (vencimiento) {
+      vencimientos[idMateria] = vencimiento;
+      if (todosVencimientos[idMateria] === undefined) huboRecuperacion = true;
     }
 
     if (materia.id_basica !== null) {
@@ -383,9 +433,11 @@ export function leerDeCarrera(plan: Plan): {
 
   // Lo recuperado se vuelve a guardar con los ids nuevos, así la próxima vez
   // se encuentra directo y los ids viejos dejan de ocupar lugar.
-  if (huboRecuperacion) guardarDeCarrera(plan, estados, desbloqueadas);
+  if (huboRecuperacion) {
+    guardarDeCarrera(plan, estados, desbloqueadas, vencimientos);
+  }
 
-  return { estados, desbloqueadas, propagados };
+  return { estados, desbloqueadas, vencimientos, propagados };
 }
 
 /**
@@ -396,12 +448,14 @@ export function guardarDeCarrera(
   plan: Plan,
   estados: Estados,
   desbloqueadas: Set<number> = new Set(),
+  vencimientos: Vencimientos = {},
 ): boolean {
   const {
     estados: todo,
     basicas,
     claves,
     desbloqueadas: todasDesbloqueadas,
+    vencimientos: todosVencimientos,
   } = leerGuardado();
 
   // Fuera lo viejo de esta carrera: por id actual y por clave natural, que
@@ -414,11 +468,13 @@ export function guardarDeCarrera(
     if (!deLaCarrera.has(clave)) continue;
     delete todo[Number(id)];
     delete claves[id];
+    delete todosVencimientos[Number(id)];
     todasDesbloqueadas.delete(Number(id));
   }
   for (const idMateria of plan.materias.keys()) {
     delete todo[idMateria];
     delete claves[idMateria];
+    delete todosVencimientos[idMateria];
     todasDesbloqueadas.delete(idMateria);
   }
 
@@ -443,10 +499,22 @@ export function guardarDeCarrera(
     claves[idMateria] = claveDe(plan.carrera.nombre, materia.codigo);
   }
 
+  // El vencimiento sólo vale mientras la materia está regular: si la
+  // aprobaron o la desmarcaron, no se guarda. Así no reaparece una fecha
+  // vieja al volver a regularizarla.
+  for (const [idMateria, fecha] of Object.entries(vencimientos)) {
+    const id = Number(idMateria);
+    const materia = plan.materias.get(id);
+    if (!materia || estados[id] !== "regular") continue;
+    todosVencimientos[id] = fecha;
+    claves[id] = claveDe(plan.carrera.nombre, materia.codigo);
+  }
+
   return guardarTodo(todo, {
     basicas,
     claves,
     desbloqueadas: todasDesbloqueadas,
+    vencimientos: todosVencimientos,
   });
 }
 

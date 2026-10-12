@@ -104,6 +104,7 @@ interface EstadoPreferencias extends Preferencias {
   cambiarTema: (tema: Tema) => void;
   cambiarEnlaces: (mostrar: boolean) => void;
   cambiarEnlacesAprobados: (ocultar: boolean) => void;
+  cambiarFestejo: (festejar: boolean) => void;
   cambiarFondo: (color: string | null) => void;
   cambiarColorEnlaces: (color: string | null) => void;
   cambiarColor: (clave: ClaveColor, color: string | null) => void;
@@ -131,6 +132,7 @@ export const usePreferencias = create<EstadoPreferencias>((set) => {
     cambiarEnlaces: (mostrarEnlaces) => asentar({ mostrarEnlaces }),
     cambiarEnlacesAprobados: (ocultarEnlacesAprobados) =>
       asentar({ ocultarEnlacesAprobados }),
+    cambiarFestejo: (festejar) => asentar({ festejar }),
     cambiarFondo: (fondo) => asentar({ fondo }),
     cambiarColorEnlaces: (colorEnlaces) => asentar({ colorEnlaces }),
     cambiarColor: (clave, color) =>

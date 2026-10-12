@@ -10,6 +10,8 @@
  * sonar, la materia se marca igual.
  */
 
+import { usePreferencias } from "../store/usePreferencias";
+
 /** Cuántas partículas salen por festejo. */
 const PARTICULAS = 90;
 /** Cuánto vive cada una, en segundos. */
@@ -235,9 +237,15 @@ function sonido() {
   }
 }
 
-/** Festeja una materia aprobada. No hace nada fuera del navegador. */
+/**
+ * Festeja una materia aprobada. No hace nada fuera del navegador.
+ *
+ * La preferencia se lee acá y no en quien llama: así el único lugar que sabe
+ * del festejo también es el único que sabe cuándo callarse.
+ */
 export function celebrar(): void {
   if (typeof document === "undefined") return;
+  if (!usePreferencias.getState().festejar) return;
   try {
     confeti();
   } catch {

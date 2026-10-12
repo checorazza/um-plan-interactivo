@@ -9,6 +9,7 @@
 
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 
+import { estaVencida, mostrarFecha } from "../../domain/fechas";
 import { estadoDeBloqueo, puedeAprobar, puedeRegularizar } from "../../domain/reglas";
 import { useMalla } from "../../store/useMalla";
 import type { Estado } from "../../types/estado";
@@ -29,6 +30,8 @@ export type DatosMateria = {
   estado: Estado | undefined;
   /** Exenta de las reglas porque el usuario la desbloqueó a mano. */
   desbloqueada: boolean;
+  /** Hasta cuándo vale la regularidad, si tiene fecha puesta. */
+  vencimiento: string | undefined;
 };
 
 export type NodoMateria = Node<DatosMateria, "materia">;
@@ -64,6 +67,15 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
     .filter(Boolean)
     .join(" ");
 
+  const vencida =
+    data.vencimiento !== undefined && estaVencida(data.vencimiento);
+
+  const sufijoVencimiento =
+    data.vencimiento === undefined
+      ? ""
+      : (vencida ? ", vencida el " : ", hasta el ") +
+        mostrarFecha(data.vencimiento);
+
   const etiquetaEstado = data.desbloqueada
     ? `${estado ?? "sin cursar"}, desbloqueada a mano`
     : estado === "aprobada"
@@ -85,8 +97,26 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
         <span className="materia__creditos">
           <span>
             {data.creditos} {data.creditos === 1 ? "crédito" : "créditos"}
-            <span className="visualmente-oculto"> — {etiquetaEstado}</span>
+            <span className="visualmente-oculto">
+              {" "}
+              — {etiquetaEstado}
+              {sufijoVencimiento}
+            </span>
           </span>
+          {data.vencimiento !== undefined && (
+            <span
+              className={
+                "materia__vencimiento" +
+                (vencida ? " materia__vencimiento--vencida" : "")
+              }
+              title={
+                (vencida ? "La regularidad venció el " : "Regular hasta el ") +
+                mostrarFecha(data.vencimiento)
+              }
+            >
+              {mostrarFecha(data.vencimiento)}
+            </span>
+          )}
           {data.desbloqueada ? (
             <IconoCandadoAbierto
               className="materia__candado materia__candado--abierto"

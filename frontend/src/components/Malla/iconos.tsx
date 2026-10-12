@@ -115,3 +115,22 @@ export function IconoCandadoAbierto({ className }: Props) {
     </svg>
   );
 }
+
+/** Calendario: la fecha de vencimiento de una regularidad. */
+export function IconoCalendario({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="14"
+      height="14"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="2.25" y="3.5" width="11.5" height="10" rx="1.5" />
+        <path d="M2.25 6.75h11.5M5.5 2v3M10.5 2v3" strokeLinecap="round" />
+      </g>
+    </svg>
+  );
+}

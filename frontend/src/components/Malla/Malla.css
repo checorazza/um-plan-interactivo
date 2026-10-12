@@ -319,3 +319,24 @@
 .flecha--activa path {
   fill: var(--arista-activa);
 }
+
+/* --- vencimiento de la regularidad --- */
+
+/* Va en la línea de créditos, a la derecha. `nowrap` porque una fecha
+   partida en dos no se lee, y porque una línea de más rompería el alto que
+   calcula `altoDeMateria`. */
+.materia__vencimiento {
+  flex: none;
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+/* Vencida: la materia hay que recursarla. No cambia ninguna regla, es un
+   recordatorio. */
+.materia__vencimiento--vencida {
+  color: var(--peligro);
+  font-weight: 600;
+  opacity: 1;
+}

@@ -1,33 +1,47 @@
 /**
- * El menú del click derecho sobre una materia bloqueada.
+ * El menú del click derecho sobre una materia.
  *
- * Sólo aparece ahí: sobre una materia disponible no hay nada que ofrecer, y
- * el menú del navegador queda anulado en toda la malla igual (ver `Malla`).
+ * Tiene dos opciones y muestra las que vengan al caso: desbloquear una
+ * materia que las reglas no dejan marcar, y la fecha de vencimiento de una
+ * regularidad. Sobre una materia disponible y sin marcar no hay nada que
+ * ofrecer y no se abre, aunque el menú del navegador queda anulado en toda
+ * la malla igual (ver `Malla`).
  */
 
 import { useEffect, useRef } from "react";
 
-import { IconoCandadoAbierto } from "./iconos";
+import { IconoCalendario, IconoCandadoAbierto } from "./iconos";
 
 /** Cuánto se separa el menú del borde de la ventana. */
 const MARGEN = 8;
-const ANCHO = 190;
-const ALTO = 44;
+const ANCHO = 215;
+/** Alto de una opción, para no abrirlo contra el borde de abajo. */
+const ALTO_OPCION = 36;
 
 export interface Posicion {
   idMateria: number;
   nombre: string;
   x: number;
   y: number;
+  /** Está bloqueada y sin marcar: se puede eximir de las reglas. */
+  puedeDesbloquearse: boolean;
+  /** Está regular: se le puede poner o cambiar el vencimiento. */
+  esRegular: boolean;
 }
 
 interface Props {
   menu: Posicion;
   onDesbloquear: () => void;
+  onRegularidad: () => void;
   onCerrar: () => void;
 }
 
-export function MenuMateria({ menu, onDesbloquear, onCerrar }: Props) {
+export function MenuMateria({
+  menu,
+  onDesbloquear,
+  onRegularidad,
+  onCerrar,
+}: Props) {
   const elemento = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,9 +67,14 @@ export function MenuMateria({ menu, onDesbloquear, onCerrar }: Props) {
     };
   }, [onCerrar]);
 
+  const opciones = (menu.puedeDesbloquearse ? 1 : 0) + (menu.esRegular ? 1 : 0);
+
   // Que no se salga de la ventana al abrirlo contra el borde.
   const x = Math.min(menu.x, window.innerWidth - ANCHO - MARGEN);
-  const y = Math.min(menu.y, window.innerHeight - ALTO - MARGEN);
+  const y = Math.min(
+    menu.y,
+    window.innerHeight - opciones * ALTO_OPCION - MARGEN,
+  );
 
   return (
     <div
@@ -67,18 +86,35 @@ export function MenuMateria({ menu, onDesbloquear, onCerrar }: Props) {
       style={{ left: Math.max(MARGEN, x), top: Math.max(MARGEN, y) }}
       onMouseDown={(evento) => evento.stopPropagation()}
     >
-      <button
-        type="button"
-        role="menuitem"
-        className="menu-materia__opcion"
-        onClick={() => {
-          onDesbloquear();
-          onCerrar();
-        }}
-      >
-        <IconoCandadoAbierto />
-        <span>Desbloquear materia</span>
-      </button>
+      {menu.puedeDesbloquearse && (
+        <button
+          type="button"
+          role="menuitem"
+          className="menu-materia__opcion"
+          onClick={() => {
+            onDesbloquear();
+            onCerrar();
+          }}
+        >
+          <IconoCandadoAbierto />
+          <span>Desbloquear materia</span>
+        </button>
+      )}
+
+      {menu.esRegular && (
+        <button
+          type="button"
+          role="menuitem"
+          className="menu-materia__opcion"
+          onClick={() => {
+            onRegularidad();
+            onCerrar();
+          }}
+        >
+          <IconoCalendario />
+          <span>Fecha de regularidad</span>
+        </button>
+      )}
     </div>
   );
 }
