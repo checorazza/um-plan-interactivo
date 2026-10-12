@@ -52,6 +52,18 @@ const ENCUADRE = { padding: 0.15, maxZoom: 1, minZoom: 0.5 };
 /** Estable, para no rearmar las aristas cada vez que se ocultan. */
 const SIN_ARISTAS: Edge[] = [];
 
+/**
+ * Las puntas de flecha.
+ *
+ * Son marcadores propios y no los de React Flow, que se definen con un color
+ * literal: estos se pintan desde el CSS, así siguen al tema y al color de
+ * enlaces que el usuario elija, sin tener que resolver la variable en JS.
+ */
+// Van como id pelado: cuando `markerEnd` es un string, React Flow le arma
+// el `url(#...)` alrededor.
+const FLECHA = "flecha";
+const FLECHA_ACTIVA = "flecha-activa";
+
 /** Color de cada materia en el minimapa, según su estado. */
 function colorEnMinimapa(nodo: Node): string {
   if (nodo.type !== "materia") return "var(--superficie-2)";
@@ -154,6 +166,7 @@ export function Malla() {
             .filter(Boolean)
             .join(" "),
           animated: tocaSeleccionada && !requisitoAprobado,
+          markerEnd: tocaSeleccionada ? FLECHA_ACTIVA : FLECHA,
         });
       }
     }
@@ -277,6 +290,34 @@ export function Malla() {
       // El menú del navegador no sirve para nada acá y tapa el propio.
       onContextMenu={(evento) => evento.preventDefault()}
     >
+      {/* Los marcadores viven en un SVG aparte, de tamaño cero: sólo están
+          para que las aristas los puedan referenciar por id. */}
+      <svg className="malla__marcadores" aria-hidden="true" focusable="false">
+        <defs>
+          {[
+            { id: "flecha", clase: "flecha" },
+            { id: "flecha-activa", clase: "flecha flecha--activa" },
+          ].map(({ id, clase }) => (
+            <marker
+              key={id}
+              id={id}
+              className={clase}
+              viewBox="0 0 10 10"
+              refX="9.5"
+              refY="5"
+              // En unidades del lienzo y no del grosor del trazo: así la
+              // flecha de la arista resaltada no engorda junto con la línea.
+              markerUnits="userSpaceOnUse"
+              markerWidth="10"
+              markerHeight="10"
+              orient="auto"
+            >
+              <path d="M 0.5 1 L 9 5 L 0.5 9 Z" />
+            </marker>
+          ))}
+        </defs>
+      </svg>
+
       <ReactFlow
         nodes={nodos}
         edges={mostrarEnlaces ? aristas : SIN_ARISTAS}

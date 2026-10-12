@@ -299,3 +299,23 @@
   color: currentColor;
   opacity: 0.8;
 }
+
+/* --- puntas de flecha --- */
+
+/* El SVG sólo contiene los `<marker>`: no dibuja nada por sí mismo y no
+   puede ocupar lugar ni recibir clicks. */
+.malla__marcadores {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.flecha path {
+  fill: var(--arista);
+}
+
+.flecha--activa path {
+  fill: var(--arista-activa);
+}
