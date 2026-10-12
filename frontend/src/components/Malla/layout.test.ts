@@ -38,8 +38,8 @@ const medirComoElNavegador = (texto: string) =>
 
 const PLAN = planDePrueba();
 
-describe("calcularUbicaciones en columnas", () => {
-  const { materias, anios } = calcularUbicaciones(PLAN, "columnas");
+describe("calcularUbicaciones", () => {
+  const { materias, anios } = calcularUbicaciones(PLAN);
 
   it("ubica una materia por cada materia del plan", () => {
     expect(materias.size).toBe(PLAN.materias.size);
@@ -78,39 +78,6 @@ describe("calcularUbicaciones en columnas", () => {
     const ids = PLAN.materiasPorAnio.get(2) ?? [];
     const y = ids.map((id) => materias.get(id)?.y ?? 0);
     expect(y).toEqual([...y].sort((a, b) => a - b));
-  });
-});
-
-describe("calcularUbicaciones apilado (móvil)", () => {
-  const { materias, anios } = calcularUbicaciones(PLAN, "apilado");
-
-  it("pone todo en una sola columna", () => {
-    const x = new Set([
-      ...[...materias.values()].map((p) => p.x),
-      ...[...anios.values()].map((p) => p.x),
-    ]);
-    expect([...x]).toEqual([0]);
-  });
-
-  it("intercala cada año con sus materias, en orden", () => {
-    const esperado: number[] = [];
-    for (const anio of [...PLAN.anios.values()].sort((a, b) => a.numero - b.numero)) {
-      esperado.push(anios.get(anio.id_anio)?.y ?? 0);
-      for (const id of PLAN.materiasPorAnio.get(anio.id_anio) ?? []) {
-        esperado.push(materias.get(id)?.y ?? 0);
-      }
-    }
-    // la secuencia completa baja sin volver atrás ni repetirse
-    expect(esperado).toEqual([...esperado].sort((a, b) => a - b));
-    expect(new Set(esperado).size).toBe(esperado.length);
-  });
-
-  it("separa las materias lo suficiente para el menú de acciones", () => {
-    const ids = PLAN.materiasPorAnio.get(1) ?? [];
-    const y = ids.map((id) => materias.get(id)?.y ?? 0);
-    for (let i = 1; i < y.length; i += 1) {
-      expect((y[i] ?? 0) - (y[i - 1] ?? 0)).toBeGreaterThan(ALTO_NODO_MINIMO);
-    }
   });
 });
 
@@ -173,8 +140,8 @@ describe("alto de la tarjeta", () => {
 });
 
 describe("las tarjetas no se superponen", () => {
-  it("en columnas", () => {
-    const { materias } = calcularUbicaciones(PLAN, "columnas");
+  it("dentro de cada año", () => {
+    const { materias } = calcularUbicaciones(PLAN);
     for (const ids of PLAN.materiasPorAnio.values()) {
       for (let i = 1; i < ids.length; i += 1) {
         const anterior = PLAN.materias.get(ids[i - 1] as number);
@@ -185,23 +152,6 @@ describe("las tarjetas no se superponen", () => {
         );
       }
     }
-  });
-
-  it("apilado, incluso entre años", () => {
-    const { materias, anios } = calcularUbicaciones(PLAN, "apilado");
-    const orden = [...PLAN.anios.values()]
-      .sort((a, b) => a.numero - b.numero)
-      .flatMap((anio) => PLAN.materiasPorAnio.get(anio.id_anio) ?? []);
-
-    for (let i = 1; i < orden.length; i += 1) {
-      const anterior = PLAN.materias.get(orden[i - 1] as number);
-      const arriba = materias.get(orden[i - 1] as number)?.y ?? 0;
-      const abajo = materias.get(orden[i] as number)?.y ?? 0;
-      expect(abajo).toBeGreaterThanOrEqual(
-        arriba + altoDeMateria(anterior?.nombre ?? ""),
-      );
-    }
-    expect(anios.size).toBe(PLAN.anios.size);
   });
 });
 

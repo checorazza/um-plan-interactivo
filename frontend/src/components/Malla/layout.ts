@@ -2,9 +2,15 @@
  * Posiciones de los nodos de la malla.
  *
  * Las posiciones se **calculan** a partir del plan, nunca se guardan: si
- * cambia el plan, la malla se reacomoda sola. Cada año es una columna (o una
- * fila, en pantallas angostas) y las materias se apilan en el orden en que las
- * devuelve la API, que ya viene por semestre y código.
+ * cambia el plan, la malla se reacomoda sola. Cada año es una columna y las
+ * materias bajan en el orden en que las devuelve la API, que ya viene por
+ * semestre y código.
+ *
+ * Es el mismo acomodo en cualquier pantalla. Hubo una variante que apilaba
+ * todo en una sola columna en el teléfono, pensada para recorrerla
+ * scrolleando; se sacó porque la malla se arrastra con el dedo en cualquier
+ * dirección, y entonces la forma angosta sólo escondía la estructura por
+ * años, que es justamente lo que el gráfico tiene para mostrar.
  */
 
 import type { Plan } from "../../types/plan";
@@ -19,9 +25,6 @@ const SEPARACION_ANIO = 300;
 const SEPARACION_MATERIA = 48;
 /** Espacio bajo el encabezado del año. */
 const ALTO_ENCABEZADO = 92;
-/** Aire entre el último nodo de un año y el encabezado del siguiente. */
-const AIRE_ENTRE_ANIOS = 48;
-
 // --- alto de una materia ---
 //
 // El nombre no se recorta, así que la tarjeta crece según cuántas líneas
@@ -135,8 +138,6 @@ export function altoDeMateria(nombre: string, medir?: Medidor): number {
   return ALTO_FIJO + lineasDe(nombre, medir) * ALTO_LINEA;
 }
 
-export type Orientacion = "columnas" | "apilado";
-
 export interface Posicion {
   x: number;
   y: number;
@@ -147,54 +148,26 @@ export interface Ubicaciones {
   anios: Map<number, Posicion>;
 }
 
-/**
- * En `columnas` (escritorio) cada año avanza hacia la derecha y sus materias
- * bajan.
- *
- * En `apilado` (móvil) todo baja en una sola columna: año, sus materias, el
- * año siguiente. Es la forma que mejor aprovecha una pantalla angosta —poner
- * las materias de un año en fila obliga a alejar tanto el zoom que no se leen—
- * y además se recorre con el gesto natural del teléfono, que es scrollear.
- */
-export function calcularUbicaciones(
-  plan: Plan,
-  orientacion: Orientacion = "columnas",
-): Ubicaciones {
+/** Cada año avanza hacia la derecha y sus materias bajan. */
+export function calcularUbicaciones(plan: Plan): Ubicaciones {
   const materias = new Map<number, Posicion>();
   const anios = new Map<number, Posicion>();
 
   const ordenados = [...plan.anios.values()].sort((a, b) => a.numero - b.numero);
 
-  if (orientacion === "columnas") {
-    ordenados.forEach((anio, indice) => {
-      const x = indice * SEPARACION_ANIO;
-      anios.set(anio.id_anio, { x, y: 0 });
+  ordenados.forEach((anio, indice) => {
+    const x = indice * SEPARACION_ANIO;
+    anios.set(anio.id_anio, { x, y: 0 });
 
-      // Cada materia arranca donde terminó la anterior: las tarjetas no
-      // miden todas lo mismo.
-      let y = ALTO_ENCABEZADO;
-      for (const idMateria of plan.materiasPorAnio.get(anio.id_anio) ?? []) {
-        materias.set(idMateria, { x, y });
-        const nombre = plan.materias.get(idMateria)?.nombre ?? "";
-        y += altoDeMateria(nombre) + SEPARACION_MATERIA;
-      }
-    });
-    return { materias, anios };
-  }
-
-  let y = 0;
-  for (const anio of ordenados) {
-    anios.set(anio.id_anio, { x: 0, y });
-    y += ALTO_ENCABEZADO;
-
+    // Cada materia arranca donde terminó la anterior: las tarjetas no miden
+    // todas lo mismo.
+    let y = ALTO_ENCABEZADO;
     for (const idMateria of plan.materiasPorAnio.get(anio.id_anio) ?? []) {
-      materias.set(idMateria, { x: 0, y });
+      materias.set(idMateria, { x, y });
       const nombre = plan.materias.get(idMateria)?.nombre ?? "";
       y += altoDeMateria(nombre) + SEPARACION_MATERIA;
     }
-
-    y += AIRE_ENTRE_ANIOS;
-  }
+  });
 
   return { materias, anios };
 }

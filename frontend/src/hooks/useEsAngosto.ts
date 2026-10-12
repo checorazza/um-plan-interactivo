@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 
-/** Ancho a partir del cual la malla usa columnas por año. */
+/** El mismo ancho que el `@media` del panel. */
 const ANCHO_ANGOSTO = "(max-width: 720px)";
 
-/** `true` en pantallas angostas, donde los años se apilan en filas. */
+/**
+ * `true` en pantallas angostas.
+ *
+ * La malla se acomoda igual en todas: lo único que cambia es lo que no entra
+ * sin estorbar, como el minimapa.
+ */
 export function useEsAngosto(): boolean {
   const [esAngosto, setEsAngosto] = useState(
     () => window.matchMedia(ANCHO_ANGOSTO).matches,

@@ -45,10 +45,9 @@ import "./Malla.css";
 const TIPOS_DE_NODO = { materia: MateriaNode, anio: AnioNode };
 
 // `minZoom` evita que en una ventana chica la malla entre entera pero
-// ilegible: por debajo de eso se recorta y el usuario la recorre.
+// ilegible: por debajo de eso se recorta y el usuario la recorre con el dedo
+// o con el mouse. Es lo que hace que el teléfono no necesite otro acomodo.
 const ENCUADRE = { padding: 0.15, maxZoom: 1, minZoom: 0.5 };
-/** Margen al encuadrar por ancho, en píxeles de pantalla. */
-const MARGEN_APILADO = 16;
 
 /** Estable, para no rearmar las aristas cada vez que se ocultan. */
 const SIN_ARISTAS: Edge[] = [];
@@ -86,10 +85,7 @@ export function Malla() {
   const { nodos, aristas } = useMemo(() => {
     if (!plan) return { nodos: [] as Node[], aristas: [] as Edge[] };
 
-    const ubicaciones = calcularUbicaciones(
-      plan,
-      esAngosto ? "apilado" : "columnas",
-    );
+    const ubicaciones = calcularUbicaciones(plan);
 
     const nodosAnio: NodoAnio[] = [...plan.anios.values()].map((anio) => ({
       id: `anio-${anio.id_anio}`,
@@ -149,7 +145,7 @@ export function Malla() {
     }
 
     return { nodos: [...nodosAnio, ...nodosMateria], aristas };
-  }, [plan, estados, seleccionada, esAngosto, desbloqueadas]);
+  }, [plan, estados, seleccionada, desbloqueadas]);
 
   const alClickNodo: NodeMouseHandler = useCallback(
     (_evento, nodo) => {
@@ -219,11 +215,12 @@ export function Malla() {
   }, [seleccionada, seleccionar]);
 
   /**
-   * Encuadra la malla.
+   * Encuadra la malla entera, en cualquier pantalla.
    *
-   * En escritorio entra entera. En el teléfono no: la columna es muy alta y
-   * hacerla entrar dejaría los nodos ilegibles, así que se ajusta al ancho y
-   * se arranca arriba de todo, para recorrerla scrolleando.
+   * En el teléfono no entra a un zoom legible, y está bien: `minZoom` la deja
+   * recortada y se recorre arrastrando con el dedo, en cualquier dirección.
+   * Antes había un encuadre aparte que la ajustaba al ancho y arrancaba
+   * arriba de todo, pensado para una malla apilada en una sola columna.
    */
   const encuadrar = useCallback(() => {
     const api = instancia.current;
@@ -233,17 +230,10 @@ export function Malla() {
     // plano, por ejemplo). Encuadrar con eso da un zoom sin sentido.
     if (elemento.clientWidth === 0) return;
 
-    if (!esAngosto) {
-      api.fitView(ENCUADRE);
-      return;
-    }
+    api.fitView(ENCUADRE);
+  }, []);
 
-    const disponible = elemento.clientWidth - MARGEN_APILADO * 2;
-    const zoom = Math.min(1, disponible / ANCHO_NODO);
-    api.setViewport({ x: MARGEN_APILADO, y: MARGEN_APILADO, zoom });
-  }, [esAngosto]);
-
-  // Al cambiar de carrera (o de orientación) la malla es otra: se reencuadra.
+  // Al cambiar de carrera la malla es otra: se reencuadra.
   useEffect(() => {
     usuarioMovio.current = false;
     encuadrar();
@@ -298,6 +288,9 @@ export function Malla() {
       >
         <Background gap={24} size={1} />
         <Controls showInteractive={false} />
+        {/* El minimapa es lo único que cambia con el tamaño: en un teléfono
+            taparía un cuarto de la malla, y para recorrerla ya está el
+            dedo. */}
         {!esAngosto && (
           <MiniMap
             pannable
