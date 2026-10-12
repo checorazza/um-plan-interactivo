@@ -5,6 +5,12 @@
  * orquesta. En particular, `marcar` nunca aplica un cambio que requiera
  * revertir otras materias: lo deja pendiente de confirmación y la UI pregunta.
  *
+ * El festejo al aprobar sale de acá y no de los componentes porque hay tres
+ * caminos que terminan en lo mismo —el menú de la materia, la confirmación
+ * de la cascada y el desbloqueo— y es el único punto por el que pasan todos.
+ * Sólo se festeja un cambio **explícito**: lo que se lee del storage o llega
+ * de la nube no toca nada.
+ *
  * localStorage es siempre la fuente inmediata, con o sin sesión. El servidor
  * es una copia que se empuja detrás: así un backend caído no rompe nada, que
  * es el caso principal de la app.
@@ -20,6 +26,7 @@ import {
   putMisEstados,
 } from "../api/cliente";
 import { armarPlan } from "../domain/plan";
+import { celebrar } from "../efectos/celebracion";
 import {
   aplicarCambio,
   combinarEstados,
@@ -401,6 +408,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
 
       set({ estados: cambio.estados, error: null });
       persistir(cambio.estados, estados);
+      if (nuevoEstado === "aprobada") celebrar();
     },
 
     confirmarCascada: () => {
@@ -409,6 +417,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       const antes = get().estados;
       set({ estados: cascada.estados, cascada: null, error: null });
       persistir(cascada.estados, antes);
+      if (cascada.nuevoEstado === "aprobada") celebrar();
     },
 
     cancelarCascada: () => set({ cascada: null }),
