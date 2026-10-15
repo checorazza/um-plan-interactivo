@@ -91,11 +91,21 @@
   color: var(--texto-suave);
 }
 
-.sidebar__personalizar {
+/* Los dos paneles, uno al lado del otro: hacen lo mismo —abrir una vista—
+   así que pesan lo mismo. */
+.sidebar__paneles {
+  display: flex;
+  gap: 8px;
+}
+
+.sidebar__panel {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 6px;
 }
 
 .sidebar__pie {

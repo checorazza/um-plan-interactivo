@@ -1,0 +1,224 @@
+/* --- el gráfico sobre el tablero --- */
+
+.grafico {
+  width: 230px;
+  height: 268px;
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  cursor: grab;
+  overflow: hidden;
+}
+
+.grafico:active {
+  cursor: grabbing;
+}
+
+.grafico__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px 7px 12px;
+  background: var(--superficie-2);
+  border-bottom: 1px solid var(--borde);
+}
+
+.grafico__titulo {
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+}
+
+.grafico__cerrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--texto-suave);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.grafico__cerrar:hover {
+  color: var(--peligro);
+  background: var(--superficie);
+}
+
+.grafico__cuerpo {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 12px 12px;
+}
+
+/* --- la torta --- */
+
+.torta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.torta__anillo {
+  position: relative;
+  align-self: center;
+  width: 108px;
+  height: 108px;
+}
+
+.torta__anillo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Un tono por encima de la superficie: está, pero no compite. */
+.torta__pista {
+  stroke: var(--superficie-2);
+}
+
+.torta__centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.torta__centro strong {
+  font-size: 24px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.torta__centro span {
+  font-size: 10px;
+  color: var(--texto-suave);
+}
+
+.torta__leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11.5px;
+}
+
+.torta__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.torta__muestra {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+/* El texto va con los colores de texto; el color lo lleva la muestra. */
+.torta__etiqueta {
+  flex: 1;
+  min-width: 0;
+  color: var(--texto-suave);
+}
+
+.torta__valor {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.torta__porcentaje {
+  width: 34px;
+  text-align: right;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.torta__pie {
+  margin: auto 0 0;
+  padding-top: 7px;
+  border-top: 1px solid var(--borde);
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* --- el panel de donde se arrastran --- */
+
+.graficos__ayuda {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.graficos__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.graficos__ficha {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 11px;
+  text-align: left;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  cursor: grab;
+}
+
+.graficos__ficha:hover {
+  border-color: var(--acento);
+}
+
+.graficos__ficha:active {
+  cursor: grabbing;
+}
+
+.graficos__icono {
+  flex: none;
+  margin-top: 1px;
+  color: var(--acento);
+}
+
+.graficos__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.graficos__texto strong {
+  font-size: 13px;
+}
+
+.graficos__texto span {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--texto-suave);
+}

@@ -1,22 +1,27 @@
 /**
  * Panel lateral: carrera, progreso de créditos y acciones generales.
  *
- * Tiene dos vistas y muestra una o la otra, no las dos: el panel es angosto y
- * en el teléfono es una barra, así que la personalización ocupa su lugar en
- * vez de agregarse abajo.
+ * Tiene varias vistas y muestra una sola: el panel es angosto y en el
+ * teléfono es una barra, así que la personalización y los gráficos ocupan su
+ * lugar en vez de agregarse abajo.
  */
 
 import { useState } from "react";
 
 import { creditosAprobados } from "../../domain/reglas";
+import { useGraficos } from "../../store/useGraficos";
 import { useMalla } from "../../store/useMalla";
+import { IconoTorta } from "../Graficos/iconos";
+import { PanelGraficos } from "../Graficos/PanelGraficos";
 import { Personalizar } from "../Personalizar/Personalizar";
 import { Sesion } from "../Sesion/Sesion";
 import { IconoPaleta } from "./iconos";
 import "./Sidebar.css";
 
 export function Sidebar() {
-  const [personalizando, setPersonalizando] = useState(false);
+  const [vista, setVista] = useState<"principal" | "personalizar" | "graficos">(
+    "principal",
+  );
   const carreras = useMalla((s) => s.carreras);
   const idCarrera = useMalla((s) => s.idCarrera);
   const plan = useMalla((s) => s.plan);
@@ -24,6 +29,7 @@ export function Sidebar() {
   const seleccionarCarrera = useMalla((s) => s.seleccionarCarrera);
   const reiniciar = useMalla((s) => s.reiniciar);
   const sinPersistencia = useMalla((s) => s.sinPersistencia);
+  const agregarGrafico = useGraficos((s) => s.agregar);
 
   const materias = plan ? [...plan.materias.values()] : [];
   const aprobadas = materias.filter((m) => estados[m.id_materia] === "aprobada");
@@ -39,10 +45,33 @@ export function Sidebar() {
       ? Math.round((aprobadas.length / materias.length) * 100)
       : 0;
 
-  if (personalizando) {
+  /**
+   * El camino sin arrastre: el gráfico va al centro del tablero.
+   *
+   * No se intenta el centro de lo que se está viendo porque el panel no
+   * conoce la vista de React Flow. Cae en un lugar razonable y el usuario lo
+   * acomoda, que es lo que iba a hacer igual.
+   */
+  function ponerGrafico(tipo: Parameters<typeof agregarGrafico>[0]) {
+    agregarGrafico(tipo, { x: 120, y: 120 });
+    setVista("principal");
+  }
+
+  if (vista === "personalizar") {
     return (
       <aside className="sidebar sidebar--personalizando">
-        <Personalizar alVolver={() => setPersonalizando(false)} />
+        <Personalizar alVolver={() => setVista("principal")} />
+      </aside>
+    );
+  }
+
+  if (vista === "graficos") {
+    return (
+      <aside className="sidebar sidebar--personalizando">
+        <PanelGraficos
+          alVolver={() => setVista("principal")}
+          alElegir={ponerGrafico}
+        />
       </aside>
     );
   }
@@ -96,14 +125,24 @@ export function Sidebar() {
             </p>
           </section>
 
-          <button
-            type="button"
-            className="boton sidebar__personalizar"
-            onClick={() => setPersonalizando(true)}
-          >
-            <IconoPaleta />
-            Personalizar
-          </button>
+          <div className="sidebar__paneles">
+            <button
+              type="button"
+              className="boton sidebar__panel"
+              onClick={() => setVista("graficos")}
+            >
+              <IconoTorta />
+              Gráficos
+            </button>
+            <button
+              type="button"
+              className="boton sidebar__panel"
+              onClick={() => setVista("personalizar")}
+            >
+              <IconoPaleta />
+              Personalizar
+            </button>
+          </div>
         </>
       )}
 

@@ -13,6 +13,7 @@ import {
   ReactFlow,
   type Edge,
   type Node,
+  type NodeChange,
   type NodeMouseHandler,
   type ReactFlowInstance,
 } from "@xyflow/react";
@@ -24,8 +25,15 @@ import {
 } from "../../domain/reglas";
 import "@xyflow/react/dist/style.css";
 
+import { useGraficos } from "../../store/useGraficos";
 import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
+import { GraficoNode, type NodoGrafico } from "../Graficos/GraficoNode";
+import {
+  ALTO_GRAFICO,
+  ANCHO_GRAFICO,
+  TIPO_ARRASTRE,
+} from "../Graficos/nodo";
 import { useEsAngosto } from "../../hooks/useEsAngosto";
 import { AnioNode, type NodoAnio } from "./AnioNode";
 import {
@@ -42,7 +50,11 @@ import {
 } from "./layout";
 import "./Malla.css";
 
-const TIPOS_DE_NODO = { materia: MateriaNode, anio: AnioNode };
+const TIPOS_DE_NODO = {
+  materia: MateriaNode,
+  anio: AnioNode,
+  grafico: GraficoNode,
+};
 
 // `minZoom` evita que en una ventana chica la malla entre entera pero
 // ilegible: por debajo de eso se recorta y el usuario la recorre con el dedo
@@ -80,6 +92,9 @@ export function Malla() {
   const seleccionar = useMalla((s) => s.seleccionar);
   const desbloqueadas = useMalla((s) => s.desbloqueadas);
   const vencimientos = useMalla((s) => s.vencimientos);
+  const graficos = useGraficos((s) => s.graficos);
+  const abrirGraficos = useGraficos((s) => s.abrir);
+  const moverGrafico = useGraficos((s) => s.mover);
   const pedirRegularidad = useMalla((s) => s.pedirRegularidad);
   const desbloquear = useMalla((s) => s.desbloquear);
   const esAngosto = useEsAngosto();
@@ -174,15 +189,77 @@ export function Malla() {
       }
     }
 
-    return { nodos: [...nodosAnio, ...nodosMateria], aristas };
+    const nodosGrafico: NodoGrafico[] = graficos.map((grafico) => ({
+      id: grafico.id,
+      type: "grafico",
+      position: { x: grafico.x, y: grafico.y },
+      width: ANCHO_GRAFICO,
+      height: ALTO_GRAFICO,
+      // El único nodo que se arrastra: las materias quedan donde el plan las
+      // pone, y moverlas a mano no significaría nada.
+      draggable: true,
+      selectable: false,
+      // Siempre por encima de la malla, aunque caiga sobre una materia.
+      zIndex: 5,
+      data: { idGrafico: grafico.id, tipo: grafico.tipo },
+    }));
+
+    return {
+      nodos: [...nodosAnio, ...nodosMateria, ...nodosGrafico],
+      aristas,
+    };
   }, [
     plan,
     estados,
     seleccionada,
     desbloqueadas,
     vencimientos,
+    graficos,
     ocultarEnlacesAprobados,
   ]);
+
+  /**
+   * React Flow avisa los cambios; el único que nos interesa es el arrastre
+   * de un gráfico. Los nodos salen de un `useMemo`, así que si esto no
+   * escribiera la posición en el store, el gráfico volvería solo a donde
+   * estaba al terminar de arrastrarlo.
+   */
+  const alCambiarNodos = useCallback(
+    (cambios: NodeChange[]) => {
+      for (const cambio of cambios) {
+        if (cambio.type === "position" && cambio.position) {
+          moverGrafico(cambio.id, cambio.position);
+        }
+      }
+    },
+    [moverGrafico],
+  );
+
+  /** Suelta un gráfico donde lo dejó el puntero. */
+  const alSoltar = useCallback(
+    (evento: React.DragEvent) => {
+      const tipo = evento.dataTransfer.getData(TIPO_ARRASTRE);
+      if (!tipo) return;
+      evento.preventDefault();
+
+      const api = instancia.current;
+      if (!api) return;
+
+      // De coordenadas de pantalla a las del tablero, que es donde viven los
+      // nodos: si no, el gráfico aparecería en otro lado con zoom aplicado.
+      const posicion = api.screenToFlowPosition({
+        x: evento.clientX,
+        y: evento.clientY,
+      });
+      // Se centra en el puntero: soltar y que aparezca abajo a la derecha se
+      // siente como que no cayó donde uno lo dejó.
+      useGraficos.getState().agregar(tipo as "torta-progreso", {
+        x: posicion.x - ANCHO_GRAFICO / 2,
+        y: posicion.y - ALTO_GRAFICO / 2,
+      });
+    },
+    [],
+  );
 
   const alClickNodo: NodeMouseHandler = useCallback(
     (_evento, nodo) => {
@@ -276,6 +353,11 @@ export function Malla() {
     api.fitView(ENCUADRE);
   }, []);
 
+  // Cada carrera tiene sus gráficos: las posiciones son de su tablero.
+  useEffect(() => {
+    if (plan) abrirGraficos(plan.carrera.nombre);
+  }, [plan, abrirGraficos]);
+
   // Al cambiar de carrera la malla es otra: se reencuadra.
   useEffect(() => {
     usuarioMovio.current = false;
@@ -305,6 +387,14 @@ export function Malla() {
       ref={contenedor}
       // El menú del navegador no sirve para nada acá y tapa el propio.
       onContextMenu={(evento) => evento.preventDefault()}
+      onDragOver={(evento) => {
+        // Sin esto el navegador no deja soltar nada acá.
+        if (evento.dataTransfer.types.includes(TIPO_ARRASTRE)) {
+          evento.preventDefault();
+          evento.dataTransfer.dropEffect = "copy";
+        }
+      }}
+      onDrop={alSoltar}
     >
       {/* Los marcadores viven en un SVG aparte, de tamaño cero: sólo están
           para que las aristas los puedan referenciar por id. */}
@@ -338,6 +428,7 @@ export function Malla() {
         nodes={nodos}
         edges={mostrarEnlaces ? aristas : SIN_ARISTAS}
         nodeTypes={TIPOS_DE_NODO}
+        onNodesChange={alCambiarNodos}
         onNodeClick={alClickNodo}
         onNodeContextMenu={alClickDerechoNodo}
         onPaneClick={alClickFondo}
