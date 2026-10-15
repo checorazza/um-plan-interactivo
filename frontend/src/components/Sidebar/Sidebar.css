@@ -108,6 +108,52 @@
   padding: 8px 6px;
 }
 
+/* --- próximos vencimientos --- */
+
+.sidebar__vencimientos h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+}
+
+.sidebar__vencimientos ul {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.sidebar__vencimientos li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* El nombre cede el ancho: la fecha no se puede recortar, el nombre sí. */
+.sidebar__materia {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__fecha {
+  flex: none;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar__fecha--vencida {
+  color: var(--peligro);
+  font-weight: 600;
+}
+
 .sidebar__pie {
   margin-top: auto;
   display: flex;
@@ -171,6 +217,7 @@
 
   .sidebar__marca p,
   .sidebar__nota,
+  .sidebar__vencimientos,
   .sidebar__resumen {
     display: none;
   }
@@ -188,7 +235,53 @@
     font-size: 20px;
   }
 
-  .sidebar__pie {
+  /* --- próximos vencimientos --- */
+
+.sidebar__vencimientos h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+}
+
+.sidebar__vencimientos ul {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.sidebar__vencimientos li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* El nombre cede el ancho: la fecha no se puede recortar, el nombre sí. */
+.sidebar__materia {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__fecha {
+  flex: none;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar__fecha--vencida {
+  color: var(--peligro);
+  font-weight: 600;
+}
+
+.sidebar__pie {
     margin-top: 0;
   }
 

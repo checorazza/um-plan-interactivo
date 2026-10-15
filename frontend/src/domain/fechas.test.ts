@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { planDePrueba } from "./fixtures";
 import {
   estaVencida,
   hoy,
   mostrarFecha,
+  proximosVencimientos,
   sanearFecha,
   sugerida,
 } from "./fechas";
@@ -74,5 +76,58 @@ describe("sugerida", () => {
   it("sigue siendo una fecha válida", () => {
     expect(sanearFecha(sugerida("2026-10-11"))).toBe("2028-10-11");
     expect(sanearFecha(sugerida())).not.toBeNull();
+  });
+});
+
+describe("proximosVencimientos", () => {
+  const PLAN = planDePrueba();
+  const HOY = "2027-01-01";
+
+  it("ordena del que vence antes al que vence después", () => {
+    const lista = proximosVencimientos(
+      PLAN,
+      { 1: "regular", 2: "regular", 3: "regular" },
+      { 1: "2028-05-01", 2: "2027-03-01", 3: "2029-01-01" },
+      HOY,
+    );
+    expect(lista.map((v) => v.idMateria)).toEqual([2, 1, 3]);
+  });
+
+  it("las vencidas van primero: son las más urgentes", () => {
+    const lista = proximosVencimientos(
+      PLAN,
+      { 1: "regular", 2: "regular" },
+      { 1: "2028-05-01", 2: "2026-06-01" },
+      HOY,
+    );
+    expect(lista.map((v) => v.idMateria)).toEqual([2, 1]);
+    expect(lista[0]?.vencida).toBe(true);
+    expect(lista[1]?.vencida).toBe(false);
+  });
+
+  it("a igual fecha, por nombre, para que el orden no baile", () => {
+    const lista = proximosVencimientos(
+      PLAN,
+      { 1: "regular", 2: "regular" },
+      { 1: "2027-03-01", 2: "2027-03-01" },
+      HOY,
+    );
+    const nombres = lista.map((v) => v.nombre);
+    expect(nombres).toEqual([...nombres].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it("deja afuera lo que no es una regularidad con fecha", () => {
+    const lista = proximosVencimientos(
+      PLAN,
+      // Aprobada: la fecha puede seguir en memoria, pero ya no vence nada.
+      { 1: "aprobada", 2: "regular" },
+      { 1: "2027-02-01", 2: "2027-03-01", 999: "2027-01-05" },
+      HOY,
+    );
+    expect(lista.map((v) => v.idMateria)).toEqual([2]);
+  });
+
+  it("sin fechas no devuelve nada", () => {
+    expect(proximosVencimientos(PLAN, { 1: "regular" }, {}, HOY)).toEqual([]);
   });
 });

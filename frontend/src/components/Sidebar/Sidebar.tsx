@@ -15,6 +15,7 @@ import { IconoTorta } from "../Graficos/iconos";
 import { PanelGraficos } from "../Graficos/PanelGraficos";
 import { Personalizar } from "../Personalizar/Personalizar";
 import { Sesion } from "../Sesion/Sesion";
+import { ProximosVencimientos } from "./ProximosVencimientos";
 import { IconoPaleta } from "./iconos";
 import "./Sidebar.css";
 
@@ -143,6 +144,8 @@ export function Sidebar() {
               Personalizar
             </button>
           </div>
+
+          <ProximosVencimientos />
         </>
       )}
 
