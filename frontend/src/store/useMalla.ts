@@ -46,7 +46,7 @@ import {
   registrarBasica,
 } from "../storage/local";
 import type { Carrera } from "../types/carrera";
-import type { Estado, Estados, Vencimientos } from "../types/estado";
+import type { Estado, Estados, FechasDeMateria } from "../types/estado";
 import type { Plan, RespuestaPlan } from "../types/plan";
 import { useSesion } from "./useSesion";
 
@@ -59,10 +59,14 @@ export interface CascadaPendiente {
   revertidas: Revertida[];
 }
 
-/** Una regularidad esperando que el usuario elija hasta cuándo vale. */
-export interface RegularidadPendiente {
+/** Las dos fechas que una materia puede llevar, según su estado. */
+export type ClaseDeFecha = "regularidad" | "aprobacion";
+
+/** Una materia esperando que el usuario elija una fecha. */
+export interface FechaPendiente {
   idMateria: number;
   nombre: string;
+  clase: ClaseDeFecha;
   /** La fecha que ya tenía, si se está editando en vez de estrenando. */
   actual: string | null;
 }
@@ -98,7 +102,9 @@ interface EstadoMalla {
    * No cambia ninguna regla: una regularidad vencida no desmarca ni bloquea
    * nada, sólo se muestra en rojo.
    */
-  vencimientos: Vencimientos;
+  vencimientos: FechasDeMateria;
+  /** Cuándo se aprobó cada materia. Es opcional: puede no estar. */
+  aprobaciones: FechasDeMateria;
 
   cargando: boolean;
   error: string | null;
@@ -117,7 +123,7 @@ interface EstadoMalla {
   /** Materia con el menú de acciones abierto. */
   seleccionada: number | null;
   cascada: CascadaPendiente | null;
-  regularidad: RegularidadPendiente | null;
+  fecha: FechaPendiente | null;
 
   cargarCarreras: () => Promise<void>;
   /**
@@ -138,11 +144,11 @@ interface EstadoMalla {
   marcar: (idMateria: number, nuevoEstado: Estado | null) => void;
   confirmarCascada: () => void;
   cancelarCascada: () => void;
-  /** Abre el selector de fecha para una materia ya regular. */
-  pedirRegularidad: (idMateria: number) => void;
+  /** Abre el selector de fecha de una materia ya marcada. */
+  pedirFecha: (idMateria: number, clase: ClaseDeFecha) => void;
   /** Guarda la fecha elegida, o la quita con `null`. */
-  fijarRegularidad: (fecha: string | null) => void;
-  cerrarRegularidad: () => void;
+  fijarFecha: (fecha: string | null) => void;
+  cerrarFecha: () => void;
   reiniciar: () => void;
   descartarAviso: () => void;
 
@@ -205,22 +211,28 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     if (!plan) return;
 
     anotarBasicas(plan, antes, estados);
-    // Una materia que dejó de estar regular no conserva su vencimiento: la
-    // fecha era de esa regularidad, no de la materia.
-    const vencimientos: Vencimientos = {};
-    for (const [idMateria, fecha] of Object.entries(get().vencimientos)) {
-      if (estados[Number(idMateria)] === "regular") {
-        vencimientos[Number(idMateria)] = fecha;
+    // Una materia que cambió de estado no conserva su fecha: era de ese
+    // estado, no de la materia.
+    const soloCuando = (fechas: FechasDeMateria, cuando: Estado) => {
+      const resultado: FechasDeMateria = {};
+      for (const [idMateria, fecha] of Object.entries(fechas)) {
+        if (estados[Number(idMateria)] === cuando) {
+          resultado[Number(idMateria)] = fecha;
+        }
       }
-    }
+      return resultado;
+    };
+    const vencimientos = soloCuando(get().vencimientos, "regular");
+    const aprobaciones = soloCuando(get().aprobaciones, "aprobada");
+
     set({
       vencimientos,
-      sinPersistencia: !guardarDeCarrera(
-        plan,
-        estados,
-        get().desbloqueadas,
+      aprobaciones,
+      sinPersistencia: !guardarDeCarrera(plan, estados, {
+        desbloqueadas: get().desbloqueadas,
         vencimientos,
-      ),
+        aprobaciones,
+      }),
     });
     programarEmpuje();
   }
@@ -278,6 +290,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       estados,
       desbloqueadas: guardado.desbloqueadas,
       vencimientos: guardado.vencimientos,
+      aprobaciones: guardado.aprobaciones,
     });
   }
 
@@ -288,6 +301,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     estados: {},
     desbloqueadas: new Set(),
     vencimientos: {},
+    aprobaciones: {},
     cargando: false,
     error: null,
     descartadas: [],
@@ -297,7 +311,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
     conflicto: null,
     seleccionada: null,
     cascada: null,
-    regularidad: null,
+    fecha: null,
 
     cargarCarreras: async () => {
       if (cargaEnCurso) return cargaEnCurso;
@@ -373,6 +387,7 @@ export const useMalla = create<EstadoMalla>((set, get) => {
           estados,
           desbloqueadas: guardado.desbloqueadas,
           vencimientos: guardado.vencimientos,
+          aprobaciones: guardado.aprobaciones,
           descartadas: aAvisar,
           cargando: false,
         });
@@ -382,12 +397,11 @@ export const useMalla = create<EstadoMalla>((set, get) => {
         // y lo descartado ya no se muestra: en los dos casos hay que grabar.
         if (descartadas.length > 0 || guardado.propagados.length > 0) {
           set({
-            sinPersistencia: !guardarDeCarrera(
-              plan,
-              estados,
-              guardado.desbloqueadas,
-              guardado.vencimientos,
-            ),
+            sinPersistencia: !guardarDeCarrera(plan, estados, {
+              desbloqueadas: guardado.desbloqueadas,
+              vencimientos: guardado.vencimientos,
+              aprobaciones: guardado.aprobaciones,
+            }),
           });
           programarEmpuje();
         }
@@ -452,9 +466,10 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       set({ estados: cambio.estados, error: null });
       persistir(cambio.estados, estados);
       if (nuevoEstado === "aprobada") celebrar();
-      // Recién acá, con la materia ya regular: el diálogo sólo elige la
+      // Recién acá, con la materia ya marcada: el diálogo sólo elige la
       // fecha, no decide si el cambio se aplica.
-      if (nuevoEstado === "regular") get().pedirRegularidad(idMateria);
+      if (nuevoEstado === "regular") get().pedirFecha(idMateria, "regularidad");
+      if (nuevoEstado === "aprobada") get().pedirFecha(idMateria, "aprobacion");
     },
 
     confirmarCascada: () => {
@@ -464,59 +479,75 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       set({ estados: cascada.estados, cascada: null, error: null });
       persistir(cascada.estados, antes);
       if (cascada.nuevoEstado === "aprobada") celebrar();
-      if (cascada.nuevoEstado === "regular") {
-        get().pedirRegularidad(cascada.idMateria);
+      if (cascada.nuevoEstado !== null) {
+        get().pedirFecha(
+          cascada.idMateria,
+          cascada.nuevoEstado === "regular" ? "regularidad" : "aprobacion",
+        );
       }
     },
 
     cancelarCascada: () => set({ cascada: null }),
 
-    pedirRegularidad: (idMateria) => {
-      const { plan, estados, vencimientos } = get();
-      if (!plan || estados[idMateria] !== "regular") return;
+    pedirFecha: (idMateria, clase) => {
+      const { plan, estados, vencimientos, aprobaciones } = get();
+      if (!plan) return;
+
+      const esperado: Estado = clase === "regularidad" ? "regular" : "aprobada";
+      if (estados[idMateria] !== esperado) return;
+
+      const actuales = clase === "regularidad" ? vencimientos : aprobaciones;
       set({
-        regularidad: {
+        fecha: {
           idMateria,
           nombre: plan.materias.get(idMateria)?.nombre ?? `#${idMateria}`,
-          actual: vencimientos[idMateria] ?? null,
+          clase,
+          actual: actuales[idMateria] ?? null,
         },
       });
     },
 
-    fijarRegularidad: (fecha) => {
-      const { plan, estados, regularidad, vencimientos } = get();
-      if (!plan || !regularidad) return;
+    fijarFecha: (elegida) => {
+      const { plan, estados, fecha, vencimientos, aprobaciones } = get();
+      if (!plan || !fecha) return;
 
-      const siguiente = { ...vencimientos };
-      // Guardar una fecha de algo que ya no está regular no tiene sentido, y
-      // además reaparecería al volver a regularizar la materia.
-      if (fecha && estados[regularidad.idMateria] === "regular") {
-        siguiente[regularidad.idMateria] = fecha;
+      const esRegularidad = fecha.clase === "regularidad";
+      const esperado: Estado = esRegularidad ? "regular" : "aprobada";
+      const siguiente = { ...(esRegularidad ? vencimientos : aprobaciones) };
+
+      // Guardar la fecha de un estado que la materia ya no tiene no sirve de
+      // nada, y además reaparecería al volver a marcarla.
+      if (elegida && estados[fecha.idMateria] === esperado) {
+        siguiente[fecha.idMateria] = elegida;
       } else {
-        delete siguiente[regularidad.idMateria];
+        delete siguiente[fecha.idMateria];
       }
 
-      set({ vencimientos: siguiente, regularidad: null });
+      set(
+        esRegularidad
+          ? { vencimientos: siguiente, fecha: null }
+          : { aprobaciones: siguiente, fecha: null },
+      );
       set({
-        sinPersistencia: !guardarDeCarrera(
-          plan,
-          estados,
-          get().desbloqueadas,
-          siguiente,
-        ),
+        sinPersistencia: !guardarDeCarrera(plan, estados, {
+          desbloqueadas: get().desbloqueadas,
+          vencimientos: get().vencimientos,
+          aprobaciones: get().aprobaciones,
+        }),
       });
     },
 
-    cerrarRegularidad: () => set({ regularidad: null }),
+    cerrarFecha: () => set({ fecha: null }),
 
     reiniciar: () => {
       set({
         estados: {},
         desbloqueadas: new Set(),
         vencimientos: {},
+        aprobaciones: {},
         seleccionada: null,
         cascada: null,
-        regularidad: null,
+        fecha: null,
         descartadas: [],
       });
       borrarProgreso();
@@ -598,7 +629,12 @@ export const useMalla = create<EstadoMalla>((set, get) => {
 
       if (borrar) {
         borrarProgreso();
-        set({ estados: {}, desbloqueadas: new Set(), vencimientos: {} });
+        set({
+          estados: {},
+          desbloqueadas: new Set(),
+          vencimientos: {},
+          aprobaciones: {},
+        });
       }
       set({ sync: "local", errorSync: null, conflicto: null });
     },

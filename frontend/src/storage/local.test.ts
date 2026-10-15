@@ -14,7 +14,9 @@ import {
   leerActualizadoEn,
   leerCarrera,
   leerDeCarrera,
+  leerAprobaciones,
   leerDesbloqueadas,
+  leerVencimientos,
   leerBasicas,
   leerSesion,
   leerTodo,
@@ -255,7 +257,7 @@ describe("cuando cambian los ids de la base", () => {
   it("los desbloqueos también se recuperan por carrera y código", () => {
     // Si no, recargar un plan volvía a bloquear una materia que el usuario
     // había desbloqueado, y `sanearEstados` le tiraba la marca.
-    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, new Set([6]));
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, { desbloqueadas: new Set([6]) });
 
     const nuevo = planConIdsNuevos();
     const { desbloqueadas } = leerDeCarrera(nuevo);
@@ -275,26 +277,77 @@ describe("cuando cambian los ids de la base", () => {
   });
 });
 
+describe("fechas por materia", () => {
+  it("la de aprobación se guarda y se vuelve a leer", () => {
+    guardarDeCarrera(planDePrueba(), { 2: "aprobada" }, {
+      aprobaciones: { 2: "2026-07-15" },
+    });
+
+    expect(leerDeCarrera(planDePrueba()).aprobaciones).toEqual({
+      2: "2026-07-15",
+    });
+  });
+
+  it("no se guarda la fecha de un estado que la materia ya no tiene", () => {
+    // El vencimiento es de la regularidad y la aprobación de la aprobada: si
+    // se guardaran igual, reaparecerían al volver a marcar la materia.
+    guardarDeCarrera(planDePrueba(), { 2: "aprobada" }, {
+      vencimientos: { 2: "2028-03-01" },
+      aprobaciones: { 2: "2026-07-15" },
+    });
+
+    const leido = leerDeCarrera(planDePrueba());
+    expect(leido.vencimientos).toEqual({});
+    expect(leido.aprobaciones).toEqual({ 2: "2026-07-15" });
+  });
+
+  it("se recuperan por carrera y código cuando cambian los ids", () => {
+    guardarDeCarrera(planDePrueba(), { 2: "aprobada" }, {
+      aprobaciones: { 2: "2026-07-15" },
+    });
+
+    const nuevo = planConIdsNuevos();
+    expect(leerDeCarrera(nuevo).aprobaciones).toEqual({ 1002: "2026-07-15" });
+  });
+
+  it("descarta las fechas con forma inválida", () => {
+    almacen.setItem(
+      "um-plan:estados",
+      JSON.stringify({
+        version: VERSION,
+        estados: {},
+        claves: {},
+        basicas: {},
+        desbloqueadas: [],
+        vencimientos: {},
+        aprobaciones: { 2: "15/07/2026", 3: "2026-02-31", 4: "2026-07-15" },
+      }),
+    );
+
+    expect(leerAprobaciones()).toEqual({ 4: "2026-07-15" });
+  });
+});
+
 describe("materias desbloqueadas a mano", () => {
   it("se guardan y se vuelven a leer", () => {
-    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, new Set([6]));
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, { desbloqueadas: new Set([6]) });
 
     expect([...leerDeCarrera(planDePrueba()).desbloqueadas]).toEqual([6]);
   });
 
   it("sin pasar ninguna, no queda ninguna", () => {
-    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, new Set([6]));
+    guardarDeCarrera(planDePrueba(), { 6: "aprobada" }, { desbloqueadas: new Set([6]) });
     guardarDeCarrera(planDePrueba(), { 6: "aprobada" });
 
     expect([...leerDeCarrera(planDePrueba()).desbloqueadas]).toEqual([]);
   });
 
   it("no se llevan las de otra carrera", () => {
-    guardarDeCarrera(planDePrueba(), {}, new Set([6]));
+    guardarDeCarrera(planDePrueba(), {}, { desbloqueadas: new Set([6]) });
 
     const otra = planConIdsNuevos();
     otra.carrera = { id_carrera: 9, nombre: "Otra Carrera" };
-    guardarDeCarrera(otra, {}, new Set([1004]));
+    guardarDeCarrera(otra, {}, { desbloqueadas: new Set([1004]) });
 
     expect([...leerDeCarrera(planDePrueba()).desbloqueadas]).toEqual([6]);
     expect([...leerDeCarrera(otra).desbloqueadas]).toEqual([1004]);
@@ -317,8 +370,8 @@ describe("materias desbloqueadas a mano", () => {
   });
 });
 
-describe("migración del formato 4", () => {
-  it("conserva el progreso y arranca sin desbloqueos", () => {
+describe("migración de los formatos viejos", () => {
+  it("el 4 conserva el progreso y arranca sin desbloqueos ni fechas", () => {
     almacen.setItem(
       "um-plan:estados",
       JSON.stringify({
@@ -332,6 +385,28 @@ describe("migración del formato 4", () => {
     expect(leerTodo()).toEqual({ 2: "aprobada" });
     expect(leerBasicas()).toEqual({ CP00: "regular" });
     expect([...leerDesbloqueadas()]).toEqual([]);
+    expect(leerVencimientos()).toEqual({});
+    expect(leerAprobaciones()).toEqual({});
+  });
+
+  it("el 6 conserva los desbloqueos y los vencimientos", () => {
+    // Lo único que no existía en el 6 son las fechas de aprobación.
+    almacen.setItem(
+      "um-plan:estados",
+      JSON.stringify({
+        version: 6,
+        estados: { 2: "regular" },
+        claves: { 2: "Ingeniería de Prueba|QG01" },
+        basicas: {},
+        desbloqueadas: [2],
+        vencimientos: { 2: "2028-03-01" },
+      }),
+    );
+
+    expect(leerTodo()).toEqual({ 2: "regular" });
+    expect([...leerDesbloqueadas()]).toEqual([2]);
+    expect(leerVencimientos()).toEqual({ 2: "2028-03-01" });
+    expect(leerAprobaciones()).toEqual({});
   });
 });
 

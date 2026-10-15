@@ -1,11 +1,11 @@
 /**
  * El menú del click derecho sobre una materia.
  *
- * Tiene dos opciones y muestra las que vengan al caso: desbloquear una
- * materia que las reglas no dejan marcar, y la fecha de vencimiento de una
- * regularidad. Sobre una materia disponible y sin marcar no hay nada que
- * ofrecer y no se abre, aunque el menú del navegador queda anulado en toda
- * la malla igual (ver `Malla`).
+ * Muestra las opciones que vengan al caso: desbloquear una materia que las
+ * reglas no dejan marcar, y la fecha que corresponda a su estado —hasta
+ * cuándo vale la regularidad, o cuándo se aprobó—. Sobre una materia
+ * disponible y sin marcar no hay nada que ofrecer y no se abre, aunque el
+ * menú del navegador queda anulado en toda la malla igual (ver `Malla`).
  */
 
 import { useEffect, useRef } from "react";
@@ -27,19 +27,21 @@ export interface Posicion {
   puedeDesbloquearse: boolean;
   /** Está regular: se le puede poner o cambiar el vencimiento. */
   esRegular: boolean;
+  /** Está aprobada: se le puede poner o cambiar la fecha de aprobación. */
+  esAprobada: boolean;
 }
 
 interface Props {
   menu: Posicion;
   onDesbloquear: () => void;
-  onRegularidad: () => void;
+  onFecha: () => void;
   onCerrar: () => void;
 }
 
 export function MenuMateria({
   menu,
   onDesbloquear,
-  onRegularidad,
+  onFecha,
   onCerrar,
 }: Props) {
   const elemento = useRef<HTMLDivElement>(null);
@@ -67,7 +69,9 @@ export function MenuMateria({
     };
   }, [onCerrar]);
 
-  const opciones = (menu.puedeDesbloquearse ? 1 : 0) + (menu.esRegular ? 1 : 0);
+  const opciones =
+    (menu.puedeDesbloquearse ? 1 : 0) +
+    (menu.esRegular || menu.esAprobada ? 1 : 0);
 
   // Que no se salga de la ventana al abrirlo contra el borde.
   const x = Math.min(menu.x, window.innerWidth - ANCHO - MARGEN);
@@ -101,18 +105,20 @@ export function MenuMateria({
         </button>
       )}
 
-      {menu.esRegular && (
+      {(menu.esRegular || menu.esAprobada) && (
         <button
           type="button"
           role="menuitem"
           className="menu-materia__opcion"
           onClick={() => {
-            onRegularidad();
+            onFecha();
             onCerrar();
           }}
         >
           <IconoCalendario />
-          <span>Fecha de regularidad</span>
+          <span>
+            {menu.esRegular ? "Fecha de regularidad" : "Fecha de aprobación"}
+          </span>
         </button>
       )}
     </div>

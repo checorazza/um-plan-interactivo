@@ -5,12 +5,14 @@ export type Estado = "regular" | "aprobada";
 export type Estados = Record<number, Estado>;
 
 /**
- * Fecha de vencimiento de la regularidad de cada materia, en `AAAA-MM-DD`.
+ * Fechas por materia, en `AAAA-MM-DD`.
  *
- * Sólo tiene sentido mientras la materia está regular: al aprobarla o
- * desmarcarla, la fecha se va con el estado.
+ * Hay dos mapas con esta forma y los dos van atados al estado: el
+ * vencimiento de la regularidad vive mientras la materia está regular, y la
+ * fecha de aprobación mientras está aprobada. Al cambiar de estado, la fecha
+ * se va con él.
  */
-export type Vencimientos = Record<number, string>;
+export type FechasDeMateria = Record<number, string>;
 
 /** Lo que devuelve la API en `GET /me/estados`. */
 export interface EstadoMateria {

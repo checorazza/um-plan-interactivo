@@ -32,6 +32,8 @@ export type DatosMateria = {
   desbloqueada: boolean;
   /** Hasta cuándo vale la regularidad, si tiene fecha puesta. */
   vencimiento: string | undefined;
+  /** Cuándo se aprobó, si tiene fecha puesta. */
+  aprobacion: string | undefined;
 };
 
 export type NodoMateria = Node<DatosMateria, "materia">;
@@ -70,11 +72,18 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
   const vencida =
     data.vencimiento !== undefined && estaVencida(data.vencimiento);
 
-  const sufijoVencimiento =
-    data.vencimiento === undefined
+  // Las dos fechas no conviven: cada una vive atada a su estado, y una
+  // materia tiene uno solo. Por eso comparten lugar en la tarjeta.
+  const fecha = data.vencimiento ?? data.aprobacion;
+
+  const sufijoFecha =
+    fecha === undefined
       ? ""
-      : (vencida ? ", vencida el " : ", hasta el ") +
-        mostrarFecha(data.vencimiento);
+      : (data.vencimiento === undefined
+          ? ", aprobada el "
+          : vencida
+            ? ", vencida el "
+            : ", hasta el ") + mostrarFecha(fecha);
 
   const etiquetaEstado = data.desbloqueada
     ? `${estado ?? "sin cursar"}, desbloqueada a mano`
@@ -100,21 +109,24 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
             <span className="visualmente-oculto">
               {" "}
               — {etiquetaEstado}
-              {sufijoVencimiento}
+              {sufijoFecha}
             </span>
           </span>
-          {data.vencimiento !== undefined && (
+          {fecha !== undefined && (
             <span
               className={
                 "materia__vencimiento" +
                 (vencida ? " materia__vencimiento--vencida" : "")
               }
               title={
-                (vencida ? "La regularidad venció el " : "Regular hasta el ") +
-                mostrarFecha(data.vencimiento)
+                (data.vencimiento === undefined
+                  ? "Aprobada el "
+                  : vencida
+                    ? "La regularidad venció el "
+                    : "Regular hasta el ") + mostrarFecha(fecha)
               }
             >
-              {mostrarFecha(data.vencimiento)}
+              {mostrarFecha(fecha)}
             </span>
           )}
           {data.desbloqueada ? (

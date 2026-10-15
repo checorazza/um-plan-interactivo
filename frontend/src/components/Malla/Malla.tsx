@@ -92,10 +92,11 @@ export function Malla() {
   const seleccionar = useMalla((s) => s.seleccionar);
   const desbloqueadas = useMalla((s) => s.desbloqueadas);
   const vencimientos = useMalla((s) => s.vencimientos);
+  const aprobaciones = useMalla((s) => s.aprobaciones);
   const graficos = useGraficos((s) => s.graficos);
   const abrirGraficos = useGraficos((s) => s.abrir);
   const moverGrafico = useGraficos((s) => s.mover);
-  const pedirRegularidad = useMalla((s) => s.pedirRegularidad);
+  const pedirFecha = useMalla((s) => s.pedirFecha);
   const desbloquear = useMalla((s) => s.desbloquear);
   const esAngosto = useEsAngosto();
   const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
@@ -146,6 +147,7 @@ export function Malla() {
         data: {
           desbloqueada: desbloqueadas.has(materia.id_materia),
           vencimiento: vencimientos[materia.id_materia],
+          aprobacion: aprobaciones[materia.id_materia],
           idMateria: materia.id_materia,
           codigo: materia.codigo,
           nombre: materia.nombre,
@@ -214,6 +216,7 @@ export function Malla() {
     seleccionada,
     desbloqueadas,
     vencimientos,
+    aprobaciones,
     graficos,
     ocultarEnlacesAprobados,
   ]);
@@ -292,7 +295,7 @@ export function Malla() {
         estadoDeBloqueo(plan, estados, idMateria, desbloqueadas) !==
           "disponible";
 
-      if (!puedeDesbloquearse && estado !== "regular") return;
+      if (!puedeDesbloquearse && !estado) return;
 
       setMenu({
         idMateria,
@@ -301,6 +304,7 @@ export function Malla() {
         y: evento.clientY,
         puedeDesbloquearse,
         esRegular: estado === "regular",
+        esAprobada: estado === "aprobada",
       });
     },
     [plan, estados, desbloqueadas],
@@ -468,7 +472,12 @@ export function Malla() {
         <MenuMateria
           menu={menu}
           onDesbloquear={abrirDesbloqueo}
-          onRegularidad={() => pedirRegularidad(menu.idMateria)}
+          onFecha={() =>
+            pedirFecha(
+              menu.idMateria,
+              menu.esRegular ? "regularidad" : "aprobacion",
+            )
+          }
           onCerrar={() => setMenu(null)}
         />
       )}
