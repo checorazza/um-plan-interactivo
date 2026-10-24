@@ -12,14 +12,19 @@ import { useRef, useState } from "react";
 import {
   type Lectura,
   armarRespaldo,
+  aplicarRespaldo,
   leerRespaldo,
   nombreDeArchivo,
 } from "../../storage/respaldo";
+import { useGraficos } from "../../store/useGraficos";
 import { useMalla } from "../../store/useMalla";
+import { usePreferencias } from "../../store/usePreferencias";
 
 export function Respaldo() {
   const paraExportar = useMalla((s) => s.paraExportar);
   const importar = useMalla((s) => s.importar);
+  const reemplazarPreferencias = usePreferencias((s) => s.reemplazar);
+  const recargarGraficos = useGraficos((s) => s.recargar);
 
   const archivo = useRef<HTMLInputElement>(null);
   const [lectura, setLectura] = useState<Lectura | null>(null);
@@ -54,7 +59,14 @@ export function Respaldo() {
 
   const confirmar = () => {
     if (!lectura?.ok) return;
-    importar(lectura.contenido);
+
+    // Primero el storage, de una sola vez, y después los stores: si no, cada
+    // uno iría escribiendo encima de lo que escribió el anterior.
+    aplicarRespaldo(lectura);
+    importar();
+    if (lectura.preferencias) reemplazarPreferencias(lectura.preferencias);
+    if (lectura.graficos) recargarGraficos();
+
     setLectura(null);
     setListo(true);
   };
@@ -102,9 +114,13 @@ export function Respaldo() {
             aprobadas y <strong>{lectura.resumen.regulares}</strong> regulares
             {lectura.resumen.desbloqueadas > 0 &&
               `, ${lectura.resumen.desbloqueadas} desbloqueadas a mano`}
-            {lectura.resumen.fechas > 0 &&
-              ` y ${lectura.resumen.fechas} fechas`}
-            . <strong>Reemplaza todo tu progreso actual.</strong>
+            {lectura.resumen.fechas > 0 && `, ${lectura.resumen.fechas} fechas`}
+            {lectura.resumen.preferencias && ", tus colores"}
+            {lectura.resumen.graficos > 0 &&
+              ` y ${lectura.resumen.graficos} ${
+                lectura.resumen.graficos === 1 ? "gráfico" : "gráficos"
+              }`}
+            . <strong>Reemplaza lo que tengas ahora.</strong>
           </p>
           <div className="respaldo__botones">
             <button
@@ -128,8 +144,8 @@ export function Respaldo() {
       {listo && <p className="respaldo__listo">Progreso importado.</p>}
 
       <p className="respaldo__nota">
-        El archivo lleva las materias marcadas, las desbloqueadas a mano y las
-        fechas. No lleva los colores ni los gráficos del tablero.
+        El archivo lleva las materias marcadas, las desbloqueadas a mano, las
+        fechas, los colores y los gráficos del tablero.
       </p>
     </section>
   );

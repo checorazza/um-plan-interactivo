@@ -100,11 +100,16 @@ function porDefecto(): Preferencias {
   return { ...POR_DEFECTO, colores: { ...POR_DEFECTO.colores } };
 }
 
-export function leerPreferencias(): Preferencias {
-  const guardado = leerCrudo(CLAVE);
-  if (!guardado || typeof guardado !== "object") return porDefecto();
+/**
+ * Lleva al formato actual cualquier cosa con forma de preferencias.
+ *
+ * Se usa con lo de `localStorage` y con lo que viene de un archivo
+ * importado: los dos son dato de afuera.
+ */
+export function interpretarPreferencias(valor: unknown): Preferencias {
+  if (!valor || typeof valor !== "object") return porDefecto();
 
-  const crudo = guardado as Record<string, unknown>;
+  const crudo = valor as Record<string, unknown>;
   // De momento sólo existe la versión 1; una futura incompatible empieza de
   // cero, que acá no cuesta nada: son preferencias, no datos del usuario.
   if (crudo.version !== VERSION_PREFERENCIAS) return porDefecto();
@@ -119,6 +124,10 @@ export function leerPreferencias(): Preferencias {
     colores: sanearColores(crudo.colores),
     festejar: crudo.festejar !== false,
   };
+}
+
+export function leerPreferencias(): Preferencias {
+  return interpretarPreferencias(leerCrudo(CLAVE));
 }
 
 export function guardarPreferencias(preferencias: Preferencias): boolean {

@@ -15,6 +15,15 @@ import {
 } from "./local";
 import { planDePrueba } from "../domain/fixtures";
 import {
+  POR_DEFECTO,
+  guardarPreferencias,
+  leerPreferencias,
+} from "./preferencias";
+import {
+  escribirTodosLosGraficos,
+  leerTodosLosGraficos,
+} from "./graficos";
+import {
   VERSION_RESPALDO,
   armarRespaldo,
   aplicarRespaldo,
@@ -201,7 +210,7 @@ describe("progreso que vive en las básicas", () => {
     localStorage.clear();
     const lectura = leerRespaldo(texto);
     if (!lectura.ok) throw new Error(lectura.motivo);
-    aplicarRespaldo(lectura.contenido);
+    aplicarRespaldo(lectura);
 
     expect(leerDeCarrera(conBasicas()).estados[1]).toBe("aprobada");
   });
@@ -217,7 +226,7 @@ describe("aplicarRespaldo", () => {
 
     const lectura = leerRespaldo(texto);
     if (!lectura.ok) throw new Error(lectura.motivo);
-    aplicarRespaldo(lectura.contenido);
+    aplicarRespaldo(lectura);
 
     expect(leerContenido().estados).toEqual({ 1: "aprobada", 2: "regular" });
     expect([...leerContenido().desbloqueadas]).toEqual([2]);
@@ -229,7 +238,7 @@ describe("aplicarRespaldo", () => {
     const texto = exportarDePrueba();
     const lectura = leerRespaldo(texto);
     if (!lectura.ok) throw new Error(lectura.motivo);
-    aplicarRespaldo(lectura.contenido);
+    aplicarRespaldo(lectura);
 
     const original = planDePrueba();
     const nuevo = planDePrueba();
@@ -244,6 +253,78 @@ describe("aplicarRespaldo", () => {
     expect(leido.estados[1001]).toBe("aprobada");
     expect([...leido.desbloqueadas]).toEqual([1002]);
     expect(leido.vencimientos[1002]).toBe("2028-03-01");
+  });
+});
+
+describe("preferencias y gráficos", () => {
+  it("el archivo los lleva", () => {
+    guardarPreferencias({
+      ...POR_DEFECTO,
+      tema: "oscuro",
+      colores: { ...POR_DEFECTO.colores, aprobada: "#123456" },
+    });
+    escribirTodosLosGraficos({
+      "Ingeniería en Informática": [
+        { id: "g1", tipo: "torta-progreso", x: 10, y: 20 },
+      ],
+    });
+
+    const respaldo = JSON.parse(exportarDePrueba());
+    expect(respaldo.version).toBe(VERSION_RESPALDO);
+    expect(respaldo.preferencias.tema).toBe("oscuro");
+    expect(respaldo.preferencias.colores.aprobada).toBe("#123456");
+    expect(respaldo.graficos.porCarrera["Ingeniería en Informática"]).toHaveLength(1);
+  });
+
+  it("van y vuelven", () => {
+    guardarPreferencias({ ...POR_DEFECTO, tema: "claro", festejar: false });
+    escribirTodosLosGraficos({
+      "Ingeniería en Informática": [
+        { id: "g1", tipo: "requisitos-anio", x: 5, y: 5 },
+      ],
+    });
+    const texto = exportarDePrueba();
+
+    // Otro dispositivo, con otro aspecto y sin gráficos.
+    localStorage.clear();
+    guardarPreferencias({ ...POR_DEFECTO, tema: "oscuro" });
+
+    const lectura = leerRespaldo(texto);
+    if (!lectura.ok) throw new Error(lectura.motivo);
+    expect(lectura.resumen.preferencias).toBe(true);
+    expect(lectura.resumen.graficos).toBe(1);
+
+    aplicarRespaldo(lectura);
+    expect(leerPreferencias().tema).toBe("claro");
+    expect(leerPreferencias().festejar).toBe(false);
+    expect(leerTodosLosGraficos()["Ingeniería en Informática"]).toHaveLength(1);
+  });
+
+  it("un archivo de la versión 1 se sigue aceptando, sin tocar el aspecto", () => {
+    // No traía aspecto: adoptar el de por defecto sería pisarle los colores
+    // a quien importa un respaldo viejo.
+    guardarPreferencias({ ...POR_DEFECTO, tema: "oscuro" });
+
+    const lectura = leerRespaldo(
+      JSON.stringify({
+        aplicacion: "um-plan-interactivo",
+        version: 1,
+        progreso: {
+          version: 7,
+          estados: { 1: "aprobada" },
+          claves: {},
+          basicas: {},
+        },
+      }),
+    );
+
+    expect(lectura.ok).toBe(true);
+    if (!lectura.ok) return;
+    expect(lectura.preferencias).toBeNull();
+    expect(lectura.resumen.preferencias).toBe(false);
+
+    aplicarRespaldo(lectura);
+    expect(leerPreferencias().tema).toBe("oscuro");
   });
 });
 

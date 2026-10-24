@@ -52,15 +52,23 @@ function sanearGrafico(valor: unknown): Grafico | null {
   };
 }
 
-function leerTodo(): Record<string, Grafico[]> {
-  const guardado = leerCrudo(CLAVE);
-  if (!guardado || typeof guardado !== "object") return {};
+/** El mapa entero, por nombre de carrera. */
+export type GraficosPorCarrera = Record<string, Grafico[]>;
 
-  const dato = guardado as Record<string, unknown>;
+/**
+ * Lleva al formato actual cualquier cosa con forma de gráficos guardados.
+ *
+ * Se usa con lo de `localStorage` y con lo que viene de un archivo
+ * importado.
+ */
+export function interpretarGraficos(valor: unknown): GraficosPorCarrera {
+  if (!valor || typeof valor !== "object") return {};
+
+  const dato = valor as Record<string, unknown>;
   if (dato.version !== VERSION_GRAFICOS) return {};
   if (!dato.porCarrera || typeof dato.porCarrera !== "object") return {};
 
-  const porCarrera: Record<string, Grafico[]> = {};
+  const porCarrera: GraficosPorCarrera = {};
   for (const [carrera, lista] of Object.entries(
     dato.porCarrera as Record<string, unknown>,
   )) {
@@ -70,6 +78,26 @@ function leerTodo(): Record<string, Grafico[]> {
       .filter((grafico): grafico is Grafico => grafico !== null);
   }
   return porCarrera;
+}
+
+function leerTodo(): GraficosPorCarrera {
+  return interpretarGraficos(leerCrudo(CLAVE));
+}
+
+/** Todos los gráficos, de todas las carreras. */
+export function leerTodosLosGraficos(): GraficosPorCarrera {
+  return leerTodo();
+}
+
+/** Pisa todos los gráficos. Lo usa la importación. */
+export function escribirTodosLosGraficos(
+  porCarrera: GraficosPorCarrera,
+): boolean {
+  if (Object.keys(porCarrera).length === 0) {
+    borrarCrudo(CLAVE);
+    return true;
+  }
+  return escribirCrudo(CLAVE, { version: VERSION_GRAFICOS, porCarrera });
 }
 
 export function leerGraficos(carrera: string): Grafico[] {

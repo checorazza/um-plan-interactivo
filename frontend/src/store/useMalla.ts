@@ -40,7 +40,6 @@ import {
   guardarCarrera,
   guardarDeCarrera,
   guardarTodo,
-  escribirContenido,
   leerCarrera,
   leerContenido,
   leerDeCarrera,
@@ -163,8 +162,8 @@ interface EstadoMalla {
 
   /** El progreso de este dispositivo, para exportarlo. */
   paraExportar: () => Contenido;
-  /** Pisa el progreso con el de un archivo importado. */
-  importar: (contenido: Contenido) => void;
+  /** Relee el progreso después de que la importación pisó el storage. */
+  importar: () => void;
 }
 
 function mensajeDe(error: unknown): string {
@@ -630,10 +629,10 @@ export const useMalla = create<EstadoMalla>((set, get) => {
 
     paraExportar: () => leerContenido(),
 
-    importar: (contenido) => {
-      escribirContenido(contenido);
-      // El progreso de la carrera abierta sale del store, no del storage:
-      // sin esto la malla seguiría mostrando lo de antes.
+    importar: () => {
+      // Lo guardado ya lo pisó `aplicarRespaldo`. Acá sólo hay que volver a
+      // leerlo: el progreso de la carrera abierta sale del store, no del
+      // storage, y sin esto la malla seguiría mostrando lo de antes.
       refrescarDesdeStorage();
       set({ seleccionada: null, cascada: null, fecha: null, descartadas: [] });
       programarEmpuje();

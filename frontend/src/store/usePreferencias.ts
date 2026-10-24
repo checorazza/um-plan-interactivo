@@ -109,6 +109,8 @@ interface EstadoPreferencias extends Preferencias {
   cambiarColorEnlaces: (color: string | null) => void;
   cambiarColor: (clave: ClaveColor, color: string | null) => void;
   restablecer: () => void;
+  /** Pisa todo el aspecto de una. La usa la importación. */
+  reemplazar: (preferencias: Preferencias) => void;
 }
 
 export const usePreferencias = create<EstadoPreferencias>((set) => {
@@ -139,5 +141,6 @@ export const usePreferencias = create<EstadoPreferencias>((set) => {
       asentar({ colores: { ...actual.colores, [clave]: color } }),
     restablecer: () =>
       asentar({ ...POR_DEFECTO, colores: { ...POR_DEFECTO.colores } }),
+    reemplazar: (preferencias) => asentar(preferencias),
   };
 });

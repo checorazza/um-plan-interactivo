@@ -10,19 +10,42 @@
  * son otros. Con ellas, cada estado lleva su "carrera|código" al lado y el
  * progreso se reconstruye solo al abrir la carrera.
  *
- * No viajan las preferencias ni los gráficos del tablero: eso es cómo se ve
- * la app, no lo que hiciste en la carrera.
+ * Viajan también las preferencias y los gráficos del tablero, que son cómo
+ * se ve la app. Son opcionales: un archivo de la versión 1 sólo traía el
+ * progreso y se sigue aceptando.
  */
 
+import {
+  type GraficosPorCarrera,
+  VERSION_GRAFICOS,
+  escribirTodosLosGraficos,
+  interpretarGraficos,
+  leerTodosLosGraficos,
+} from "./graficos";
 import {
   type Contenido,
   VERSION,
   escribirContenido,
   interpretar,
 } from "./local";
+import {
+  type Preferencias,
+  VERSION_PREFERENCIAS,
+  guardarPreferencias,
+  interpretarPreferencias,
+  leerPreferencias,
+} from "./preferencias";
 
-/** Versión del archivo, aparte de la del storage que lleva adentro. */
-export const VERSION_RESPALDO = 1;
+/**
+ * Versión del archivo, aparte de la del storage que lleva adentro.
+ *
+ * - 1: sólo el progreso.
+ * - 2: se agregan las preferencias y los gráficos del tablero.
+ */
+export const VERSION_RESPALDO = 2;
+
+/** Las que se saben leer. La 1 no traía aspecto y se adopta igual. */
+const ACEPTADAS = [1, VERSION_RESPALDO];
 
 const APLICACION = "um-plan-interactivo";
 
@@ -32,6 +55,17 @@ export interface Respaldo {
   exportadoEn: string;
   /** El progreso tal cual se guarda, con su propia versión. */
   progreso: Record<string, unknown>;
+  /** El aspecto: tema, colores y opciones. Desde la versión 2. */
+  preferencias?: Record<string, unknown>;
+  /** Los gráficos del tablero, por carrera. Desde la versión 2. */
+  graficos?: Record<string, unknown>;
+}
+
+/** Todo lo que un archivo puede traer, ya saneado. */
+export interface Importado {
+  contenido: Contenido;
+  preferencias: Preferencias | null;
+  graficos: GraficosPorCarrera | null;
 }
 
 /** Un vistazo de lo que trae un archivo, para mostrarlo antes de aplicarlo. */
@@ -40,11 +74,15 @@ export interface Resumen {
   regulares: number;
   desbloqueadas: number;
   fechas: number;
+  /** Si el archivo trae el aspecto guardado. */
+  preferencias: boolean;
+  /** Cuántos gráficos puestos trae, sumando todas las carreras. */
+  graficos: number;
   exportadoEn: string | null;
 }
 
 export function resumirContenido(
-  contenido: Contenido,
+  { contenido, preferencias, graficos }: Importado,
   exportadoEn: string | null = null,
 ): Resumen {
   // Las básicas van aparte y **no** están duplicadas en `estados`: su
@@ -62,16 +100,29 @@ export function resumirContenido(
     fechas:
       Object.keys(contenido.vencimientos).length +
       Object.keys(contenido.aprobaciones).length,
+    preferencias: preferencias !== null,
+    graficos: Object.values(graficos ?? {}).reduce(
+      (suma, lista) => suma + lista.length,
+      0,
+    ),
     exportadoEn,
   };
 }
 
-/** El progreso de este dispositivo, listo para escribir a un archivo. */
+/** Lo que hay en este dispositivo, listo para escribir a un archivo. */
 export function armarRespaldo(contenido: Contenido): Respaldo {
   return {
     aplicacion: APLICACION,
     version: VERSION_RESPALDO,
     exportadoEn: new Date().toISOString(),
+    preferencias: {
+      version: VERSION_PREFERENCIAS,
+      ...leerPreferencias(),
+    },
+    graficos: {
+      version: VERSION_GRAFICOS,
+      porCarrera: leerTodosLosGraficos(),
+    },
     progreso: {
       version: VERSION,
       estados: contenido.estados,
@@ -93,7 +144,7 @@ export function nombreDeArchivo(ahora: Date = new Date()): string {
 }
 
 export type Lectura =
-  | { ok: true; contenido: Contenido; resumen: Resumen }
+  | ({ ok: true; resumen: Resumen } & Importado)
   | { ok: false; motivo: string };
 
 /**
@@ -120,16 +171,26 @@ export function leerRespaldo(texto: string): Lectura {
   if (dato.aplicacion !== APLICACION) {
     return { ok: false, motivo: "Ese archivo no es un respaldo de esta app." };
   }
-  if (dato.version !== VERSION_RESPALDO) {
+  if (typeof dato.version !== "number" || !ACEPTADAS.includes(dato.version)) {
     return {
       ok: false,
       motivo: `El archivo es de otra versión (${String(dato.version)}).`,
     };
   }
 
-  const contenido = interpretar(dato.progreso);
+  const importado: Importado = {
+    contenido: interpretar(dato.progreso),
+    // Un archivo sin aspecto no es un archivo con el aspecto por defecto:
+    // sería pisarle los colores a quien importa un respaldo viejo.
+    preferencias: dato.preferencias
+      ? interpretarPreferencias(dato.preferencias)
+      : null,
+    // `interpretarGraficos` espera el envoltorio entero —con su versión—,
+    // no el mapa de adentro, que es lo que `armarRespaldo` escribe acá.
+    graficos: dato.graficos ? interpretarGraficos(dato.graficos) : null,
+  };
   const resumen = resumirContenido(
-    contenido,
+    importado,
     typeof dato.exportadoEn === "string" ? dato.exportadoEn : null,
   );
 
@@ -140,10 +201,22 @@ export function leerRespaldo(texto: string): Lectura {
     };
   }
 
-  return { ok: true, contenido, resumen };
+  return { ok: true, ...importado, resumen };
 }
 
-/** Pisa el progreso de este dispositivo con el del archivo. */
-export function aplicarRespaldo(contenido: Contenido): boolean {
-  return escribirContenido(contenido);
+/**
+ * Pisa lo de este dispositivo con lo del archivo.
+ *
+ * Lo que el archivo no traiga se deja como está: un respaldo viejo, sin
+ * aspecto, no tiene por qué devolverle los colores al original.
+ */
+export function aplicarRespaldo({
+  contenido,
+  preferencias,
+  graficos,
+}: Importado): boolean {
+  let ok = escribirContenido(contenido);
+  if (preferencias) ok = guardarPreferencias(preferencias) && ok;
+  if (graficos) ok = escribirTodosLosGraficos(graficos) && ok;
+  return ok;
 }

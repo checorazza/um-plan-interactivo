@@ -30,6 +30,8 @@ interface EstadoGraficos {
   agregar: (tipo: TipoGrafico, posicion: Posicion) => void;
   mover: (id: string, posicion: Posicion) => void;
   quitar: (id: string) => void;
+  /** Vuelve a leer los de la carrera abierta. La usa la importación. */
+  recargar: () => void;
 }
 
 /** Id único de cada gráfico puesto. `crypto.randomUUID` no está en todos lados. */
@@ -75,6 +77,11 @@ export const useGraficos = create<EstadoGraficos>((set, get) => {
 
     quitar: (id) => {
       asentar(get().graficos.filter((grafico) => grafico.id !== id));
+    },
+
+    recargar: () => {
+      const { carrera } = get();
+      if (carrera) set({ graficos: leerGraficos(carrera) });
     },
   };
 });
