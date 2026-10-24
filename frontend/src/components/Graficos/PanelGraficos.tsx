@@ -8,9 +8,14 @@
 
 import type { TipoGrafico } from "../../storage/graficos";
 import { IconoVolver } from "../Sidebar/iconos";
-import { IconoTorta } from "./iconos";
+import { IconoBarras, IconoTorta } from "./iconos";
 import { TIPO_ARRASTRE } from "./nodo";
 import "./Graficos.css";
+
+const ICONOS: Record<TipoGrafico, typeof IconoTorta> = {
+  "torta-progreso": IconoTorta,
+  "aprobadas-por-anio": IconoBarras,
+};
 
 const DISPONIBLES: {
   tipo: TipoGrafico;
@@ -21,6 +26,11 @@ const DISPONIBLES: {
     tipo: "torta-progreso",
     titulo: "Progreso",
     descripcion: "Aprobadas, regulares y lo que falta, sobre el total.",
+  },
+  {
+    tipo: "aprobadas-por-anio",
+    titulo: "Aprobadas por año",
+    descripcion: "Cuántas aprobaste cada año, según las fechas que cargues.",
   },
 ];
 
@@ -51,7 +61,9 @@ export function PanelGraficos({ alVolver, alElegir }: Props) {
       </p>
 
       <ul className="graficos__lista">
-        {DISPONIBLES.map((grafico) => (
+        {DISPONIBLES.map((grafico) => {
+          const Icono = ICONOS[grafico.tipo];
+          return (
           <li key={grafico.tipo}>
             <button
               type="button"
@@ -63,14 +75,15 @@ export function PanelGraficos({ alVolver, alElegir }: Props) {
               }}
               onClick={() => alElegir(grafico.tipo)}
             >
-              <IconoTorta className="graficos__icono" />
+              <Icono className="graficos__icono" />
               <span className="graficos__texto">
                 <strong>{grafico.titulo}</strong>
                 <span>{grafico.descripcion}</span>
               </span>
             </button>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

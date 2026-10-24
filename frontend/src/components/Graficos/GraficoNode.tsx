@@ -11,7 +11,8 @@ import type { Node, NodeProps } from "@xyflow/react";
 
 import { useGraficos } from "../../store/useGraficos";
 import type { TipoGrafico } from "../../storage/graficos";
-import { TITULOS } from "./nodo";
+import { BarrasPorAnio } from "./BarrasPorAnio";
+import { MEDIDAS, TITULOS } from "./nodo";
 import { TortaProgreso } from "./TortaProgreso";
 import "./Graficos.css";
 
@@ -25,8 +26,10 @@ export type NodoGrafico = Node<DatosGrafico, "grafico">;
 export function GraficoNode({ data }: NodeProps<NodoGrafico>) {
   const quitar = useGraficos((s) => s.quitar);
 
+  const medidas = MEDIDAS[data.tipo];
+
   return (
-    <div className="grafico">
+    <div className="grafico" style={{ width: medidas.ancho, height: medidas.alto }}>
       {/* Se arrastra desde cualquier parte menos el botón de cerrar, que
           lleva `nodrag`. Pedir un agarre chico es pedirle puntería al
           usuario para algo que no la necesita. */}
@@ -45,6 +48,7 @@ export function GraficoNode({ data }: NodeProps<NodoGrafico>) {
 
       <div className="grafico__cuerpo">
         {data.tipo === "torta-progreso" && <TortaProgreso />}
+        {data.tipo === "aprobadas-por-anio" && <BarrasPorAnio />}
       </div>
     </div>
   );

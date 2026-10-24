@@ -1,10 +1,8 @@
 /* --- el gráfico sobre el tablero --- */
 
+/* El tamaño lo pone el componente desde `MEDIDAS`: React Flow lo necesita
+   antes de pintar el nodo, así que no puede salir del contenido. */
 .grafico {
-  width: 230px;
-  /* El mismo número que `ALTO_GRAFICO`: React Flow necesita el alto del nodo
-     antes de pintarlo, así que no puede salir del contenido. */
-  height: 226px;
   display: flex;
   flex-direction: column;
   background: var(--superficie);
@@ -215,5 +213,78 @@
 .graficos__texto span {
   font-size: 11.5px;
   line-height: 1.4;
+  color: var(--texto-suave);
+}
+
+/* --- barras por año --- */
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Las columnas se reparten el ancho. Sin eje ni grilla: con pocas barras, el
+   número arriba dice más y ocupa menos que una escala al costado. */
+.barras__grafico {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barras__columna {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 3px;
+}
+
+.barras__valor {
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.barras__barra {
+  width: 100%;
+  max-width: 34px;
+  border-radius: 3px 3px 0 0;
+  background: var(--sin-estado-borde);
+}
+
+/* El año más productivo, que es la pregunta que contesta el gráfico. */
+.barras__barra--mejor {
+  background: var(--aprobada-borde);
+}
+
+.barras__anio {
+  font-size: 10.5px;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.barras__nota {
+  margin: 8px 0 0;
+  padding-top: 7px;
+  border-top: 1px solid var(--borde);
+  font-size: 10.5px;
+  color: var(--texto-suave);
+}
+
+.barras__vacio {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
   color: var(--texto-suave);
 }

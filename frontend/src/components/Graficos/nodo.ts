@@ -10,11 +10,20 @@ import type { TipoGrafico } from "../../storage/graficos";
 
 export const TITULOS: Record<TipoGrafico, string> = {
   "torta-progreso": "Progreso",
+  "aprobadas-por-anio": "Aprobadas por año",
 };
 
-/** React Flow necesita el tamaño del nodo antes de pintarlo. */
-export const ANCHO_GRAFICO = 230;
-export const ALTO_GRAFICO = 226;
+/**
+ * El tamaño de cada tarjeta. React Flow lo necesita antes de pintar el nodo,
+ * así que no puede salir del contenido: va acá y el CSS lo repite.
+ *
+ * Cada gráfico pide lo suyo. Un anillo con leyenda es angosto y alto; unas
+ * barras en el tiempo son anchas y bajas.
+ */
+export const MEDIDAS: Record<TipoGrafico, { ancho: number; alto: number }> = {
+  "torta-progreso": { ancho: 230, alto: 226 },
+  "aprobadas-por-anio": { ancho: 272, alto: 196 },
+};
 
 /** El tipo que viaja en el arrastre desde el panel hasta el tablero. */
 export const TIPO_ARRASTRE = "application/x-grafico";

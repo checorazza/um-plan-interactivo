@@ -28,12 +28,9 @@ import "@xyflow/react/dist/style.css";
 import { useGraficos } from "../../store/useGraficos";
 import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
+import type { TipoGrafico } from "../../storage/graficos";
 import { GraficoNode, type NodoGrafico } from "../Graficos/GraficoNode";
-import {
-  ALTO_GRAFICO,
-  ANCHO_GRAFICO,
-  TIPO_ARRASTRE,
-} from "../Graficos/nodo";
+import { MEDIDAS, TIPO_ARRASTRE } from "../Graficos/nodo";
 import { useEsAngosto } from "../../hooks/useEsAngosto";
 import { AnioNode, type NodoAnio } from "./AnioNode";
 import {
@@ -195,8 +192,8 @@ export function Malla() {
       id: grafico.id,
       type: "grafico",
       position: { x: grafico.x, y: grafico.y },
-      width: ANCHO_GRAFICO,
-      height: ALTO_GRAFICO,
+      width: MEDIDAS[grafico.tipo].ancho,
+      height: MEDIDAS[grafico.tipo].alto,
       // El único nodo que se arrastra: las materias quedan donde el plan las
       // pone, y moverlas a mano no significaría nada.
       draggable: true,
@@ -256,9 +253,12 @@ export function Malla() {
       });
       // Se centra en el puntero: soltar y que aparezca abajo a la derecha se
       // siente como que no cayó donde uno lo dejó.
-      useGraficos.getState().agregar(tipo as "torta-progreso", {
-        x: posicion.x - ANCHO_GRAFICO / 2,
-        y: posicion.y - ALTO_GRAFICO / 2,
+      const medidas = MEDIDAS[tipo as TipoGrafico];
+      if (!medidas) return;
+
+      useGraficos.getState().agregar(tipo as TipoGrafico, {
+        x: posicion.x - medidas.ancho / 2,
+        y: posicion.y - medidas.alto / 2,
       });
     },
     [],

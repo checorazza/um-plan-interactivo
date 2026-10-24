@@ -39,3 +39,23 @@ export function IconoTorta({ className }: Props) {
     </svg>
   );
 }
+
+/** Tres barras de distinta altura. */
+export function IconoBarras({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="18"
+      height="18"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g fill="currentColor">
+        <rect x="2" y="9" width="3" height="5" rx="1" opacity="0.4" />
+        <rect x="6.5" y="4" width="3" height="10" rx="1" />
+        <rect x="11" y="7" width="3" height="7" rx="1" opacity="0.4" />
+      </g>
+    </svg>
+  );
+}
