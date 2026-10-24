@@ -3,8 +3,11 @@
  *
  * Las tres porciones suman el total de materias: aprobadas, regulares y las
  * que faltan. "Total" no es una porción más —sería contar dos veces lo que ya
- * está en las otras—, así que va como número en el centro, que además es el
- * dato que se lee de un vistazo.
+ * está en las otras—, así que va abajo, junto con los créditos.
+ *
+ * En el centro va el porcentaje aprobado: es la única cifra que resume la
+ * carrera entera en un número, y el anillo que la rodea ya muestra de dónde
+ * sale.
  *
  * Los colores son los mismos que los de las tarjetas de la malla, incluidos
  * los que el usuario haya cambiado en Personalizar: el verde de acá es el
@@ -63,7 +66,11 @@ export function TortaProgreso() {
   return (
     <div className="torta">
       <div className="torta__anillo">
-        <svg viewBox="0 0 120 120" role="img" aria-label={resumen(porciones, total)}>
+        <svg
+          viewBox="0 0 120 120"
+          role="img"
+          aria-label={resumen(porciones, total, aprobadas)}
+        >
           {/* La pista de atrás: con pocas materias marcadas, deja ver que el
               anillo está entero y no a medio dibujar. */}
           <circle
@@ -102,8 +109,8 @@ export function TortaProgreso() {
         </svg>
 
         <div className="torta__centro">
-          <strong>{total}</strong>
-          <span>materias</span>
+          <strong>{porcentaje(aprobadas, total)}%</strong>
+          <span>aprobado</span>
         </div>
       </div>
 
@@ -125,15 +132,17 @@ export function TortaProgreso() {
         ))}
       </ul>
 
-      <p className="torta__pie">{creditos} créditos aprobados</p>
+      <p className="torta__pie">
+        {aprobadas} de {total} materias · {creditos} créditos
+      </p>
     </div>
   );
 }
 
 /** El mismo contenido en una frase, para quien no ve el dibujo. */
-function resumen(porciones: Porcion[], total: number): string {
+function resumen(porciones: Porcion[], total: number, aprobadas: number): string {
   const partes = porciones.map(
     (porcion) => `${porcion.valor} ${porcion.etiqueta.toLowerCase()}`,
   );
-  return `De ${total} materias: ${partes.join(", ")}.`;
+  return `${porcentaje(aprobadas, total)}% aprobado. De ${total} materias: ${partes.join(", ")}.`;
 }
