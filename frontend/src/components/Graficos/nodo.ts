@@ -14,7 +14,7 @@ export const TITULOS: Record<TipoGrafico, string> = {
 
 /** React Flow necesita el tamaño del nodo antes de pintarlo. */
 export const ANCHO_GRAFICO = 230;
-export const ALTO_GRAFICO = 268;
+export const ALTO_GRAFICO = 226;
 
 /** El tipo que viaja en el arrastre desde el panel hasta el tablero. */
 export const TIPO_ARRASTRE = "application/x-grafico";

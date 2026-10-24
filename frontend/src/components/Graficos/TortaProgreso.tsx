@@ -2,8 +2,8 @@
  * Cuánto de la carrera llevás, como anillo.
  *
  * Las tres porciones suman el total de materias: aprobadas, regulares y las
- * que faltan. "Total" no es una porción más —sería contar dos veces lo que ya
- * está en las otras—, así que va abajo, junto con los créditos.
+ * que faltan. "Total" no es una porción más: sería contar dos veces lo que ya
+ * está en las otras.
  *
  * En el centro va el porcentaje aprobado: es la única cifra que resume la
  * carrera entera en un número, y el anillo que la rodea ya muestra de dónde
@@ -14,7 +14,6 @@
  * verde de allá, y eso es lo que hace que no haga falta pensar la leyenda.
  */
 
-import { creditosAprobados } from "../../domain/reglas";
 import { useMalla } from "../../store/useMalla";
 import { arcos, porcentaje, type Porcion } from "./torta";
 
@@ -61,7 +60,6 @@ export function TortaProgreso() {
 
   const dibujados = arcos(porciones, CIRCUNFERENCIA, HUECO);
   const porClave = new Map(porciones.map((porcion) => [porcion.clave, porcion]));
-  const creditos = plan ? creditosAprobados(plan, estados) : 0;
 
   return (
     <div className="torta">
@@ -131,10 +129,6 @@ export function TortaProgreso() {
           </li>
         ))}
       </ul>
-
-      <p className="torta__pie">
-        {aprobadas} de {total} materias · {creditos} créditos
-      </p>
     </div>
   );
 }

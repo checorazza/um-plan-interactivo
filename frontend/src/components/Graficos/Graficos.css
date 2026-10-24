@@ -2,7 +2,9 @@
 
 .grafico {
   width: 230px;
-  height: 268px;
+  /* El mismo número que `ALTO_GRAFICO`: React Flow necesita el alto del nodo
+     antes de pintarlo, así que no puede salir del contenido. */
+  height: 226px;
   display: flex;
   flex-direction: column;
   background: var(--superficie);
@@ -153,13 +155,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.torta__pie {
-  margin: auto 0 0;
-  padding-top: 7px;
-  border-top: 1px solid var(--borde);
-  font-size: 11px;
-  color: var(--texto-suave);
-}
 
 /* --- el panel de donde se arrastran --- */
 
