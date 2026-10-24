@@ -325,3 +325,15 @@
 .interruptor input:disabled {
   cursor: default;
 }
+
+/* El selector de carrera: el mismo aspecto que tenía en el panel. */
+.ajustes__carrera {
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+}

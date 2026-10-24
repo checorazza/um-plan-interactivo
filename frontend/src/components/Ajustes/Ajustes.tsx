@@ -1,5 +1,5 @@
 /**
- * El panel de personalización: tema, fondo, colores y enlaces.
+ * El panel de ajustes: la carrera y el aspecto.
  *
  * Reemplaza a la vieja lista de referencias y la incluye: cada fila muestra
  * la misma muestra de color que antes, pero ahora se puede cambiar.
@@ -18,10 +18,11 @@ import {
   type ClaveColor,
   type Tema,
 } from "../../storage/preferencias";
+import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
 import { IconoVolver } from "../Sidebar/iconos";
 import { SelectorColor } from "./SelectorColor";
-import "./Personalizar.css";
+import "./Ajustes.css";
 
 const TEMAS: { valor: Tema; etiqueta: string }[] = [
   { valor: "auto", etiqueta: "Sistema" },
@@ -67,7 +68,7 @@ interface Props {
   alVolver: () => void;
 }
 
-export function Personalizar({ alVolver }: Props) {
+export function Ajustes({ alVolver }: Props) {
   const tema = usePreferencias((s) => s.tema);
   const mostrarEnlaces = usePreferencias((s) => s.mostrarEnlaces);
   const ocultarEnlacesAprobados = usePreferencias(
@@ -87,6 +88,10 @@ export function Personalizar({ alVolver }: Props) {
   const cambiarColor = usePreferencias((s) => s.cambiarColor);
   const cambiarFestejo = usePreferencias((s) => s.cambiarFestejo);
   const restablecer = usePreferencias((s) => s.restablecer);
+
+  const carreras = useMalla((s) => s.carreras);
+  const idCarrera = useMalla((s) => s.idCarrera);
+  const seleccionarCarrera = useMalla((s) => s.seleccionarCarrera);
 
   const [abierto, setAbierto] = useState<Abierto>(null);
 
@@ -145,8 +150,28 @@ export function Personalizar({ alVolver }: Props) {
         >
           <IconoVolver />
         </button>
-        <h2>Personalizar</h2>
+        <h2>Ajustes</h2>
       </header>
+
+      {carreras.length > 1 && (
+        <section className="personalizar__grupo">
+          <h3 id="ajustes-carrera">Carrera</h3>
+          <select
+            className="ajustes__carrera"
+            aria-labelledby="ajustes-carrera"
+            value={idCarrera ?? ""}
+            onChange={(evento) => {
+              void seleccionarCarrera(Number(evento.target.value));
+            }}
+          >
+            {carreras.map((carrera) => (
+              <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                {carrera.nombre}
+              </option>
+            ))}
+          </select>
+        </section>
+      )}
 
       <section className="personalizar__grupo">
         <h3 id="personalizar-tema">Tema</h3>

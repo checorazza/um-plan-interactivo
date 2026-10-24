@@ -56,3 +56,24 @@ export function IconoVolver({ className }: Props) {
     </svg>
   );
 }
+
+/** Engranaje: abre los ajustes. */
+export function IconoEngranaje({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g fill="none" stroke="currentColor" strokeWidth="1.4">
+        {/* Los dientes cruzan el aro: separados se leen como un sol. */}
+        <path d="M12.00 8.00L14.60 8.00M10.83 10.83L12.67 12.67M8.00 12.00L8.00 14.60M5.17 10.83L3.33 12.67M4.00 8.00L1.40 8.00M5.17 5.17L3.33 3.33M8.00 4.00L8.00 1.40M10.83 5.17L12.67 3.33" strokeLinecap="round" />
+        <circle cx="8" cy="8" r="4.6" />
+        <circle cx="8" cy="8" r="1.9" />
+      </g>
+    </svg>
+  );
+}

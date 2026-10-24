@@ -2,8 +2,8 @@
  * Panel lateral: carrera, progreso de créditos y acciones generales.
  *
  * Tiene varias vistas y muestra una sola: el panel es angosto y en el
- * teléfono es una barra, así que la personalización y los gráficos ocupan su
- * lugar en vez de agregarse abajo.
+ * teléfono es una barra, así que los ajustes y los gráficos ocupan su lugar
+ * en vez de agregarse abajo.
  */
 
 import { useState } from "react";
@@ -13,21 +13,18 @@ import { useGraficos } from "../../store/useGraficos";
 import { useMalla } from "../../store/useMalla";
 import { IconoTorta } from "../Graficos/iconos";
 import { PanelGraficos } from "../Graficos/PanelGraficos";
-import { Personalizar } from "../Personalizar/Personalizar";
+import { Ajustes } from "../Ajustes/Ajustes";
 import { Sesion } from "../Sesion/Sesion";
 import { ProximosVencimientos } from "./ProximosVencimientos";
-import { IconoPaleta } from "./iconos";
+import { IconoEngranaje } from "./iconos";
 import "./Sidebar.css";
 
 export function Sidebar() {
-  const [vista, setVista] = useState<"principal" | "personalizar" | "graficos">(
+  const [vista, setVista] = useState<"principal" | "ajustes" | "graficos">(
     "principal",
   );
-  const carreras = useMalla((s) => s.carreras);
-  const idCarrera = useMalla((s) => s.idCarrera);
   const plan = useMalla((s) => s.plan);
   const estados = useMalla((s) => s.estados);
-  const seleccionarCarrera = useMalla((s) => s.seleccionarCarrera);
   const reiniciar = useMalla((s) => s.reiniciar);
   const sinPersistencia = useMalla((s) => s.sinPersistencia);
   const agregarGrafico = useGraficos((s) => s.agregar);
@@ -58,10 +55,10 @@ export function Sidebar() {
     setVista("principal");
   }
 
-  if (vista === "personalizar") {
+  if (vista === "ajustes") {
     return (
       <aside className="sidebar sidebar--personalizando">
-        <Personalizar alVolver={() => setVista("principal")} />
+        <Ajustes alVolver={() => setVista("principal")} />
       </aside>
     );
   }
@@ -80,27 +77,20 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <header className="sidebar__marca">
-        <h1>Plan Interactivo</h1>
-        <p>Marcá y seguí tu carrera.</p>
+        <div>
+          <h1>Plan Interactivo</h1>
+          <p>Marcá y seguí tu carrera.</p>
+        </div>
+        <button
+          type="button"
+          className="sidebar__ajustes"
+          onClick={() => setVista("ajustes")}
+          aria-label="Ajustes"
+          title="Ajustes"
+        >
+          <IconoEngranaje />
+        </button>
       </header>
-
-      {carreras.length > 1 && (
-        <label className="sidebar__campo">
-          <span>Carrera</span>
-          <select
-            value={idCarrera ?? ""}
-            onChange={(evento) => {
-              void seleccionarCarrera(Number(evento.target.value));
-            }}
-          >
-            {carreras.map((carrera) => (
-              <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                {carrera.nombre}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
 
       {plan && (
         <>
@@ -126,24 +116,14 @@ export function Sidebar() {
             </p>
           </section>
 
-          <div className="sidebar__paneles">
-            <button
-              type="button"
-              className="boton sidebar__panel"
-              onClick={() => setVista("graficos")}
-            >
-              <IconoTorta />
-              Gráficos
-            </button>
-            <button
-              type="button"
-              className="boton sidebar__panel"
-              onClick={() => setVista("personalizar")}
-            >
-              <IconoPaleta />
-              Personalizar
-            </button>
-          </div>
+          <button
+            type="button"
+            className="boton sidebar__panel"
+            onClick={() => setVista("graficos")}
+          >
+            <IconoTorta />
+            Gráficos
+          </button>
 
           <ProximosVencimientos />
         </>

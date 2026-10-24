@@ -10,7 +10,7 @@
  * sale.
  *
  * Los colores son los mismos que los de las tarjetas de la malla, incluidos
- * los que el usuario haya cambiado en Personalizar: el verde de acá es el
+ * los que el usuario haya cambiado en Ajustes: el verde de acá es el
  * verde de allá, y eso es lo que hace que no haga falta pensar la leyenda.
  */
 

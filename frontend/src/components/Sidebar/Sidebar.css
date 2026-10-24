@@ -10,6 +10,34 @@
   border-right: 1px solid var(--borde);
 }
 
+/* El título y el engranaje, en una fila. */
+.sidebar__marca {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sidebar__ajustes {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--texto-suave);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radio-chico);
+}
+
+.sidebar__ajustes:hover {
+  color: var(--texto);
+  background: var(--superficie-2);
+  border-color: var(--borde);
+}
+
 .sidebar__marca h1 {
   margin: 0;
   font-size: 18px;
@@ -20,25 +48,6 @@
   margin: 2px 0 0;
   font-size: 13px;
   color: var(--texto-suave);
-}
-
-.sidebar__campo {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--texto-suave);
-}
-
-.sidebar__campo select {
-  padding: 8px 10px;
-  font: inherit;
-  font-weight: 500;
-  color: var(--texto);
-  background: var(--superficie-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-chico);
 }
 
 .sidebar__progreso {
@@ -91,15 +100,7 @@
   color: var(--texto-suave);
 }
 
-/* Los dos paneles, uno al lado del otro: hacen lo mismo —abrir una vista—
-   así que pesan lo mismo. */
-.sidebar__paneles {
-  display: flex;
-  gap: 8px;
-}
-
 .sidebar__panel {
-  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -211,7 +212,35 @@
     border-bottom: 1px solid var(--borde);
   }
 
-  .sidebar__marca h1 {
+  /* El título y el engranaje, en una fila. */
+.sidebar__marca {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sidebar__ajustes {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--texto-suave);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radio-chico);
+}
+
+.sidebar__ajustes:hover {
+  color: var(--texto);
+  background: var(--superficie-2);
+  border-color: var(--borde);
+}
+
+.sidebar__marca h1 {
     font-size: 15px;
   }
 
@@ -220,10 +249,6 @@
   .sidebar__vencimientos,
   .sidebar__resumen {
     display: none;
-  }
-
-  .sidebar__campo {
-    flex: 1 1 140px;
   }
 
   .sidebar__progreso {
