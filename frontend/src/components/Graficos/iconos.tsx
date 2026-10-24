@@ -59,3 +59,24 @@ export function IconoBarras({ className }: Props) {
     </svg>
   );
 }
+
+/** Dos pistas con su relleno: un medidor. */
+export function IconoMedidor({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="18"
+      height="18"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g fill="currentColor">
+        <rect x="2" y="3.5" width="12" height="3" rx="1.5" opacity="0.3" />
+        <rect x="2" y="3.5" width="8.5" height="3" rx="1.5" />
+        <rect x="2" y="9.5" width="12" height="3" rx="1.5" opacity="0.3" />
+        <rect x="2" y="9.5" width="4.5" height="3" rx="1.5" />
+      </g>
+    </svg>
+  );
+}

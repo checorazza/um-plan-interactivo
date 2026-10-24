@@ -16,9 +16,16 @@ export const VERSION_GRAFICOS = 1;
 const CLAVE = `${PREFIJO}:graficos`;
 
 /** Los gráficos que se pueden poner. */
-export type TipoGrafico = "torta-progreso" | "aprobadas-por-anio";
+export type TipoGrafico =
+  | "torta-progreso"
+  | "aprobadas-por-anio"
+  | "requisitos-anio";
 
-export const TIPOS: TipoGrafico[] = ["torta-progreso", "aprobadas-por-anio"];
+export const TIPOS: TipoGrafico[] = [
+  "torta-progreso",
+  "aprobadas-por-anio",
+  "requisitos-anio",
+];
 
 export interface Grafico {
   /** Único dentro de la carrera; lo usa React Flow como id de nodo. */

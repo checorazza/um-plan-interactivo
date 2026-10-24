@@ -13,6 +13,7 @@ import { useGraficos } from "../../store/useGraficos";
 import type { TipoGrafico } from "../../storage/graficos";
 import { BarrasPorAnio } from "./BarrasPorAnio";
 import { MEDIDAS, TITULOS } from "./nodo";
+import { RequisitosAnio } from "./RequisitosAnio";
 import { TortaProgreso } from "./TortaProgreso";
 import "./Graficos.css";
 
@@ -49,6 +50,7 @@ export function GraficoNode({ data }: NodeProps<NodoGrafico>) {
       <div className="grafico__cuerpo">
         {data.tipo === "torta-progreso" && <TortaProgreso />}
         {data.tipo === "aprobadas-por-anio" && <BarrasPorAnio />}
+        {data.tipo === "requisitos-anio" && <RequisitosAnio />}
       </div>
     </div>
   );

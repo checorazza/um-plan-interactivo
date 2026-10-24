@@ -186,7 +186,7 @@ function migrarDesdeV1(): Estados | null {
   return estados;
 }
 
-interface Contenido {
+export interface Contenido {
   estados: Estados;
   claves: Record<string, Clave>;
   basicas: Record<string, Estado>;
@@ -195,10 +195,26 @@ interface Contenido {
   aprobaciones: FechasDeMateria;
 }
 
-/** Lo guardado, ya llevado al formato actual. */
-function leerGuardado(): Contenido {
-  const valor = leerCrudo(CLAVE_ESTADOS);
+/** Un contenido vacío: lo que se devuelve cuando no hay nada que rescatar. */
+function vacio(): Contenido {
+  return {
+    estados: {},
+    claves: {},
+    basicas: {},
+    desbloqueadas: new Set(),
+    vencimientos: {},
+    aprobaciones: {},
+  };
+}
 
+/**
+ * Lleva al formato actual cualquier cosa con forma de progreso guardado.
+ *
+ * Se usa con lo que hay en `localStorage` y también con lo que viene de un
+ * archivo importado: los dos son dato de afuera y los dos pueden venir de
+ * una versión vieja, así que pasan por el mismo filtro.
+ */
+export function interpretar(valor: unknown): Contenido {
   if (valor && typeof valor === "object") {
     const dato = valor as Partial<Guardado>;
     if (dato.version === VERSION) {
@@ -241,24 +257,36 @@ function leerGuardado(): Contenido {
       };
     }
     // Versión desconocida (de una app más nueva, o dato corrupto): se ignora.
-    return {
-      estados: {},
-      claves: {},
-      basicas: {},
-      desbloqueadas: new Set(),
-      vencimientos: {},
-      aprobaciones: {},
-    };
+    return vacio();
   }
 
-  return {
-    estados: migrarDesdeV1() ?? {},
-    claves: {},
-    basicas: {},
-    desbloqueadas: new Set(),
-    vencimientos: {},
-    aprobaciones: {},
-  };
+  return vacio();
+}
+
+/** Lo guardado en este dispositivo, ya llevado al formato actual. */
+export function leerContenido(): Contenido {
+  return leerGuardado();
+}
+
+function leerGuardado(): Contenido {
+  const valor = leerCrudo(CLAVE_ESTADOS);
+  if (valor === null) {
+    // Sin nada en la clave nueva puede quedar algo del formato 1, que usaba
+    // una clave por carrera.
+    return { ...vacio(), estados: migrarDesdeV1() ?? {} };
+  }
+  return interpretar(valor);
+}
+
+/** Pisa **todo** el progreso con el que se le pase. Lo usa la importación. */
+export function escribirContenido(contenido: Contenido): boolean {
+  return guardarTodo(contenido.estados, {
+    basicas: contenido.basicas,
+    claves: contenido.claves,
+    desbloqueadas: contenido.desbloqueadas,
+    vencimientos: contenido.vencimientos,
+    aprobaciones: contenido.aprobaciones,
+  });
 }
 
 /** Todo el progreso guardado, de todas las carreras. */

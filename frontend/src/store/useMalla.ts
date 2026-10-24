@@ -35,11 +35,14 @@ import {
   type Revertida,
 } from "../domain/reglas";
 import {
+  type Contenido,
   borrarProgreso,
   guardarCarrera,
   guardarDeCarrera,
   guardarTodo,
+  escribirContenido,
   leerCarrera,
+  leerContenido,
   leerDeCarrera,
   leerTodo,
   adoptarBasicas,
@@ -157,6 +160,11 @@ interface EstadoMalla {
   resolverConflicto: (opcion: OpcionConflicto) => Promise<void>;
   /** Vuelve al modo local. `borrar` limpia el progreso de este dispositivo. */
   salirDeLaSesion: (borrar: boolean) => void;
+
+  /** El progreso de este dispositivo, para exportarlo. */
+  paraExportar: () => Contenido;
+  /** Pisa el progreso con el de un archivo importado. */
+  importar: (contenido: Contenido) => void;
 }
 
 function mensajeDe(error: unknown): string {
@@ -618,6 +626,17 @@ export const useMalla = create<EstadoMalla>((set, get) => {
       } catch (error) {
         set({ sync: "error", errorSync: mensajeDe(error) });
       }
+    },
+
+    paraExportar: () => leerContenido(),
+
+    importar: (contenido) => {
+      escribirContenido(contenido);
+      // El progreso de la carrera abierta sale del store, no del storage:
+      // sin esto la malla seguiría mostrando lo de antes.
+      refrescarDesdeStorage();
+      set({ seleccionada: null, cascada: null, fecha: null, descartadas: [] });
+      programarEmpuje();
     },
 
     salirDeLaSesion: (borrar) => {

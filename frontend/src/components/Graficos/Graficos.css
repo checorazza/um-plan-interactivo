@@ -288,3 +288,79 @@
   line-height: 1.45;
   color: var(--texto-suave);
 }
+
+/* --- requisitos por año --- */
+
+.requisitos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.requisitos__total {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+}
+
+.requisitos__total strong {
+  font-size: 22px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.requisitos__total span {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.requisitos__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.requisitos__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-size: 11.5px;
+}
+
+.requisitos__anio {
+  font-weight: 600;
+}
+
+.requisitos__estado {
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.requisitos__estado--listo {
+  color: var(--aprobada-borde);
+}
+
+.requisitos__pista {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--superficie-2);
+  overflow: hidden;
+}
+
+.requisitos__relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--acento);
+  transition: width 0.2s ease;
+}
+
+.requisitos__relleno--listo {
+  background: var(--aprobada-borde);
+}

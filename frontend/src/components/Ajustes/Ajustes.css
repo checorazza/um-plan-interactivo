@@ -337,3 +337,53 @@
   border: 1px solid var(--borde);
   border-radius: var(--radio-chico);
 }
+
+/* --- exportar e importar --- */
+
+.respaldo__botones {
+  display: flex;
+  gap: 8px;
+}
+
+.respaldo__botones .boton {
+  flex: 1;
+}
+
+.respaldo__nota {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+/* Importar pisa todo: el aviso tiene el peso de una advertencia, no el de
+   una nota al pie. */
+.respaldo__confirmar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 11px;
+  background: var(--regular-fondo);
+  color: var(--regular-texto);
+  border: 1px solid var(--regular-borde);
+  border-radius: var(--radio-chico);
+}
+
+.respaldo__confirmar p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.respaldo__error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--peligro);
+}
+
+.respaldo__listo {
+  margin: 0;
+  font-size: 12px;
+  color: var(--aprobada-borde);
+}

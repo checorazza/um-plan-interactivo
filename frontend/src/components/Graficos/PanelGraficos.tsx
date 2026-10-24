@@ -8,13 +8,14 @@
 
 import type { TipoGrafico } from "../../storage/graficos";
 import { IconoVolver } from "../Sidebar/iconos";
-import { IconoBarras, IconoTorta } from "./iconos";
+import { IconoBarras, IconoMedidor, IconoTorta } from "./iconos";
 import { TIPO_ARRASTRE } from "./nodo";
 import "./Graficos.css";
 
 const ICONOS: Record<TipoGrafico, typeof IconoTorta> = {
   "torta-progreso": IconoTorta,
   "aprobadas-por-anio": IconoBarras,
+  "requisitos-anio": IconoMedidor,
 };
 
 const DISPONIBLES: {
@@ -31,6 +32,11 @@ const DISPONIBLES: {
     tipo: "aprobadas-por-anio",
     titulo: "Aprobadas por año",
     descripcion: "Cuántas aprobaste cada año, según las fechas que cargues.",
+  },
+  {
+    tipo: "requisitos-anio",
+    titulo: "Requisitos por año",
+    descripcion: "Cuántos créditos te faltan para destrabar cada año.",
   },
 ];
 

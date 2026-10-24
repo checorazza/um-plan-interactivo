@@ -1,5 +1,5 @@
 /**
- * El panel de ajustes: la carrera y el aspecto.
+ * El panel de ajustes: la carrera, el aspecto y el respaldo de los datos.
  *
  * Reemplaza a la vieja lista de referencias y la incluye: cada fila muestra
  * la misma muestra de color que antes, pero ahora se puede cambiar.
@@ -21,6 +21,7 @@ import {
 import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
 import { IconoVolver } from "../Sidebar/iconos";
+import { Respaldo } from "./Respaldo";
 import { SelectorColor } from "./SelectorColor";
 import "./Ajustes.css";
 
@@ -281,6 +282,8 @@ export function Ajustes({ alVolver }: Props) {
           })}
         </ul>
       </section>
+
+      <Respaldo />
 
       <footer className="personalizar__pie">
         <button
