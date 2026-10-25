@@ -30,6 +30,7 @@ import {
 const FAMILIA: Record<ClaveColor, string> = {
   aprobada: "aprobada",
   regular: "regular",
+  cursando: "cursando",
   disponible: "sin-estado",
   sinCreditos: "bloqueada",
 };

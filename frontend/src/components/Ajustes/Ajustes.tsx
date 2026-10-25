@@ -34,6 +34,7 @@ const TEMAS: { valor: Tema; etiqueta: string }[] = [
 const ETIQUETAS: Record<ClaveColor, string> = {
   aprobada: "Aprobada",
   regular: "Regular",
+  cursando: "Cursando",
   disponible: "Disponible",
   sinCreditos: "Créditos insuficientes",
 };
@@ -42,6 +43,7 @@ const ETIQUETAS: Record<ClaveColor, string> = {
 const VARIABLE: Record<ClaveColor, string> = {
   aprobada: "--aprobada-borde",
   regular: "--regular-borde",
+  cursando: "--cursando-borde",
   disponible: "--sin-estado-borde",
   sinCreditos: "--bloqueada-borde",
 };

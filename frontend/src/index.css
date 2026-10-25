@@ -22,6 +22,10 @@
   --regular-borde: #d9a400;
   --regular-texto: #553f00;
 
+  --cursando-fondo: #d9f0fa;
+  --cursando-borde: #0b8fbf;
+  --cursando-texto: #06405a;
+
   --aprobada-fondo: #d8f5e3;
   --aprobada-borde: #1f9254;
   --aprobada-texto: #0c3f24;
@@ -64,6 +68,10 @@
     --regular-borde: #d9a400;
     --regular-texto: #f4de9b;
 
+    --cursando-fondo: #0a2a38;
+    --cursando-borde: #38bdf8;
+    --cursando-texto: #a5e4fb;
+
     --aprobada-fondo: #0f3522;
     --aprobada-borde: #2fab65;
     --aprobada-texto: #a7e8c3;
@@ -98,6 +106,10 @@
   --regular-fondo: #3a2f0c;
   --regular-borde: #d9a400;
   --regular-texto: #f4de9b;
+
+  --cursando-fondo: #0a2a38;
+  --cursando-borde: #38bdf8;
+  --cursando-texto: #a5e4fb;
 
   --aprobada-fondo: #0f3522;
   --aprobada-borde: #2fab65;

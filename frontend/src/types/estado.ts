@@ -1,5 +1,10 @@
-/** Estado de cursado de una materia. La ausencia de estado se representa con `undefined`. */
-export type Estado = "regular" | "aprobada";
+/**
+ * Estado de cursado de una materia. Sin estado se representa con `undefined`.
+ *
+ * Van de menos a más: `cursando` es la materia que estás haciendo ahora,
+ * `regular` la que cursaste y te falta rendir, `aprobada` la que terminaste.
+ */
+export type Estado = "cursando" | "regular" | "aprobada";
 
 /** Estado de todas las materias de un usuario, indexado por id de materia. */
 export type Estados = Record<number, Estado>;

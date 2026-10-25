@@ -33,11 +33,17 @@ const TEMAS: Tema[] = ["auto", "claro", "oscuro"];
  * "Falta la correlativa" no está porque no tiene color propio: es una materia
  * disponible con el borde cortado.
  */
-export type ClaveColor = "aprobada" | "regular" | "disponible" | "sinCreditos";
+export type ClaveColor =
+  | "aprobada"
+  | "regular"
+  | "cursando"
+  | "disponible"
+  | "sinCreditos";
 
 export const CLAVES_COLOR: ClaveColor[] = [
   "aprobada",
   "regular",
+  "cursando",
   "disponible",
   "sinCreditos",
 ];
@@ -70,6 +76,7 @@ export const POR_DEFECTO: Preferencias = {
   colores: {
     aprobada: null,
     regular: null,
+    cursando: null,
     disponible: null,
     sinCreditos: null,
   },

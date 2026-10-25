@@ -61,6 +61,7 @@ describe("preferencias", () => {
         aprobada: "#00ff00",
         regular: null,
         disponible: null,
+        cursando: null,
         sinCreditos: "#123456",
       },
       festejar: false,

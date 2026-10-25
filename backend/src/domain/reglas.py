@@ -7,23 +7,25 @@ SQLAlchemy. El adaptador que arma un `Plan` desde la base está en
 
 Las reglas:
 
-1. Una materia está sin estado, `regular` o `aprobada`.
+1. Una materia está sin estado, `cursando`, `regular` o `aprobada`.
 2. Sólo las materias aprobadas otorgan créditos.
-3. Para marcar una materia del año N (regular *o* aprobada) hace falta que el
+3. Para marcar una materia del año N —con cualquier estado— hace falta que el
    total de créditos aprobados, de cualquier año, alcance los créditos
    requeridos por el año N.
 4. Para marcar una materia como aprobada hacen falta todas sus correlativas
    aprobadas.
-5. Regularizar no exige correlativas: alcanza con el gate de créditos.
+5. Cursar y regularizar no exigen correlativas: alcanza con el gate de
+   créditos. Los dos piden lo mismo.
 6. Un conjunto de estados es válido sólo si existe algún orden en el que se
    pudo haber llegado a él respetando 3 y 4.
 """
 
 from dataclasses import dataclass
 
+CURSANDO = 'cursando'
 REGULAR = 'regular'
 APROBADA = 'aprobada'
-ESTADOS = (REGULAR, APROBADA)
+ESTADOS = (CURSANDO, REGULAR, APROBADA)
 
 
 @dataclass(frozen=True)

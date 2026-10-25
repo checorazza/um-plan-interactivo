@@ -17,6 +17,7 @@ import {
   IconoAprobada,
   IconoCandado,
   IconoCandadoAbierto,
+  IconoCursando,
   IconoRegular,
 } from "./iconos";
 
@@ -53,6 +54,10 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
 
   // Una materia ya marcada siempre se puede desmarcar, aunque hoy no cumpla
   // las reglas para volver a marcarse.
+  //
+  // Cursar y regularizar piden lo mismo —el gate de créditos, sin
+  // correlativas—, así que alcanza con mirar una.
+  const habilitarCursando = regular.ok || estado === "cursando";
   const habilitarRegular = regular.ok || estado === "regular";
   const habilitarAprobada = aprobada.ok || estado === "aprobada";
 
@@ -87,13 +92,11 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
 
   const etiquetaEstado = data.desbloqueada
     ? `${estado ?? "sin cursar"}, desbloqueada a mano`
-    : estado === "aprobada"
-      ? "aprobada"
-      : estado === "regular"
-        ? "regular"
-        : bloqueo === "bloqueada_por_creditos"
-          ? "bloqueada"
-          : "sin cursar";
+    : estado !== undefined
+      ? estado
+      : bloqueo === "bloqueada_por_creditos"
+        ? "bloqueada"
+        : "sin cursar";
 
   return (
     <div className={clases}>
@@ -144,6 +147,17 @@ export function MateriaNode({ data, selected }: NodeProps<NodoMateria>) {
 
       {selected && (
         <div className="materia__acciones" role="group" aria-label={`Acciones de ${data.nombre}`}>
+          <button
+            type="button"
+            className="accion accion--cursando"
+            aria-pressed={estado === "cursando"}
+            disabled={!habilitarCursando}
+            title={habilitarCursando ? "Marcar como cursando" : regular.motivo}
+            onClick={() => alternar("cursando")}
+          >
+            <IconoCursando />
+            <span>Cursando</span>
+          </button>
           <button
             type="button"
             className="accion accion--regular"

@@ -19,7 +19,8 @@ function resumir(estados: Estados) {
   const valores = Object.values(estados);
   return {
     aprobadas: valores.filter((e) => e === "aprobada").length,
-    regulares: valores.filter((e) => e === "regular").length,
+    regulares: valores.filter((e) => e === "regular" || e === "cursando")
+      .length,
   };
 }
 

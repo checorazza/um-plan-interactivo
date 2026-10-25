@@ -1,9 +1,10 @@
 from . import db
 from .usuario import ahora
 
+CURSANDO = 'cursando'
 REGULAR = 'regular'
 APROBADA = 'aprobada'
-ESTADOS = (REGULAR, APROBADA)
+ESTADOS = (CURSANDO, REGULAR, APROBADA)
 
 
 class EstadoMateria(db.Model):
@@ -31,7 +32,8 @@ class EstadoMateria(db.Model):
 
     __table_args__ = (
         db.CheckConstraint(
-            "estado IN ('regular', 'aprobada')", name='ck_estado_materia_estado'
+            "estado IN ('cursando', 'regular', 'aprobada')",
+            name='ck_estado_materia_estado'
         ),
     )
 

@@ -6,14 +6,16 @@
  *
  * Las reglas:
  *
- * 1. Una materia está sin estado, `regular` o `aprobada`.
+ * 1. Una materia está sin estado, `cursando`, `regular` o `aprobada`.
  * 2. Sólo las materias aprobadas otorgan créditos.
  * 3. Para marcar una materia del año N (regular *o* aprobada) hace falta que el
  *    total de créditos aprobados, de cualquier año, alcance los créditos
  *    requeridos por el año N.
  * 4. Para marcar una materia como aprobada hacen falta todas sus correlativas
  *    aprobadas.
- * 5. Regularizar no exige correlativas: alcanza con el gate de créditos.
+ * 5. Cursar y regularizar no exigen correlativas: alcanza con el gate de
+ *    créditos. Los dos piden lo mismo, así que una materia que se puede
+ *    cursar se puede regularizar y al revés.
  * 6. Un conjunto de estados es válido sólo si existe algún orden en el que se
  *    pudo haber llegado a él respetando 3 y 4.
  * 7. Una materia **desbloqueada a mano** queda exenta de 3 y 4. Es una
@@ -61,7 +63,19 @@ export type Desbloqueadas = ReadonlySet<number>;
 
 const NINGUNA: Desbloqueadas = new Set<number>();
 
-const ESTADOS: Estado[] = ["regular", "aprobada"];
+const ESTADOS: Estado[] = ["cursando", "regular", "aprobada"];
+
+/**
+ * De menos a más, para quedarse con el más avanzado al combinar.
+ *
+ * El orden importa sólo acá: para las reglas, `cursando` y `regular` piden
+ * exactamente lo mismo.
+ */
+const AVANCE: Record<Estado, number> = {
+  cursando: 1,
+  regular: 2,
+  aprobada: 3,
+};
 
 /**
  * Suma los créditos de las materias aprobadas.
@@ -176,7 +190,7 @@ export function puedeMarcar(
     };
   }
 
-  // Regularizar no exige correlativas; aprobar sí.
+  // Cursar y regularizar no exigen correlativas; aprobar sí.
   if (nuevoEstado === "aprobada") {
     const faltantes = correlativasFaltantes(plan, estados, idMateria);
     if (faltantes.length > 0) {
@@ -323,7 +337,8 @@ export function sanearEstados(
 
 /**
  * Combina dos conjuntos de estados quedándose con el más avanzado de cada
- * materia: `aprobada` gana sobre `regular`, y `regular` sobre no tener estado.
+ * materia: `aprobada` gana sobre `regular`, `regular` sobre `cursando`, y
+ * cualquiera sobre no tener estado.
  *
  * Es la opción "combinar" del diálogo de conflicto al iniciar sesión: nunca
  * pierde progreso, aunque puede dar un conjunto que no respete las reglas si
@@ -334,7 +349,8 @@ export function combinarEstados(a: Estados, b: Estados): Estados {
   const combinado: Estados = { ...a };
   for (const [clave, estado] of Object.entries(b)) {
     const idMateria = Number(clave);
-    if (combinado[idMateria] === "aprobada") continue;
+    const actual = combinado[idMateria];
+    if (actual !== undefined && AVANCE[actual] >= AVANCE[estado]) continue;
     combinado[idMateria] = estado;
   }
   return combinado;

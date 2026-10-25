@@ -32,6 +32,7 @@ export function Sidebar() {
   const materias = plan ? [...plan.materias.values()] : [];
   const aprobadas = materias.filter((m) => estados[m.id_materia] === "aprobada");
   const regulares = materias.filter((m) => estados[m.id_materia] === "regular");
+  const cursando = materias.filter((m) => estados[m.id_materia] === "cursando");
 
   const creditos = plan ? creditosAprobados(plan, estados) : 0;
   const creditosTotales = materias.reduce((suma, m) => suma + m.creditos, 0);
@@ -113,6 +114,7 @@ export function Sidebar() {
             <p className="sidebar__resumen">
               {creditos} de {creditosTotales} créditos
               {regulares.length > 0 && ` · ${regulares.length} regulares`}
+              {cursando.length > 0 && ` · ${cursando.length} cursando`}
             </p>
           </section>
 
@@ -136,7 +138,9 @@ export function Sidebar() {
           type="button"
           className="boton boton--peligro"
           onClick={reiniciar}
-          disabled={aprobadas.length + regulares.length === 0}
+          disabled={
+            aprobadas.length + regulares.length + cursando.length === 0
+          }
         >
           Reiniciar progreso
         </button>

@@ -134,3 +134,28 @@ export function IconoCalendario({ className }: Props) {
     </svg>
   );
 }
+
+/** Círculo punteado: la materia está en curso, todavía sin cerrar. */
+export function IconoCursando({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle
+        cx="8"
+        cy="8"
+        r="6.25"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="3 2.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}

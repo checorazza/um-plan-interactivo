@@ -57,7 +57,7 @@ const CLAVE_ESTADOS = `${PREFIJO}:estados`;
 const CLAVE_CARRERA = `${PREFIJO}:carrera`;
 const CLAVE_SESION = `${PREFIJO}:sesion`;
 
-const ESTADOS_VALIDOS: Estado[] = ["regular", "aprobada"];
+const ESTADOS_VALIDOS: Estado[] = ["cursando", "regular", "aprobada"];
 
 /** Clave natural de una materia: no depende de los ids de la base. */
 export type Clave = string;

@@ -79,6 +79,7 @@ function colorEnMinimapa(nodo: Node): string {
   const estado = (nodo.data as DatosMateria).estado;
   if (estado === "aprobada") return "var(--aprobada-borde)";
   if (estado === "regular") return "var(--regular-borde)";
+  if (estado === "cursando") return "var(--cursando-borde)";
   return "var(--sin-estado-borde)";
 }
 

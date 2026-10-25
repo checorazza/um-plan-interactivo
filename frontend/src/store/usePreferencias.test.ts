@@ -40,6 +40,7 @@ describe("variablesDe", () => {
       colores: {
         aprobada: "#111111",
         regular: "#222222",
+        cursando: "#555555",
         disponible: "#333333",
         sinCreditos: "#444444",
       },

@@ -72,6 +72,7 @@ export interface Importado {
 export interface Resumen {
   aprobadas: number;
   regulares: number;
+  cursando: number;
   desbloqueadas: number;
   fechas: number;
   /** Si el archivo trae el aspecto guardado. */
@@ -96,6 +97,7 @@ export function resumirContenido(
   return {
     aprobadas: estados.filter((estado) => estado === "aprobada").length,
     regulares: estados.filter((estado) => estado === "regular").length,
+    cursando: estados.filter((estado) => estado === "cursando").length,
     desbloqueadas: contenido.desbloqueadas.size,
     fechas:
       Object.keys(contenido.vencimientos).length +
@@ -194,7 +196,7 @@ export function leerRespaldo(texto: string): Lectura {
     typeof dato.exportadoEn === "string" ? dato.exportadoEn : null,
   );
 
-  if (resumen.aprobadas + resumen.regulares === 0) {
+  if (resumen.aprobadas + resumen.regulares + resumen.cursando === 0) {
     return {
       ok: false,
       motivo: "El archivo no tiene ninguna materia marcada.",

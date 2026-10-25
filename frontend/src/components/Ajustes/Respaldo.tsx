@@ -112,6 +112,8 @@ export function Respaldo() {
           <p>
             El archivo trae <strong>{lectura.resumen.aprobadas}</strong>{" "}
             aprobadas y <strong>{lectura.resumen.regulares}</strong> regulares
+            {lectura.resumen.cursando > 0 &&
+              `, ${lectura.resumen.cursando} cursando`}
             {lectura.resumen.desbloqueadas > 0 &&
               `, ${lectura.resumen.desbloqueadas} desbloqueadas a mano`}
             {lectura.resumen.fechas > 0 && `, ${lectura.resumen.fechas} fechas`}

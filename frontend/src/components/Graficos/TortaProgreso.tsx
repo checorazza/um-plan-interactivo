@@ -1,8 +1,8 @@
 /**
  * Cuánto de la carrera llevás, como anillo.
  *
- * Las tres porciones suman el total de materias: aprobadas, regulares y las
- * que faltan. "Total" no es una porción más: sería contar dos veces lo que ya
+ * Las porciones suman el total de materias: aprobadas, regulares, las que
+ * estás cursando y las que faltan. "Total" no es una porción más: sería contar dos veces lo que ya
  * está en las otras.
  *
  * En el centro va el porcentaje aprobado: es la única cifra que resume la
@@ -35,6 +35,9 @@ export function TortaProgreso() {
   const regulares = materias.filter(
     (materia) => estados[materia.id_materia] === "regular",
   ).length;
+  const cursando = materias.filter(
+    (materia) => estados[materia.id_materia] === "cursando",
+  ).length;
   const total = materias.length;
 
   const porciones: Porcion[] = [
@@ -51,9 +54,15 @@ export function TortaProgreso() {
       color: "var(--regular-borde)",
     },
     {
+      clave: "cursando",
+      etiqueta: "Cursando",
+      valor: cursando,
+      color: "var(--cursando-borde)",
+    },
+    {
       clave: "faltan",
       etiqueta: "Sin cursar",
-      valor: Math.max(0, total - aprobadas - regulares),
+      valor: Math.max(0, total - aprobadas - regulares - cursando),
       color: "var(--sin-estado-borde)",
     },
   ];

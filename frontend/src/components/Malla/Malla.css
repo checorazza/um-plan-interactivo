@@ -158,6 +158,12 @@
 
 /* estados */
 
+.materia--cursando {
+  --materia-borde: var(--cursando-borde);
+  background: var(--cursando-fondo);
+  color: var(--cursando-texto);
+}
+
 .materia--regular {
   --materia-borde: var(--regular-borde);
   background: var(--regular-fondo);
@@ -170,6 +176,7 @@
   color: var(--aprobada-texto);
 }
 
+.materia--cursando .materia__creditos,
 .materia--regular .materia__creditos,
 .materia--aprobada .materia__creditos {
   color: currentColor;
@@ -210,10 +217,12 @@
 .materia__acciones {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
-  right: 0;
+  /* Más ancha que la tarjeta: tres botones no entran en 210 px, y recortar
+     las etiquetas sería peor que desbordar un poco hacia los costados. */
+  left: -26px;
+  right: -26px;
   display: flex;
-  gap: 6px;
+  gap: 5px;
   z-index: 10;
 }
 
@@ -222,8 +231,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 6px 8px;
+  gap: 4px;
+  padding: 6px 6px;
+  white-space: nowrap;
   font-size: 11px;
   font-weight: 600;
   border: 1.5px solid var(--borde);
@@ -239,6 +249,12 @@
 
 .accion:disabled {
   opacity: 0.45;
+}
+
+.accion--cursando[aria-pressed="true"] {
+  background: var(--cursando-fondo);
+  border-color: var(--cursando-borde);
+  color: var(--cursando-texto);
 }
 
 .accion--regular[aria-pressed="true"] {
