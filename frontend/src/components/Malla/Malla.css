@@ -49,9 +49,11 @@
 
 /* --- encabezado de año --- */
 
+/* El encabezado de año es el agarre del plan: desde acá se mueve entero. */
 .anio {
   width: 210px;
   height: 56px;
+  cursor: grab;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -72,6 +74,10 @@
 .anio__creditos {
   font-size: 12px;
   color: var(--texto-suave);
+}
+
+.anio:active {
+  cursor: grabbing;
 }
 
 .anio--cerrado {

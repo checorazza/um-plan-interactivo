@@ -16,7 +16,7 @@ import {
   leerRespaldo,
   nombreDeArchivo,
 } from "../../storage/respaldo";
-import { useGraficos } from "../../store/useGraficos";
+import { useTablero } from "../../store/useTablero";
 import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
 
@@ -24,7 +24,7 @@ export function Respaldo() {
   const paraExportar = useMalla((s) => s.paraExportar);
   const importar = useMalla((s) => s.importar);
   const reemplazarPreferencias = usePreferencias((s) => s.reemplazar);
-  const recargarGraficos = useGraficos((s) => s.recargar);
+  const recargarGraficos = useTablero((s) => s.recargar);
 
   const archivo = useRef<HTMLInputElement>(null);
   const [lectura, setLectura] = useState<Lectura | null>(null);
@@ -65,7 +65,7 @@ export function Respaldo() {
     aplicarRespaldo(lectura);
     importar();
     if (lectura.preferencias) reemplazarPreferencias(lectura.preferencias);
-    if (lectura.graficos) recargarGraficos();
+    if (lectura.graficos || lectura.tablero) recargarGraficos();
 
     setLectura(null);
     setListo(true);
@@ -147,7 +147,7 @@ export function Respaldo() {
 
       <p className="respaldo__nota">
         El archivo lleva las materias marcadas, las desbloqueadas a mano, las
-        fechas, los colores y los gráficos del tablero.
+        fechas, los colores y cómo está acomodado el tablero.
       </p>
     </section>
   );

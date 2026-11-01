@@ -25,7 +25,7 @@ import {
 } from "../../domain/reglas";
 import "@xyflow/react/dist/style.css";
 
-import { useGraficos } from "../../store/useGraficos";
+import { useTablero } from "../../store/useTablero";
 import { useMalla } from "../../store/useMalla";
 import { usePreferencias } from "../../store/usePreferencias";
 import type { TipoGrafico } from "../../storage/graficos";
@@ -91,9 +91,11 @@ export function Malla() {
   const desbloqueadas = useMalla((s) => s.desbloqueadas);
   const vencimientos = useMalla((s) => s.vencimientos);
   const aprobaciones = useMalla((s) => s.aprobaciones);
-  const graficos = useGraficos((s) => s.graficos);
-  const abrirGraficos = useGraficos((s) => s.abrir);
-  const moverGrafico = useGraficos((s) => s.mover);
+  const graficos = useTablero((s) => s.graficos);
+  const abrirTablero = useTablero((s) => s.abrir);
+  const moverGrafico = useTablero((s) => s.mover);
+  const desplazamiento = useTablero((s) => s.desplazamiento);
+  const moverPlan = useTablero((s) => s.moverPlan);
   const pedirFecha = useMalla((s) => s.pedirFecha);
   const desbloquear = useMalla((s) => s.desbloquear);
   const esAngosto = useEsAngosto();
@@ -118,16 +120,25 @@ export function Malla() {
 
     const ubicaciones = calcularUbicaciones(plan);
 
+    /** El acomodo automático, corrido a donde el usuario dejó el plan. */
+    const ubicar = (posicion: { x: number; y: number } | undefined) => ({
+      x: (posicion?.x ?? 0) + desplazamiento.x,
+      y: (posicion?.y ?? 0) + desplazamiento.y,
+    });
+
     const nodosAnio: NodoAnio[] = [...plan.anios.values()].map((anio) => ({
       id: `anio-${anio.id_anio}`,
       type: "anio",
-      position: ubicaciones.anios.get(anio.id_anio) ?? { x: 0, y: 0 },
+      position: ubicar(ubicaciones.anios.get(anio.id_anio)),
       data: { numero: anio.numero, creditosRequeridos: anio.creditos_requeridos },
       // Explícitas para que React Flow no tenga que medirlas: sin esto el
       // minimapa no dibuja los nodos.
       width: ANCHO_NODO,
       height: ALTO_NODO_ANIO,
-      draggable: false,
+      // El encabezado de año es el agarre del plan entero: arrastrarlo mueve
+      // todo el conjunto. Las materias no se arrastran, que moverlas de a una
+      // rompería el acomodo por años sin ganar nada.
+      draggable: true,
       selectable: false,
       focusable: false,
     }));
@@ -136,7 +147,7 @@ export function Malla() {
       (materia) => ({
         id: String(materia.id_materia),
         type: "materia",
-        position: ubicaciones.materias.get(materia.id_materia) ?? { x: 0, y: 0 },
+        position: ubicar(ubicaciones.materias.get(materia.id_materia)),
         selected: seleccionada === materia.id_materia,
         width: ANCHO_NODO,
         // Explícita y calculada: React Flow necesita el alto antes de
@@ -216,24 +227,41 @@ export function Malla() {
     vencimientos,
     aprobaciones,
     graficos,
+    desplazamiento,
     ocultarEnlacesAprobados,
   ]);
 
   /**
-   * React Flow avisa los cambios; el único que nos interesa es el arrastre
-   * de un gráfico. Los nodos salen de un `useMemo`, así que si esto no
-   * escribiera la posición en el store, el gráfico volvería solo a donde
-   * estaba al terminar de arrastrarlo.
+   * React Flow avisa los cambios; los que nos interesan son los arrastres.
+   * Los nodos salen de un `useMemo`, así que si esto no escribiera la
+   * posición en el store, lo arrastrado volvería solo a donde estaba al
+   * soltarlo.
+   *
+   * Arrastrar un año no mueve ese año: mueve el plan entero. De la posición
+   * nueva se descuenta dónde lo pondría el acomodo automático, y lo que
+   * queda es el desplazamiento del conjunto.
    */
   const alCambiarNodos = useCallback(
     (cambios: NodeChange[]) => {
       for (const cambio of cambios) {
-        if (cambio.type === "position" && cambio.position) {
-          moverGrafico(cambio.id, cambio.position);
+        if (cambio.type !== "position" || !cambio.position) continue;
+
+        if (cambio.id.startsWith("anio-")) {
+          if (!plan) continue;
+          const idAnio = Number(cambio.id.slice("anio-".length));
+          const propia = calcularUbicaciones(plan).anios.get(idAnio);
+          if (!propia) continue;
+          moverPlan({
+            x: cambio.position.x - propia.x,
+            y: cambio.position.y - propia.y,
+          });
+          continue;
         }
+
+        moverGrafico(cambio.id, cambio.position);
       }
     },
-    [moverGrafico],
+    [plan, moverGrafico, moverPlan],
   );
 
   /** Suelta un gráfico donde lo dejó el puntero. */
@@ -257,7 +285,7 @@ export function Malla() {
       const medidas = MEDIDAS[tipo as TipoGrafico];
       if (!medidas) return;
 
-      useGraficos.getState().agregar(tipo as TipoGrafico, {
+      useTablero.getState().agregar(tipo as TipoGrafico, {
         x: posicion.x - medidas.ancho / 2,
         y: posicion.y - medidas.alto / 2,
       });
@@ -358,10 +386,10 @@ export function Malla() {
     api.fitView(ENCUADRE);
   }, []);
 
-  // Cada carrera tiene sus gráficos: las posiciones son de su tablero.
+  // Cada carrera tiene su tablero: los gráficos y dónde quedó el plan.
   useEffect(() => {
-    if (plan) abrirGraficos(plan.carrera.nombre);
-  }, [plan, abrirGraficos]);
+    if (plan) abrirTablero(plan.carrera.nombre);
+  }, [plan, abrirTablero]);
 
   // Al cambiar de carrera la malla es otra: se reencuadra.
   useEffect(() => {

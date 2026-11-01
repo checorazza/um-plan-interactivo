@@ -387,3 +387,10 @@
   font-size: 12px;
   color: var(--aprobada-borde);
 }
+
+/* Vuelve el plan a donde lo pone el acomodo automático. Queda apagado
+   mientras no se haya movido: no hay nada que restablecer. */
+.ajustes__ubicacion {
+  width: 100%;
+  margin-top: 2px;
+}

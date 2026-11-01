@@ -19,12 +19,14 @@ const CLAVE = `${PREFIJO}:graficos`;
 export type TipoGrafico =
   | "torta-progreso"
   | "aprobadas-por-anio"
-  | "requisitos-anio";
+  | "requisitos-anio"
+  | "progreso-anio";
 
 export const TIPOS: TipoGrafico[] = [
   "torta-progreso",
   "aprobadas-por-anio",
   "requisitos-anio",
+  "progreso-anio",
 ];
 
 export interface Grafico {

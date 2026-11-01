@@ -12,6 +12,7 @@ export const TITULOS: Record<TipoGrafico, string> = {
   "torta-progreso": "Progreso",
   "aprobadas-por-anio": "Aprobadas por año",
   "requisitos-anio": "Requisitos por año",
+  "progreso-anio": "Progreso por año",
 };
 
 /**
@@ -25,6 +26,7 @@ export const MEDIDAS: Record<TipoGrafico, { ancho: number; alto: number }> = {
   "torta-progreso": { ancho: 230, alto: 226 },
   "aprobadas-por-anio": { ancho: 272, alto: 196 },
   "requisitos-anio": { ancho: 248, alto: 232 },
+  "progreso-anio": { ancho: 284, alto: 222 },
 };
 
 /** El tipo que viaja en el arrastre desde el panel hasta el tablero. */

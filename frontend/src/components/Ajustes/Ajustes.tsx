@@ -19,6 +19,7 @@ import {
   type Tema,
 } from "../../storage/preferencias";
 import { useMalla } from "../../store/useMalla";
+import { useTablero } from "../../store/useTablero";
 import { usePreferencias } from "../../store/usePreferencias";
 import { IconoVolver } from "../Sidebar/iconos";
 import { Respaldo } from "./Respaldo";
@@ -91,6 +92,9 @@ export function Ajustes({ alVolver }: Props) {
   const cambiarColor = usePreferencias((s) => s.cambiarColor);
   const cambiarFestejo = usePreferencias((s) => s.cambiarFestejo);
   const restablecer = usePreferencias((s) => s.restablecer);
+
+  const desplazamiento = useTablero((s) => s.desplazamiento);
+  const restablecerPlan = useTablero((s) => s.restablecerPlan);
 
   const carreras = useMalla((s) => s.carreras);
   const idCarrera = useMalla((s) => s.idCarrera);
@@ -229,6 +233,15 @@ export function Ajustes({ alVolver }: Props) {
           />
           <span>Festejar al aprobar, con confeti y sonido</span>
         </label>
+
+        <button
+          type="button"
+          className="boton ajustes__ubicacion"
+          onClick={restablecerPlan}
+          disabled={desplazamiento.x === 0 && desplazamiento.y === 0}
+        >
+          Restablecer la ubicación del plan
+        </button>
       </section>
 
       <section className="personalizar__grupo">

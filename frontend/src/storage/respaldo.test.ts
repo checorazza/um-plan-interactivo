@@ -23,6 +23,7 @@ import {
   escribirTodosLosGraficos,
   leerTodosLosGraficos,
 } from "./graficos";
+import { guardarDesplazamiento, leerDesplazamiento } from "./tablero";
 import {
   VERSION_RESPALDO,
   armarRespaldo,
@@ -325,6 +326,60 @@ describe("preferencias y gráficos", () => {
 
     aplicarRespaldo(lectura);
     expect(leerPreferencias().tema).toBe("oscuro");
+  });
+});
+
+describe("el tablero también viaja", () => {
+  it("el archivo lleva dónde quedó el plan", () => {
+    guardarDesplazamiento("Ingeniería en Informática", { x: 240, y: -60 });
+
+    const respaldo = JSON.parse(exportarDePrueba());
+    expect(respaldo.tablero.porCarrera).toEqual({
+      "Ingeniería en Informática": { x: 240, y: -60 },
+    });
+  });
+
+  it("va y vuelve", () => {
+    guardarDesplazamiento("Ingeniería en Informática", { x: 240, y: -60 });
+    const texto = exportarDePrueba();
+
+    // Otro dispositivo, con el plan en otro lado.
+    localStorage.clear();
+    guardarDesplazamiento("Ingeniería en Informática", { x: 999, y: 999 });
+
+    const lectura = leerRespaldo(texto);
+    if (!lectura.ok) throw new Error(lectura.motivo);
+    aplicarRespaldo(lectura);
+
+    expect(leerDesplazamiento("Ingeniería en Informática")).toEqual({
+      x: 240,
+      y: -60,
+    });
+  });
+
+  it("un archivo sin tablero no mueve el plan de nadie", () => {
+    guardarDesplazamiento("Ingeniería en Informática", { x: 240, y: -60 });
+
+    const lectura = leerRespaldo(
+      JSON.stringify({
+        aplicacion: "um-plan-interactivo",
+        version: 1,
+        progreso: {
+          version: 7,
+          estados: { 1: "aprobada" },
+          claves: {},
+          basicas: {},
+        },
+      }),
+    );
+    if (!lectura.ok) throw new Error(lectura.motivo);
+    expect(lectura.tablero).toBeNull();
+
+    aplicarRespaldo(lectura);
+    expect(leerDesplazamiento("Ingeniería en Informática")).toEqual({
+      x: 240,
+      y: -60,
+    });
   });
 });
 

@@ -1,7 +1,7 @@
 /**
- * Los gráficos puestos sobre el tablero.
+ * Cómo está acomodado el tablero: los gráficos puestos y dónde quedó el plan.
  *
- * Están aparte de `useMalla` a propósito: no son progreso ni reglas, son
+ * Está aparte de `useMalla` a propósito: no es progreso ni reglas, es
  * acomodo de pantalla. La carrera abierta se le avisa desde la malla, que es
  * la que sabe cuál es.
  */
@@ -14,23 +14,39 @@ import {
   guardarGraficos,
   leerGraficos,
 } from "../storage/graficos";
+import {
+  type Desplazamiento,
+  SIN_MOVER,
+  guardarDesplazamiento,
+  leerDesplazamiento,
+} from "../storage/tablero";
 
 export interface Posicion {
   x: number;
   y: number;
 }
 
-interface EstadoGraficos {
+interface EstadoTablero {
   /** Nombre de la carrera abierta, o null antes de abrir ninguna. */
   carrera: string | null;
   graficos: Grafico[];
+  /**
+   * Cuánto se corrió el plan de estudios respecto de donde lo pone el
+   * acomodo automático. Los gráficos no se mueven con él: cada uno tiene su
+   * posición propia.
+   */
+  desplazamiento: Desplazamiento;
 
   /** Cambia de carrera y trae sus gráficos. */
   abrir: (carrera: string) => void;
   agregar: (tipo: TipoGrafico, posicion: Posicion) => void;
   mover: (id: string, posicion: Posicion) => void;
   quitar: (id: string) => void;
-  /** Vuelve a leer los de la carrera abierta. La usa la importación. */
+  /** Corre el plan de estudios a un desplazamiento nuevo. */
+  moverPlan: (desplazamiento: Desplazamiento) => void;
+  /** Devuelve el plan a donde lo pone el acomodo automático. */
+  restablecerPlan: () => void;
+  /** Vuelve a leer lo de la carrera abierta. La usa la importación. */
   recargar: () => void;
 }
 
@@ -41,7 +57,7 @@ function nuevoId(): string {
   return `grafico-${Date.now().toString(36)}-${siguiente}`;
 }
 
-export const useGraficos = create<EstadoGraficos>((set, get) => {
+export const useTablero = create<EstadoTablero>((set, get) => {
   /** Guarda y deja el estado igual a lo guardado. */
   function asentar(graficos: Grafico[]) {
     const { carrera } = get();
@@ -52,10 +68,15 @@ export const useGraficos = create<EstadoGraficos>((set, get) => {
   return {
     carrera: null,
     graficos: [],
+    desplazamiento: SIN_MOVER,
 
     abrir: (carrera) => {
       if (get().carrera === carrera) return;
-      set({ carrera, graficos: leerGraficos(carrera) });
+      set({
+        carrera,
+        graficos: leerGraficos(carrera),
+        desplazamiento: leerDesplazamiento(carrera),
+      });
     },
 
     agregar: (tipo, posicion) => {
@@ -79,9 +100,21 @@ export const useGraficos = create<EstadoGraficos>((set, get) => {
       asentar(get().graficos.filter((grafico) => grafico.id !== id));
     },
 
+    moverPlan: (desplazamiento) => {
+      const { carrera } = get();
+      set({ desplazamiento });
+      if (carrera) guardarDesplazamiento(carrera, desplazamiento);
+    },
+
+    restablecerPlan: () => get().moverPlan(SIN_MOVER),
+
     recargar: () => {
       const { carrera } = get();
-      if (carrera) set({ graficos: leerGraficos(carrera) });
+      if (!carrera) return;
+      set({
+        graficos: leerGraficos(carrera),
+        desplazamiento: leerDesplazamiento(carrera),
+      });
     },
   };
 });

@@ -10,9 +10,9 @@
  * son otros. Con ellas, cada estado lleva su "carrera|código" al lado y el
  * progreso se reconstruye solo al abrir la carrera.
  *
- * Viajan también las preferencias y los gráficos del tablero, que son cómo
- * se ve la app. Son opcionales: un archivo de la versión 1 sólo traía el
- * progreso y se sigue aceptando.
+ * Viajan también las preferencias y el tablero —los gráficos puestos y dónde
+ * quedó el plan—, que son cómo se ve la app. Son opcionales: un archivo de
+ * la versión 1 sólo traía el progreso y se sigue aceptando.
  */
 
 import {
@@ -28,6 +28,13 @@ import {
   escribirContenido,
   interpretar,
 } from "./local";
+import {
+  type DesplazamientosPorCarrera,
+  VERSION_TABLERO,
+  escribirTodosLosDesplazamientos,
+  interpretarTablero,
+  leerTodosLosDesplazamientos,
+} from "./tablero";
 import {
   type Preferencias,
   VERSION_PREFERENCIAS,
@@ -59,6 +66,8 @@ export interface Respaldo {
   preferencias?: Record<string, unknown>;
   /** Los gráficos del tablero, por carrera. Desde la versión 2. */
   graficos?: Record<string, unknown>;
+  /** Dónde quedó el plan en cada carrera. Desde la versión 2. */
+  tablero?: Record<string, unknown>;
 }
 
 /** Todo lo que un archivo puede traer, ya saneado. */
@@ -66,6 +75,7 @@ export interface Importado {
   contenido: Contenido;
   preferencias: Preferencias | null;
   graficos: GraficosPorCarrera | null;
+  tablero: DesplazamientosPorCarrera | null;
 }
 
 /** Un vistazo de lo que trae un archivo, para mostrarlo antes de aplicarlo. */
@@ -124,6 +134,10 @@ export function armarRespaldo(contenido: Contenido): Respaldo {
     graficos: {
       version: VERSION_GRAFICOS,
       porCarrera: leerTodosLosGraficos(),
+    },
+    tablero: {
+      version: VERSION_TABLERO,
+      porCarrera: leerTodosLosDesplazamientos(),
     },
     progreso: {
       version: VERSION,
@@ -190,6 +204,7 @@ export function leerRespaldo(texto: string): Lectura {
     // `interpretarGraficos` espera el envoltorio entero —con su versión—,
     // no el mapa de adentro, que es lo que `armarRespaldo` escribe acá.
     graficos: dato.graficos ? interpretarGraficos(dato.graficos) : null,
+    tablero: dato.tablero ? interpretarTablero(dato.tablero) : null,
   };
   const resumen = resumirContenido(
     importado,
@@ -216,9 +231,11 @@ export function aplicarRespaldo({
   contenido,
   preferencias,
   graficos,
+  tablero,
 }: Importado): boolean {
   let ok = escribirContenido(contenido);
   if (preferencias) ok = guardarPreferencias(preferencias) && ok;
   if (graficos) ok = escribirTodosLosGraficos(graficos) && ok;
+  if (tablero) ok = escribirTodosLosDesplazamientos(tablero) && ok;
   return ok;
 }

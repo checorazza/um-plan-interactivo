@@ -9,10 +9,11 @@
 
 import type { Node, NodeProps } from "@xyflow/react";
 
-import { useGraficos } from "../../store/useGraficos";
+import { useTablero } from "../../store/useTablero";
 import type { TipoGrafico } from "../../storage/graficos";
 import { BarrasPorAnio } from "./BarrasPorAnio";
 import { MEDIDAS, TITULOS } from "./nodo";
+import { ProgresoPorAnio } from "./ProgresoPorAnio";
 import { RequisitosAnio } from "./RequisitosAnio";
 import { TortaProgreso } from "./TortaProgreso";
 import "./Graficos.css";
@@ -25,7 +26,7 @@ export type DatosGrafico = {
 export type NodoGrafico = Node<DatosGrafico, "grafico">;
 
 export function GraficoNode({ data }: NodeProps<NodoGrafico>) {
-  const quitar = useGraficos((s) => s.quitar);
+  const quitar = useTablero((s) => s.quitar);
 
   const medidas = MEDIDAS[data.tipo];
 
@@ -51,6 +52,7 @@ export function GraficoNode({ data }: NodeProps<NodoGrafico>) {
         {data.tipo === "torta-progreso" && <TortaProgreso />}
         {data.tipo === "aprobadas-por-anio" && <BarrasPorAnio />}
         {data.tipo === "requisitos-anio" && <RequisitosAnio />}
+        {data.tipo === "progreso-anio" && <ProgresoPorAnio />}
       </div>
     </div>
   );

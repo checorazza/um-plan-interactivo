@@ -9,7 +9,7 @@
 import { useState } from "react";
 
 import { creditosAprobados } from "../../domain/reglas";
-import { useGraficos } from "../../store/useGraficos";
+import { useTablero } from "../../store/useTablero";
 import { useMalla } from "../../store/useMalla";
 import { IconoTorta } from "../Graficos/iconos";
 import { PanelGraficos } from "../Graficos/PanelGraficos";
@@ -27,7 +27,7 @@ export function Sidebar() {
   const estados = useMalla((s) => s.estados);
   const reiniciar = useMalla((s) => s.reiniciar);
   const sinPersistencia = useMalla((s) => s.sinPersistencia);
-  const agregarGrafico = useGraficos((s) => s.agregar);
+  const agregarGrafico = useTablero((s) => s.agregar);
 
   const materias = plan ? [...plan.materias.values()] : [];
   const aprobadas = materias.filter((m) => estados[m.id_materia] === "aprobada");

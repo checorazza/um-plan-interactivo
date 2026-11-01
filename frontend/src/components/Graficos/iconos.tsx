@@ -80,3 +80,26 @@ export function IconoMedidor({ className }: Props) {
     </svg>
   );
 }
+
+/** Barras horizontales partidas: una por año, cada una con sus tramos. */
+export function IconoApiladas({ className }: Props) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      width="18"
+      height="18"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g fill="currentColor">
+        <rect x="2" y="3" width="7" height="2.6" rx="1.3" />
+        <rect x="10" y="3" width="4" height="2.6" rx="1.3" opacity="0.35" />
+        <rect x="2" y="6.7" width="4.5" height="2.6" rx="1.3" />
+        <rect x="7.5" y="6.7" width="6.5" height="2.6" rx="1.3" opacity="0.35" />
+        <rect x="2" y="10.4" width="2.5" height="2.6" rx="1.3" />
+        <rect x="5.5" y="10.4" width="8.5" height="2.6" rx="1.3" opacity="0.35" />
+      </g>
+    </svg>
+  );
+}
